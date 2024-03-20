@@ -1,0 +1,48 @@
+{
+  "driverId": "string",                                           // dont use this, this is internal to BE only, can be changed at any time without any intimation     
+  "tenantId": "string",                                           // dont use this, this is internal to BE only, can be changed at any time without any intimation
+  "calendarStartDate": "2022-07-17T13:38:17.639Z",                     // dont use this, this is internal to BE only, can be changed at any time without any intimation
+  // if there has been any status activated by driver, there will be relevant entry in below object
+  // for example, if driver never turned on driving status, you wont find "onDriving" object within "statusesData"
+  "statusesData": {
+    "id": "string",
+    "onDuty": {
+      "startedAt": "2022-07-17T13:38:17.639Z",                    // << the start date and time of the action
+      "lastStartedAt": "2022-07-17T13:38:17.639Z",                // << the last date and time of the action
+      "counter": 0,                                               // << how many times a counter has been used so far
+      "totalSecondsSpentSoFar": 0                                 // << how many seconds has been spent in this status used so far
+    },
+    "onBreak": {
+      "startedAt": "2022-07-17T13:38:17.639Z",                    // << the start date and time of the action
+      "lastStartedAt": "2022-07-17T13:38:17.639Z",                // << the last date and time of the action
+      "counter": 0,                                               // << how many times a counter has been used so far
+      "totalSecondsSpentSoFar": 0                                 // << how many seconds has been spent in this status used so far
+    },
+    "onDriving": {
+      "startedAt": "2022-07-17T13:38:17.639Z",                    // << the start date and time of the action
+      "lastStartedAt": "2022-07-17T13:38:17.639Z",                // << the last date and time of the action
+      "counter": 0,                                               // << how many times a counter has been used so far
+      "totalSecondsSpentSoFar": 0                                 // << how many seconds has been spent in this status used so far
+    },
+    "sleeperBerth": {
+      "startedAt": "2022-07-17T13:38:17.639Z",                    // << the start date and time of the action
+      "lastStartedAt": "2022-07-17T13:38:17.639Z",                // << the last date and time of the action
+      "counter": 0,                                               // << how many times a counter has been used so far
+      "totalSecondsSpentSoFar": 0                                 // << how many seconds has been spent in this status used so far
+    },
+    "offDuty": {
+      "startedAt": "2022-07-17T13:38:17.639Z",                    // << the start date and time of the action
+      "lastStartedAt": "2022-07-17T13:38:17.639Z",                // << the last date and time of the action
+      "counter": 0,                                               // << how many times a counter has been used so far
+      "totalSecondsSpentSoFar": 0                                 // << how many seconds has been spent in this status used so far
+    }
+  },
+  "dutyStatus": "string",                                         // << current duty status possible values are: "ON_DUTY_NOT_DRIVING", "DRIVING", "SLEEPER_BERTH", "OFF_DUTY", "BREAK"
+  "totalDriveTimeInSecondsSoFar": 0,                              // dont use this, when the shift will be reseted, this will become 0
+  "totalDutyTimeInSecondsSoFar": 0,                               // dont use this, when the shift will be reseted, this will become 0
+  "lastKnownLocation": {                                          // the last known location of the unit
+    "latitude": 0,
+    "longitude": 0
+  },
+  "logs": []                                                      // forget this, this is not for you, it will be removed sooner.
+}

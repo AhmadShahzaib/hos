@@ -1,0 +1,96 @@
+{
+  "id": 1,
+  "driverId": 1,
+  "tenantId": 1,
+  "calendarStartDate": "",
+  // HOSStatusInMemoryCalculatedStats -- start
+  "currentlyOnBreak": "false",
+  "currentlyOnDuty": "false",
+  "currentlyOnDriving": "false",
+  "currentlyOffDuty": "true",
+  "totalDriveTimeInSecondsSoFar": 0,
+  "totalDutyTimeInSecondsSoFar": 0,
+  "statusesData": {
+    "onDuty": {
+      "dutyStartedAt": "Date",
+      "lastDutyStartedAt": "Date",
+      "dutyStartCounter": "Number",
+      "totalDutySecondsSpentSoFar": "Number"
+    },
+    "onBreak": {
+      "breakStartedAt": "Date",
+      "lastBreakStartedAt": "Date",
+      "breakStartCounter": "Number",
+      "totalBreakSecondsSpentSoFar": "Number"
+    },
+    "onDriving": {
+      "drivingStartedAt": "Date",
+      "lastDrivingStartedAt": "Date",
+      "drivingStartCounter": "Number",
+      "totalDrivingSecondsSpentSoFar": "Number"
+    },
+    "sleeperBerth": {
+      "sleeperBerthStartedAt": "Date",
+      "lastSleeperBerthStartedAt": "Date",
+      "sleeperBerthCounter": "Number",
+      "totalSleeperBerthSecondsSpentSoFar": "Number"
+    },
+    "offDuty": {
+      "offDutyStartedAt": "Date",
+      "lastOffDutyStartedAt": "Date",
+      "offDutyStartCounter": "Number",
+      "totalOffDutySecondsSpentSoFar": "Number"
+    }
+  },
+
+  "logs": [
+    {
+      "id": 1,
+      "driverId": 1,
+      "tenantId": 1,
+      "actionType": "",
+      "actionDate": "",
+      "isViolation":false,
+      "violations":[],
+      "geoLocation": {
+        "longitude": 0,
+        "latitude": 0
+      },
+      "odoMeterMillage": 0,
+      "odoMeterSpeed": 0,
+      "engineHours": 0,
+      "engineRPMs": 0,
+      "statusesData": {
+        "offDuty": {
+          "offDutyStartedAt": "",
+          "lastOffDutyStartedAt": "",
+          "offDutyStartCounter": 0,
+          "totalOffDutySecondsSpentSoFar": 0
+        }
+      }
+    },
+    {
+      "driverId": 1,
+      "tenantId": 1,
+      "actionType": "",
+      "actionDate": "",
+      "geoLocation": {
+        "longitude": 0,
+        "latitude": 0
+      },
+      "odoMeterMillage": 0,
+      "odoMeterSpeed": 0,
+      "engineHours": 0,
+      "engineRPMs": 0,
+      "statusesData": {
+        "OnBreak": {
+          "breakStartedAt": "Date",
+          "lastBreakStartedAt": "Date",
+          "breakStartCounter": "Number",
+          "totalBreakSecondsSpentSoFar": "Number"
+        }
+      }
+    }
+  ]
+  // HOSStatusInMemoryCalculatedStats -- ends
+}
