@@ -1,5 +1,5 @@
 import { generateUniqueHexId } from "./generateEventSeqId";
-import { Length } from '../../../logEld-TenantBackendMicroservices-Assets-Future/src/models/length.model';
+// import { Length } from '../../../logEld-TenantBackendMicroservices-Assets-Future/src/models/length.model';
 
 export async function insertLog(logs, newLog, startTime, endTime) {
     let updatedLogs = [...logs];
