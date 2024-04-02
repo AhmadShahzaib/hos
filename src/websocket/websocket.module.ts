@@ -1,26 +1,29 @@
-import { Module, Injectable, Scope, MiddlewareConsumer } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppService } from './services/app.service';
-import { DriverCsvService } from './services/driverCsv.service';
+import { WebsocketGateway } from './websocket.gateway';
+import { AppService } from '../services/app.service';
 import {
   ConfigurationService,
   MessagePatternResponseInterceptor,
   SharedModule,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
-import { AppController } from './controllers/app.controller';
-import { LogsController } from './controllers/logs.controller';
-import { DriverCsvController } from './controllers/driverCsv.controller';
-import { Transport, ClientProxyFactory } from '@nestjs/microservices';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+
 import {
   LogEditRequestHistorySchema,
   LogsSchema,
   DriverCsvSchema,
 } from 'mongoDb/schema/schema';
+import {  Injectable, Scope, MiddlewareConsumer } from '@nestjs/common';
+import { DriverCsvService } from '../services/driverCsv.service';
+
+import { AppController } from '../controllers/app.controller';
+import { LogsController } from '../controllers/logs.controller';
+import { DriverCsvController } from '../controllers/driverCsv.controller';
+import { Transport, ClientProxyFactory } from '@nestjs/microservices';
+
 // import { LogsSocketGateway } from 'gateway/socket.gateway';
 import { LogsService } from 'services/logs.service';
-import tunnel from 'tunnel-ssh';
-import tunnelConfig from './tunnelConfig';
-import { APP_INTERCEPTOR } from '@nestjs/core';
 import { UnidentifiedLogsController } from 'controllers/unidentifiedLogs.controller';
 import { UnidentifiedLogsService } from 'services/unidentifiedLogs.service';
 import { UnidentifiedLogsSchema } from 'mongoDb/schema/unidentifiedLogs.schema';
@@ -29,9 +32,6 @@ import { EditInsertLogHistorySchema } from 'mongoDb/schema/editInsertLogHistoryS
 import { DriverLiveLocationSchema } from 'mongoDb/schema/driverLiveLocation.schema';
 import { HistorySchema } from 'mongoDb/schema/history.schema';
 import { RecordTableSchema } from 'mongoDb/schema/recordTable.schema';
-import { WebsocketModule } from './websocket/websocket.module';
-import { WebsocketGateway } from './websocket/websocket.gateway';
-
 const getProxyObject = (
   proxyName: string,
   hostPort: string,
@@ -51,10 +51,8 @@ const getProxyObject = (
     inject: [ConfigurationService],
   };
 };
-
 @Module({
-  imports: [
-    SharedModule,
+  imports:[ SharedModule,
     MongooseModule.forFeature([
       { name: 'driverLogs', schema: LogsSchema },
       { name: 'logEditRequestHistory', schema: LogEditRequestHistorySchema },
@@ -65,31 +63,7 @@ const getProxyObject = (
       { name: 'driverLiveLocation', schema: DriverLiveLocationSchema },
       {name:'RecordTable',schema:RecordTableSchema},
       { name: 'history', schema: HistorySchema },
-    ]), // { name: 'driverCsvData', schema: DriverCsvSchema } { name: 'unidentifiedlog', schema: unidentifiedLogsSchema }
-    MongooseModule.forRootAsync({
-      useFactory: async (configService: ConfigurationService) => {
-        const useTunnel = JSON.parse(
-          configService.get('USE_TUNNEL') ?? 'false',
-        );
-
-        const mongooseConfig = {
-          uri: configService.mongoUri,
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        };
-
-        
-        return mongooseConfig;
-      },
-      inject: [ConfigurationService],
-    }), WebsocketModule,
-  ],
-  controllers: [
-    AppController,
-    LogsController,
-    DriverCsvController,
-    UnidentifiedLogsController,
-  ],
+    ])],
   providers: [
     {
       provide: APP_INTERCEPTOR,
@@ -177,31 +151,4 @@ const getProxyObject = (
     ConfigurationService,
   ],
 })
-export class AppModule {
-  static port: number | string;
-  static isDev: boolean;
-
-  constructor(private readonly _configurationService: ConfigurationService) {
-    AppModule.port = AppModule.normalizePort(
-      _configurationService.get('SELF_MICROSERVICE_HOST'),
-    );
-    AppModule.isDev = _configurationService.isDevelopment;
-  }
-  /**
-   * Normalize port or return an error if port is not valid
-   * @param val The port to normalize
-   */
-  private static normalizePort(val: number | string): number | string {
-    const port: number = typeof val === 'string' ? parseInt(val, 10) : val;
-
-    if (Number.isNaN(port)) {
-      return val;
-    }
-
-    if (port >= 0) {
-      return port;
-    }
-
-    throw new Error(`Port "${val}" is invalid.`);
-  }
-}
+export class WebsocketModule {}

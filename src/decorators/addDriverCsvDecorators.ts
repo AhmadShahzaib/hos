@@ -14,27 +14,7 @@ export default function AddDriverCsvDecorators() {
     Post('csv/log'),
     SetMetadata('permissions', [HOS.ADD_LOG]),
     ApiExtraModels(LogEntryRequestModel, Array<LogEntryRequestModel>),
-    ApiBody({
-      examples: {
-        // "example 1": { value: example1 },
-        // "example 2": { value: example2 },
-        // "example 3": { value: example3 },
-        // "example 4": { value: example4 },
-        // "example 5": { value: example5 },
-
-      },
-      schema: {
-        anyOf: [
-          {
-            type: 'array', items: { $ref: getSchemaPath(LogEntryRequestModel) },
-          },
-          {
-            $ref: getSchemaPath(LogEntryRequestModel),
-          }
-        ]
-      }
-
-    }),
+    
     ApiOkResponse({
       content: {
         'application/json': {
