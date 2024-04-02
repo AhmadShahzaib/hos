@@ -12,13 +12,14 @@ import {
 
 import { Transport } from '@nestjs/microservices';
 import configureSwagger from './swaggerConfigurations';
-
+import { IoAdapter } from '@nestjs/platform-socket.io';
 // import { SnakeCaseInterceptor } from './shared/interceptors/snake-case.interceptor';
 import * as requestIp from 'request-ip';
 import { json } from 'express';
 import { CustomInterceptor } from 'utils/customInterceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new IoAdapter(app));
   const logger = new Logger('Main');
   const globalPrefix = '/api';
   const conf = app.get<ConfigurationService>(ConfigurationService);
