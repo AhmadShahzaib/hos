@@ -35,7 +35,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import EditInsertLogsDocument from 'mongoDb/document/editInsertLogsDocument';
 import editInsertLogHistory from 'mongoDb/document/editInsertLogHistoryDocument';
 import { paginator } from 'utils/pagination';
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({ scope: Scope.DEFAULT  })
 export class LogsService {
   private readonly logger = new Logger('HOSLogsService');
 

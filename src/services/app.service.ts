@@ -54,7 +54,7 @@ import {
 } from 'utils/removeDuplicateConsecutiveLogs';
 import { getIntermediateType } from 'utils/getIntermediateType';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({ scope: Scope.DEFAULT  })
 export class AppService {
   private readonly logger = new Logger('HOSStatusService');
 
