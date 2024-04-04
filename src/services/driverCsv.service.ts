@@ -57,7 +57,7 @@ let Schema = mongoose.Schema;
 let globalIntermediates = {};
 global.globalIntermediatesArray = [];
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({ scope: Scope.DEFAULT  })
 export class DriverCsvService {
   private readonly logger = new Logger('DriverCsvService');
   constructor(

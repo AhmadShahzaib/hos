@@ -4,12 +4,13 @@ import { AppService } from './services/app.service';
 import { DriverCsvService } from './services/driverCsv.service';
 import {
   ConfigurationService,
-  MessagePatternResponseInterceptor,
+  MessagePatternResponseInterceptor,SocketManagerService,
   SharedModule,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 import { AppController } from './controllers/app.controller';
 import { LogsController } from './controllers/logs.controller';
 import { DriverCsvController } from './controllers/driverCsv.controller';
+// import {WebsocketGateway } from './websocket/websocket.gateway'
 import { Transport, ClientProxyFactory } from '@nestjs/microservices';
 import {
   LogEditRequestHistorySchema,
@@ -29,7 +30,7 @@ import { EditInsertLogHistorySchema } from 'mongoDb/schema/editInsertLogHistoryS
 import { DriverLiveLocationSchema } from 'mongoDb/schema/driverLiveLocation.schema';
 import { HistorySchema } from 'mongoDb/schema/history.schema';
 import { RecordTableSchema } from 'mongoDb/schema/recordTable.schema';
-import { WebsocketModule } from './websocket/websocket.module';
+// import { WebsocketModule } from './websocket/websocket.module';
 import { WebsocketGateway } from './websocket/websocket.gateway';
 
 const getProxyObject = (
@@ -82,20 +83,22 @@ const getProxyObject = (
         return mongooseConfig;
       },
       inject: [ConfigurationService],
-    }), WebsocketModule,
+    }), 
+    // WebsocketModule,
   ],
   controllers: [
     AppController,
     LogsController,
     DriverCsvController,
-    UnidentifiedLogsController,
+    UnidentifiedLogsController
   ],
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: MessagePatternResponseInterceptor,
-    },
+    },WebsocketGateway,
     // LogsSocketGateway,WebsocketGateway,
+    // SocketManagerService,
     /**
      * V2 UNIT_SERVICE Initialize
      * AUthor : Farzan
@@ -176,6 +179,10 @@ const getProxyObject = (
     { useClass: UnidentifiedLogsService, provide: 'UnidentifiedLogsService' },
     ConfigurationService,
   ],
+  // exports:[ 
+  //   { useClass: DriverCsvService, provide: 'DriverCsvService' },
+
+  // ]
 })
 export class AppModule {
   static port: number | string;

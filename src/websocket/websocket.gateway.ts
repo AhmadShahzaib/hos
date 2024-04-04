@@ -21,13 +21,14 @@ import {
   Param,
   Get,
 } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
-import { JwtPayload } from 'jsonwebtoken';
 import {
-  SocketManagerService,
   MessagePatternResponseType,
   mapMessagePatternResponseToException,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
+import { SocketManagerService } from '@shafiqrathore/logeld-tenantbackend-common-future';
+
+import { Server, Socket } from 'socket.io';
+import { JwtPayload } from 'jsonwebtoken';
 import { DriverCsvService } from 'services/driverCsv.service';
 import { AppService } from '../services/app.service';
 import { ClientProxy, MessagePattern } from '@nestjs/microservices';
@@ -38,9 +39,9 @@ export class WebsocketGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
+    private readonly socketManager: SocketManagerService,
     @Inject('DriverCsvService')
     private readonly driverCsvService: DriverCsvService,
-    private readonly socketManager: SocketManagerService,
     @Inject('UNIT_SERVICE') private readonly unitClient: ClientProxy,
     @Inject('DRIVER_SERVICE') private readonly driverClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
@@ -51,6 +52,7 @@ export class WebsocketGateway
 
   async handleConnection(client: Socket, ...args: any[]) {
     // Access the authorization token from the client's handshake
+
     const tokenPayload: JwtPayload = await this.socketManager.validateToken(
       client.handshake.headers.authorization,
     );
@@ -65,6 +67,7 @@ export class WebsocketGateway
   async getOrignalLogs(@MessageBody() queryParams: any): Promise<any> {
     try {
       //  const response = await this.HOSService.getOrignalLogs(queryParams);
+      console.log('i am here in orignal');
       let user;
       if (!queryParams.id) {
         return {
@@ -110,7 +113,7 @@ export class WebsocketGateway
       let resp = {
         csvBeforeUpdate: { csv: csv, violations: violations },
       };
-      this.server.emit('message',{
+      this.server.emit('sendOrignal', {
         message: 'Success',
         data: resp,
       });
