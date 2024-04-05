@@ -2,8 +2,7 @@ import { ForbiddenException, Get, HttpStatus, Post, SetMetadata } from '@nestjs/
 import { ApiQuery, ApiOkResponse, getSchemaPath, refs, ApiExtraModels, ApiBody } from '@nestjs/swagger';
 import { CombineDecorators, CombineDecoratorType, HOS } from '@shafiqrathore/logeld-tenantbackend-common-future';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
-import { LogEntry } from 'logs/types';
-import { AppDeviceType, LogActionType } from 'logs/Enums';
+
 import moment from 'moment';
 
 
