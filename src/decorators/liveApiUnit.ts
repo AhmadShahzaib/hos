@@ -20,7 +20,7 @@ import {
   CombineDecoratorType,
   HOS,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
-import { AppDeviceType, LogActionType } from 'logs/Enums';
+
 import moment from 'moment';
 
 export default function GetDriverCsvForAdminDecorators() {

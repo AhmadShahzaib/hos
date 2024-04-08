@@ -11,7 +11,6 @@ import {
   HOS,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
-import { AppDeviceType, LogActionType } from 'logs/Enums';
 import moment from 'moment';
 import { EditLogEntryRequestModel } from 'models/editLogEntry.request.model';
 

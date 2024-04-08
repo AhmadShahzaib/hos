@@ -1,4 +1,3 @@
-import { EventType } from '../logs/Enums';
 
 export async function getInBetweenLogs(logs, startTime, endTime) {
   const arr = [];

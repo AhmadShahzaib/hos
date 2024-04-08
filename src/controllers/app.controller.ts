@@ -1,4 +1,3 @@
-import { EditLogEntry, LoginLogoutLog } from './../logs/types';
 import {
   BaseController,
   getTimeZoneDateRangeForDay,
@@ -44,7 +43,6 @@ import GetGraphDataDecorators, {
 } from 'decorators/getGraphData';
 import { Response, Request } from 'express';
 import { mapKeys, camelCase } from 'lodash';
-import { LogEntry } from 'logs/types';
 import LogsDocument from 'mongoDb/document/document';
 import { LogsService } from 'services/logs.service';
 import { DriverCsvService } from 'services/driverCsv.service';
@@ -52,7 +50,6 @@ import { DriverCsvService } from 'services/driverCsv.service';
 import { AppService } from '../services/app.service';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
 import { LastKnownLocationRequest } from 'models/lastKnownLocation';
-import { getLiveDriverData } from 'shared/getDriverLiveData';
 import GetMyLiveDataDecorators from 'decorators/getMyLiveData';
 import GetDriverLiveDataUptoNow from 'decorators/getDriverLiveDataUptoNow';
 import { getAddress } from 'services/addresses.cron';
@@ -64,7 +61,6 @@ import {
   EventPattern,
   MessagePattern,
 } from '@nestjs/microservices';
-import { dateRangeForDriverLog } from 'shared/utils';
 import { firstValueFrom } from 'rxjs';
 
 import GetFourteenDaysRecapDecorators, {

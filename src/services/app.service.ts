@@ -50,7 +50,6 @@ export class AppService {
   private readonly logger = new Logger('HOSStatusService');
 
   constructor(
-    @InjectModel('driverLogs') private driverLogsModel: Model<LogsDocument>,
     @InjectModel('logEditRequestHistory')
     private logEditRequestHistoryModel: Model<LogEditRequestHistoryDocument>,
     @InjectModel('EditInsertLogs')
@@ -118,21 +117,7 @@ export class AppService {
     return messagePatternDevice;
   };
 
-  findDbEntry = async (
-    options: FilterQuery<LogsDocument>,
-    projection: ProjectionType<LogsDocument> = {},
-    mongooseOptn?: QueryOptions | null,
-  ): Promise<LogsDocument> => {
-    try {
-      return await this.driverLogsModel.findOne(
-        options,
-        projection,
-        mongooseOptn,
-      );
-    } catch (error) {
-      throw error;
-    }
-  };
+ 
 
   // ): Promise<any[]> => {
 
@@ -262,45 +247,11 @@ export class AppService {
   //   }
   // };
 
-  updateLastKnownLocation = async (
-    options: FilterQuery<LogsDocument>,
-    lastKnownLocation: LastKnownLocationRequest,
-  ) => {
-    try {
-      return await this.driverLogsModel.findOneAndUpdate(
-        options,
-        lastKnownLocation,
-        { new: true },
-      );
-    } catch (error) {
-      throw error;
-    }
-  };
+ 
 
-  getLogEntriesFromDb = async (
-    aggregationArray: PipelineStage[],
-  ): Promise<any> => {
-    try {
-      return await this.driverLogsModel.aggregate(aggregationArray).exec();
-    } catch (error) {
-      throw error;
-    }
-  };
 
-  findLatestEntry = async (
-    options: FilterQuery<LogsDocument>,
-  ): Promise<LogsDocument> => {
-    try {
-      return this.driverLogsModel
-        .findOne(options)
-        .sort({
-          updatedAt: -1,
-        })
-        .exec();
-    } catch (error) {
-      throw error;
-    }
-  };
+
+ 
 
   updateDataInUnits = async (data) => {
     const messagePatternFirstValue = await firstValueFrom(
@@ -316,27 +267,7 @@ export class AppService {
    * @param options nested level query filters
    * @returns
    */
-  findAndUpdateDriverLogsInDB = async (
-    query: FilterQuery<LogsDocument>,
-    update: FilterQuery<LogsDocument>,
-    options: FilterQuery<LogsDocument>,
-  ): Promise<LogsDocument> => {
-    try {
-      const result = await this.driverLogsModel.findOneAndUpdate(
-        query,
-        update,
-        options,
-      );
-      if (!result) {
-        Logger.log(`Requested log entry not found ${query['logs._id']}`);
-        throw new NotFoundException(`${query['logs._id']} Not found`);
-      }
-      return result;
-    } catch (error) {
-      Logger.log(`Error while performing action: ${error}`);
-      throw error;
-    }
-  };
+
 
   addEditLogRequestHistory = async (data, user, editedDay, requestStatus) => {
     try {
