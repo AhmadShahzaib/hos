@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { LogsEntryDocument } from '../mongoDb/document/document';
 import { Status } from './status.model';
-import { PartialStatusesType } from 'logs/types';
 import {
   IsEnum,
   IsNotEmpty,
@@ -11,16 +10,9 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { AppDeviceType, LogActionType } from 'logs/Enums';
 export class LogEntryRequestModel {
-  @ApiProperty()
-  statusesData: PartialStatusesType;
-
-  @ApiProperty()
-  @IsString()
-  @IsEnum(LogActionType)
-  actionType: string;
-
+ 
+  
   @ApiProperty()
   @IsOptional()
   @MaxLength(250)
@@ -65,10 +57,7 @@ export class LogEntryRequestModel {
   @IsOptional()
   appVersion?: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsEnum(AppDeviceType)
-  deviceType: string;
+ 
 
   @ApiProperty()
   @IsNumber()

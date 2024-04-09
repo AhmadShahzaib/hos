@@ -1,4 +1,3 @@
-import { EventType } from '../logs/Enums';
 export async function getLog(logs,time) { 
 
 const targetTime = time; // hhmmss

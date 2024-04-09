@@ -1,6 +1,5 @@
 import { formateDate } from "./formateDate";
 import { generateUniqueHexId } from "./generateEventSeqId";
-import { LoginLogoutLog } from '../logs/types';
 import moment from "moment";
 
 export function insert_powerup_powerdown(poweruppowerdown, statusInfo, date, time, cmvPowerUnitNumber, cmvVin, timezone) {

@@ -1,30 +1,15 @@
 import { Schema } from 'mongoose';
 import * as mongoose from 'mongoose';
-import { CombinedStatuses, GenericStatusTeller } from 'logs/types';
-import {
-  AppDeviceType,
-  EventType,
-  LogActionType,
-  ViolationType,
-} from 'logs/Enums';
+
 import moment from 'moment';
 
-const ViolationTypeArrSchema = {
-  statusStartedAt: { type: Number, required: false },
-  startedAt: { type: Number, required: false },
-  type: { type: String, enum: ViolationType, required: false },
-  endedAt: { type: Number, required: false },
-};
+
 export const StatusesSchema = new mongoose.Schema({
   calendarStartDate: Number,
   calendarEndDate: Number,
   shiftStartDate: Number,
   shiftEndDate: Number,
-  violations: {
-    required: true,
-    type: Array<{ type: ViolationType; count: Number }>,
-    default: [],
-  },
+  
   onDuty: {
     required: false,
     startedAt: { type: Number, index: true },
@@ -87,75 +72,9 @@ export const StatusesSchema = new mongoose.Schema({
   },
 });
 
-const logEntryKeys = {
-  driverId: { type: Schema.Types.ObjectId, required: true, index: true },
-  tenantId: { type: Schema.Types.ObjectId, required: true, index: true },
-  serverDate: { type: Number, index: true },
-  actionType: {
-    enum: LogActionType,
-    type: String,
-    default: LogActionType.OFF_DUTY,
-    index: true,
-  },
-  isViolation: { required: false, type: Boolean, default: false },
-  violations: { required: false, type: [ViolationTypeArrSchema] },
-  actionDate: { type: Number, default: null, index: true },
-  notes: { required: false, type: String },
-  geoLocation: {
-    required: false,
-    longitude: Number,
-    latitude: Number,
-    address: String,
-  },
-  address: { required: false, type: String },
-  odoMeterMillage: { required: false, type: Number },
-  odoMeterSpeed: { required: false, type: Number },
-  engineHours: { required: false, type: Number },
-  engineRPMs: { required: false, type: Number },
-  statusesData: { required: false, type: StatusesSchema },
-  violationType: { required: false, type: String },
-  vehicleManualId: { required: true, type: String },
-  appVersion: { required: false, type: String },
-  deviceVersion: { required: false, type: String },
-  OSversion: { required: false, type: String },
-  deviceType: {
-    required: true,
-    enum: AppDeviceType,
-    type: String,
-    default: 'android',
-    index: true,
-  },
-  annotation: { required: false, type: Number },
-  isManual: { required: false, type: Boolean },
-  eventType: { required: false, type: String, enum: EventType },
-  sequenceNumber: { required: false, type: Number },
-  deviceModel: { required: false, type: String },
-  eldType: { required: false, type: String },
-  malfunction: { required: false, type: String },
-};
-let editRequestLogEntryKeys = {
-  ...logEntryKeys,
-  isEdited: { required: false, type: Boolean },
-  annotation: { required: false, type: Number },
-  notes: { required: false, type: String },
-  parentId: { required: false, type: String },
-};
-let updatedLogEntryKeys = {
-  ...logEntryKeys,
-  annotation: { required: false, type: Number },
-  notes: { required: false, type: String },
-  parentId: { required: false, type: String },
-};
 
-export const LogsEntrySchema = new mongoose.Schema(
-  {
-    ...logEntryKeys,
-    editRequest: { required: false, type: [editRequestLogEntryKeys] },
-    updated: { required: false, type: [updatedLogEntryKeys] },
-    isApproved: { required: false, type: Boolean },
-  },
-  { timestamps: true },
-);
+
+
 
 export const ShiftDataSchema = new mongoose.Schema(
   {
@@ -166,85 +85,7 @@ export const ShiftDataSchema = new mongoose.Schema(
   { _id: false },
 );
 
-export const LogsSchema: Schema = new mongoose.Schema(
-  {
-    driver: {
-      id: { type: Schema.Types.ObjectId, required: true, index: true },
-      tenantId: { type: Schema.Types.ObjectId, required: true, index: true },
-      firstName: { type: String, required: true },
-      lastName: { type: String, required: true },
-    },
-    statusesData: {
-      required: false,
-      type: StatusesSchema,
-    },
-    shiftStartDate: { type: Number, default: null, index: true },
-    shiftEndDate: { type: Number, default: null, index: true },
-    calendarStartDate: { type: Number, required: true, index: true },
-    calendarEndDate: {
-      type: Number,
-      required: false,
-      index: true,
-      default: null,
-    },
-    isActive: { type: Boolean, required: true, default: true },
-    dutyStatus: {
-      enum: LogActionType,
-      type: String,
-      required: true,
-      default: LogActionType.OFF_DUTY,
-    },
-    continuousOffTimeInSeconds: { type: Number, required: true, default: 0 },
-    totalDriveTimeInSecondsSoFar: { type: Number, required: true, default: 0 },
-    totalDutyTimeInSecondsSoFar: { type: Number, required: true, default: 0 },
-    lastKnownLocation: {
-      required: false,
-      longitude: Number,
-      latitude: Number,
-      address: String,
-    },
-    secondLastKnownLocation: {
-      required: false,
-      longitude: Number,
-      latitude: Number,
-      address: String,
-    },
-    logs: {
-      type: [LogsEntrySchema],
-    },
-    recap: {
-      type: [StatusesSchema],
-    },
-    shiftRecap: [],
-    currentStatusInstance: {},
-    shiftStartStatus: {
-      type: Number,
-      default: 0,
-    },
-    potentialQualifyingPeriod: [],
-    prevQualifyingPeriod: [],
-    qualifyingPeriod: [],
-    isPotentialSatisfied: {
-      type: Boolean,
-    },
-    continuousDriveTime: {
-      type: Number,
-      default: 0,
-    },
-    continuousNonDriveTime: {
-      type: Number,
-      default: 0,
-    },
-    isStarted: {
-      type: Boolean,
-      default: false,
-    },
-    lastEntry: {
-      type: logEntryKeys,
-    },
-  },
-  { timestamps: true },
-);
+
 
 export const LogEditRequestHistorySchema: Schema = new mongoose.Schema(
   {

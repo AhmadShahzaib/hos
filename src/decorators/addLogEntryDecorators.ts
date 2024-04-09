@@ -2,77 +2,14 @@ import { ForbiddenException, HttpStatus, Post, SetMetadata } from '@nestjs/commo
 import { ApiQuery, ApiOkResponse, getSchemaPath, refs, ApiExtraModels, ApiBody } from '@nestjs/swagger';
 import { CombineDecorators, CombineDecoratorType, HOS } from '@shafiqrathore/logeld-tenantbackend-common-future';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
-import { LogEntry } from 'logs/types';
-import { AppDeviceType, LogActionType } from 'logs/Enums';
 import moment from 'moment';
 
 
 
 export default function AddLogEntryDecorators() {
-  let example1: LogEntryRequestModel = {
-    actionType: LogActionType.ON_DUTY_NOT_DRIVING,
-    actionDate: moment().unix(),
-    notes: "notes",
-    deviceType: AppDeviceType.ANDROID,
-    statusesData: {
-      onDuty: {
-        startedAt: moment().unix()
-      }
-    }
-  }
 
-  let example2: LogEntryRequestModel = {
-    actionType: LogActionType.ON_DUTY_NOT_DRIVING,
-    actionDate: moment().unix(),
-    notes: "notes",
-    deviceType: AppDeviceType.IOS,
-    statusesData: {
-      onDuty: {
-        lastStartedAt: moment().unix()
-      }
-    }
-  }
 
-  let example3: LogEntryRequestModel = {
-    actionType: LogActionType.ON_DUTY_NOT_DRIVING,
-    actionDate: moment().unix(),
-    deviceType: AppDeviceType.ANDROID,
-    notes: "notes",
-    statusesData: {
-      onDuty: {
-        startedAt: moment().unix(),
-        lastStartedAt: moment().unix(),
-      }
-    }
-  }
-
-  let example4: LogEntryRequestModel = {
-    actionType: LogActionType.DRIVING,
-    actionDate: moment().unix(),
-    deviceType: AppDeviceType.ANDROID,
-    notes: "notes",
-    odoMeterMillage: 12545,
-    odoMeterSpeed: 50,
-    engineHours: 50,
-    engineRPMs: 2000,
-    geoLocation: {
-      longitude: 31.121546519849,
-      latitude: 31.5981861498498
-    },
-    statusesData: {
-      onDriving: {
-        startedAt: moment().unix(),
-        lastStartedAt: moment().unix(),
-      }
-    }
-  }
-
-  let example5 = [
-    { ...example1 },
-    { ...example2 },
-    { ...example4 },
-    { ...example3 }
-  ]
+ 
 
 
   let responseExample1 = {
@@ -209,11 +146,7 @@ export default function AddLogEntryDecorators() {
     ApiExtraModels(LogEntryRequestModel, Array<LogEntryRequestModel>),
     ApiBody({
       examples: {
-        "example 1": { value: example1 },
-        "example 2": { value: example2 },
-        "example 3": { value: example3 },
-        "example 4": { value: example4 },
-        "example 5": { value: example5 },
+       
 
       },
       schema: {

@@ -1,6 +1,5 @@
 import { formateDate } from "./formateDate";
 import { generateUniqueHexId } from "./generateEventSeqId";
-import { LoginLogoutLog } from '../logs/types';
 import moment from "moment";
 
 export function insert_Login_Logout(loginlogout, statusInfo, date, time,name,timezone) {

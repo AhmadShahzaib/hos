@@ -2,7 +2,6 @@ import { Put, SetMetadata } from '@nestjs/common';
 import { ApiOkResponse, getSchemaPath, ApiExtraModels, ApiBody } from '@nestjs/swagger';
 import { CombineDecorators, CombineDecoratorType, HOS } from '@shafiqrathore/logeld-tenantbackend-common-future';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
-import { AppDeviceType, LogActionType } from 'logs/Enums';
 import moment from 'moment';
 import { EditLogEntryRequestModel } from 'models/editLogEntry.request.model';
 
@@ -10,34 +9,8 @@ import { EditLogEntryRequestModel } from 'models/editLogEntry.request.model';
 
 export default function editLogEntryDecorators() {
 
-  let example1: EditLogEntryRequestModel = {
-    driverId: "635625dd471cc66e86df410f",
-    tenantId: "6329cdf541c5047250e3d821",
-    logs: [[{
-      "actionDate": moment().unix(),
-      "geoLocation": {
-        "latitude": 0.0,
-        "longitude": 0.0
-      },
-      "odoMeterMillage": 1.24,
-      "odoMeterSpeed": 0,
-      "engineHours": 1,
-      "engineRPMs": 0,
-      "actionType": LogActionType.OFF_DUTY,
-      "statusesData": {
-        "offDuty": {
-          "startedAt": 1666119600,
-          "lastStartedAt": 1666120800
-        }
-      },
-      "id": "6356125f1c67b2ac0d9d72cb",
-      deviceType: AppDeviceType.ANDROID,
-      notes: "notes",
-    }]]
-  };
-  let example5 = [
-    { example1 }
-  ]
+ 
+ 
 
 
   let responseExample1 = {
@@ -159,7 +132,7 @@ export default function editLogEntryDecorators() {
     ApiExtraModels(EditLogEntryRequestModel, Array<EditLogEntryRequestModel>),
     ApiBody({
       examples: {
-        "example 1": { value: example1 },
+        "example 1": { value: {} },
 
       },
       schema: {

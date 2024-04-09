@@ -1,4 +1,3 @@
-import { EventType } from '../logs/Enums';
 import { generateUniqueHexId } from './generateEventSeqId';
 
 export async function addFirstandLast(arr, filterd,startTime,endTime) {

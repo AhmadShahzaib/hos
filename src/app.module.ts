@@ -14,7 +14,7 @@ import { DriverCsvController } from './controllers/driverCsv.controller';
 import { Transport, ClientProxyFactory } from '@nestjs/microservices';
 import {
   LogEditRequestHistorySchema,
-  LogsSchema,
+ 
   DriverCsvSchema,
 } from 'mongoDb/schema/schema';
 // import { LogsSocketGateway } from 'gateway/socket.gateway';
@@ -57,7 +57,6 @@ const getProxyObject = (
   imports: [
     SharedModule,
     MongooseModule.forFeature([
-      { name: 'driverLogs', schema: LogsSchema },
       { name: 'logEditRequestHistory', schema: LogEditRequestHistorySchema },
       { name: 'driverCsvData', schema: DriverCsvSchema },
       { name: 'UnidentifiedLogs', schema: UnidentifiedLogsSchema },

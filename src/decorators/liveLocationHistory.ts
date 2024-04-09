@@ -18,8 +18,7 @@ import {
   HOS,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
-import { LogEntry } from 'logs/types';
-import { AppDeviceType, LogActionType } from 'logs/Enums';
+
 import moment from 'moment';
 
 export default function liveLocationHistory() {
