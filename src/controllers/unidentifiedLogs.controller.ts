@@ -307,9 +307,10 @@ export class UnidentifiedLogsController {
         }
         options = {
           ...options,
-          tenantId: {
-            $eq: extractedUserFromToken.tenantId,
-          },
+          // because tenantId is not available yet
+          // tenantId: {
+          //   $eq: extractedUserFromToken.tenantId,
+          // }, 
         };
         // query.tenantId=extractedUserFromToken.tenantId
         const response = await this.unidetifiedLogsService.findAll(
