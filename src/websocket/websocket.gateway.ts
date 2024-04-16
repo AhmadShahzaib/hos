@@ -63,6 +63,58 @@ export class WebsocketGateway
   handleDisconnect(client: Socket) {
     console.log('Client disconnected');
   }
+
+  @SubscribeMessage('getSync')
+  async getSync(@MessageBody() queryParams: any): Promise<any> {
+    try {
+      const { query, params, driverId } = queryParams;
+      // this section is for getting driver data if the request is from admin.
+      let user;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+      } else {
+        user = queryParams.user;
+      }
+
+      let result = await this.driverCsvService.runCalculationOnRecentHOS(
+        query,
+        user,
+      );
+      if (result == 2) {
+        this.server.emit('syncResponse', {
+          message: 'Failed as no data is available',
+          data: {},
+        });
+      }
+
+      const resp: any = await this.driverCsvService.getFromDB(query, user);
+
+      if (resp) {
+        this.server.emit('syncResponse', {
+          message: 'Success',
+          data: resp,
+        });
+      } else {
+        this.server.emit('syncResponse', {
+          message: 'Failure',
+          data: {},
+        });
+      }
+    } catch (error) {
+      this.server.emit('syncResponse', {
+        message: error.message,
+        data: error,
+      });
+    }
+  }
+
   @SubscribeMessage('getOrignal')
   async getOrignalLogs(@MessageBody() queryParams: any): Promise<any> {
     try {
@@ -125,7 +177,7 @@ export class WebsocketGateway
   async replyMessage(@MessageBody() queryParams: any): Promise<any> {
     this.server.emit('message', {
       message: 'Success',
-      data: "data is here",
+      data: 'data is here',
     });
   }
   @SubscribeMessage('getLive')
