@@ -34,7 +34,7 @@ import { AppService } from '../services/app.service';
 import { ClientProxy, MessagePattern } from '@nestjs/microservices';
 import { firstValueFrom, filter } from 'rxjs';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class WebsocketGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
