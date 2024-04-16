@@ -121,7 +121,13 @@ export class WebsocketGateway
       throw error;
     }
   }
-
+  @SubscribeMessage('message')
+  async replyMessage(@MessageBody() queryParams: any): Promise<any> {
+    this.server.emit('message', {
+      message: 'Success',
+      data: "data is here",
+    });
+  }
   @SubscribeMessage('getLive')
   async handleMessage(@MessageBody() request: any): Promise<any> {
     try {
