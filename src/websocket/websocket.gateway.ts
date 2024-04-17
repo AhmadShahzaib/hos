@@ -80,7 +80,16 @@ export class WebsocketGateway
         }
         user = messagePatternDriver.data;
       } else {
-        user = queryParams.user;
+        this.server.emit('syncResponse', {
+          message: 'Please Add driver Id',
+          data: {},
+        });
+      }
+      if (!user) {
+        this.server.emit('syncResponse', {
+          message: 'Failed as no data is available against DriverId',
+          data: {},
+        });
       }
 
       let result = await this.driverCsvService.runCalculationOnRecentHOS(
