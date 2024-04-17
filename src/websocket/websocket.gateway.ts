@@ -26,7 +26,10 @@ import {
   mapMessagePatternResponseToException,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 import { SocketManagerService } from '@shafiqrathore/logeld-tenantbackend-common-future';
-
+import {
+  getDatesBetweenUnixTimestamps,
+  isSameDay,
+} from 'utils/getDatesBetweenUnixTimestamps';
 import { Server, Socket } from 'socket.io';
 import { JwtPayload } from 'jsonwebtoken';
 import { DriverCsvService } from 'services/driverCsv.service';
@@ -120,6 +123,168 @@ export class WebsocketGateway
       this.server.emit('syncResponse', {
         message: error.message,
         data: error,
+      });
+    }
+  }
+
+  @SubscribeMessage('getOrignal')
+  async addDataDriver(@MessageBody() queryParams: any): Promise<any> {
+    try {
+      const { body, driverId } = queryParams;
+      let user;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+      } else {
+        this.server.emit('dataAddResp', {
+          message: 'Please Add driver Id',
+          data: {},
+        });
+      }
+      if (!user) {
+        this.server.emit('dataAddResp', {
+          message: 'Failed as no data is available against DriverId',
+          data: {},
+        });
+      }
+      if (!body.meta) {
+        return this.server.emit('dataAddResp', {
+          message: 'Entry in meta is rejected as meta is not available',
+          data: {},
+        });
+      }
+      if (!body.meta.deviceCalculations) {
+        return this.server.emit('dataAddResp', {
+          message: 'Entry in  rejected as deviceCalculations is not available',
+          data: {},
+        });
+      }
+      if (!body.meta.dateTime) {
+        return this.server.emit('dataAddResp', {
+          message:
+            'Entry in  rejected as deviceCalculations.isDataFound is not available',
+          data: {},
+        });
+      }
+      if (!body.csv) {
+        return this.server.emit('dataAddResp', {
+          message: 'Entry in meta is rejected as csv is not available',
+          data: {},
+        });
+      }
+      if (!body.csv.timePlaceLine) {
+        return this.server.emit('dataAddResp', {
+          message:
+            'Entry in meta is rejected as csv timeplaceline is not available',
+          data: {},
+        });
+      }
+      if (!body.meta.pti) {
+        return this.server.emit('dataAddResp', {
+          message: 'Entry in meta is rejected as PTI is not available',
+          data: {},
+        });
+      }
+      // 1. Check if driver data available ----340
+      console.log(`In controller ---- `);
+      const recentCSV = await this.driverCsvService.getLatestCSV(
+        {
+          start: moment().format('YYYY-MM-DD'),
+          end: moment().format('YYYY-MM-DD'),
+        },
+        user,
+      );
+      let previousBody = JSON.parse(JSON.stringify(body));
+      let resp;
+      let reqBody;
+      // 2. if true
+      /**
+       * add to db
+       */
+      const csvPresent = isSameDay(body.meta.dateTime, body.meta.dateTime);
+
+      if (recentCSV != 2) {
+        if (recentCSV.length == 0) {
+          const datesBetween = getDatesBetweenUnixTimestamps(
+            moment().subtract(14, 'day').unix(),
+            moment().subtract(1, 'day').unix(),
+            user.homeTerminalTimeZone.tzCode,
+          );
+          let messagePatternUnit =
+            await firstValueFrom<MessagePatternResponseType>(
+              this.unitClient.send({ cmd: 'get_unit_by_driverId' }, user.id),
+            );
+          if (messagePatternUnit.isError) {
+            Logger.log(`Error while finding unit against driver`);
+            mapMessagePatternResponseToException(messagePatternUnit);
+          }
+          console.log(`All date of  ---- >>> `, datesBetween);
+          for (const date of datesBetween) {
+            Logger.log('Date +++++++++++++++++ \n\n\n' + date);
+            reqBody = await this.driverCsvService.createMissingCSV(
+              previousBody,
+              user,
+              date,
+            );
+            // console.log(`In add date of  ---- >>> `, date);
+            await this.driverCsvService.addToDB(reqBody, user);
+
+            // This code is to tpdate driver record need to add messagepattern to get unit  =  get_unit_by_driverId
+            await this.driverCsvService.updateRecordMade(user, reqBody);
+          }
+        }
+      }
+
+      resp = await this.driverCsvService.addToDB(body, user);
+      if (resp?.error) {
+        return this.server.emit('dataAddResp', {
+          message: resp.message,
+          data: {},
+        });
+      }
+      const meta = this.driverCsvService.updateMetaVariables(body);
+      const messagePatternUnits =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+        );
+      if (messagePatternUnits.isError) {
+        mapMessagePatternResponseToException(messagePatternUnits);
+      }
+      // let dateOfQuery = moment(body.date);
+      // dateOfQuery = dateOfQuery.subtract(1, 'days');
+      // let dateQuery = dateOfQuery.format('YYYY-MM-DD');
+      var query = {
+        start: body.date,
+        end: moment().tz(user.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD'),
+      };
+      let result = await this.driverCsvService.runCalculationOnDateHOS(
+        query,
+        user,
+      );
+      query = {
+        start: body.date,
+        end: body.date,
+      };
+      const respo: any = await this.driverCsvService.getFromDB(query, user);
+      if (resp) {
+        return this.server.emit('dataAddResp', {
+          message: 'Entry Added Successfully',
+          data: respo.graphData[0].meta,
+        });
+      } else {
+        return this.server.emit('dataAddResp', {
+          message: resp,
+        });
+      }
+    } catch (error) {
+      return this.server.emit('dataAddResp', {
+        message: error,
       });
     }
   }
