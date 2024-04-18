@@ -127,7 +127,7 @@ export class WebsocketGateway
     }
   }
 
-  @SubscribeMessage('getOrignal')
+  @SubscribeMessage('addSync')
   async addDataDriver(@MessageBody() queryParams: any): Promise<any> {
     try {
       const { body, driverId } = queryParams;
