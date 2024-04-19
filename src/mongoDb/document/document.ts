@@ -1,21 +1,5 @@
-import {
-  AppDeviceType,
-  EventType,
-  LogActionType,
-  ViolationType,
-} from 'logs/Enums';
-import {
-  CombinedStatuses,
-  OffDuty,
-  OnBreak,
-  OnDriving,
-  OnDuty,
-  OnSleeperBerth,
-  PartialStatusesType,
-  OnPersonalConveyance,
-  OnYardMove,
-  DutyType,
-} from 'logs/types';
+
+
 import { Document, Schema } from 'mongoose';
 
 export interface ViolationTypeArrDocument extends Document {
@@ -29,7 +13,7 @@ export interface CommonLogEntryKeysDocument extends Document {
   driverId: string;
   tenantId: string;
   serverDate: Number;
-  actionType: LogActionType;
+  actionType: any;
   isViolation: boolean;
   violations?: Array<ViolationTypeArrDocument>;
   actionDate: Number;
@@ -44,17 +28,17 @@ export interface CommonLogEntryKeysDocument extends Document {
   odoMeterSpeed?: number;
   engineHours?: number;
   engineRPMs?: number;
-  statusesData?: PartialStatusesType; //TODO: Umer: <= this needs to be renamed to statusData as the property is pointing to one status at a time.
+  statusesData?: any; //TODO: Umer: <= this needs to be renamed to statusData as the property is pointing to one status at a time.
   violationType?: String;
   vehicleManualId: String;
   appVersion?: String;
   deviceVersion?: String;
   OSversion?: String;
-  deviceType?: AppDeviceType;
+  deviceType?: any;
   annotation?: number;
   isApproved?: Boolean;
   isManual?: Boolean;
-  eventType?: EventType;
+  eventType?: any;
   sequenceNumber?: number;
   deviceModel?: String;
   eldType?: String;
@@ -92,7 +76,7 @@ export default interface LogsDocument extends Document {
   shiftEndDate: number;
   calendarStartDate: number;
   calendarEndDate: number;
-  dutyStatus: LogActionType;
+  dutyStatus: any;
   totalDriveTimeInSecondsSoFar: number;
   totalDutyTimeInSecondsSoFar: number;
   continuousOffTimeInSeconds: number;
@@ -114,8 +98,8 @@ export default interface LogsDocument extends Document {
   recap: Array<StatusesDocument>;
   logEntryIds?: Array<string>;
   // New additions
-  shiftRecap: Array<DutyType>;
-  currentStatusInstance: DutyType;
+  shiftRecap: Array<any>;
+  currentStatusInstance: any;
   shiftStartStatus: number;
   potentialQualifyingPeriod: Array<number>;
   prevQualifyingPeriod: Array<number>;
@@ -324,14 +308,14 @@ export interface StatusesDocument extends Document {
   calendarEndDate: number;
   shiftStartDate: number;
   shiftEndDate: number;
-  violations: Array<{ type: ViolationType; count: number }>;
-  onDuty: OnDuty;
-  offDuty: OffDuty;
-  onDriving: OnDriving;
-  onBreak: OnBreak;
-  onSleeperBerth: OnSleeperBerth;
-  onPersonalConveyance: OnPersonalConveyance;
-  onYardMove: OnYardMove;
+  violations: Array<{ type: any; count: number }>;
+  onDuty: any;
+  offDuty: any;
+  onDriving: any;
+  onBreak: any;
+  onSleeperBerth: any;
+  onPersonalConveyance: any;
+  onYardMove: any;
 }
 
 export interface LogEditRequestHistoryDocument extends Document {

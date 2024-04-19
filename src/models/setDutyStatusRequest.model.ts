@@ -7,14 +7,11 @@ import {
   IsNotEmptyObject,
   ValidateIf,
 } from 'class-validator';
-import { LogActionType } from 'logs/Enums';
-import { LogEntry } from 'logs/types';
+
 
 export class SetDutyStatusRequest {
-  @ApiProperty({
-    enum: LogActionType,
-  })
-  @IsEnum(LogActionType)
+  @ApiProperty()
+
   @IsString()
   @IsNotEmpty()
   status: string;
@@ -22,10 +19,6 @@ export class SetDutyStatusRequest {
   @ApiProperty()
   @IsObject()
   @IsNotEmptyObject()
-  @ValidateIf(
-    (data) =>
-      data.status === LogActionType.DRIVING ||
-      data.status === LogActionType.ON_DUTY_NOT_DRIVING,
-  )
-  logEntry: LogEntry;
+ 
+  logEntry: any;
 }

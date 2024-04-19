@@ -1,5 +1,4 @@
 import { OmitType } from '@nestjs/swagger';
-import { PartialStatusesType } from 'logs/types';
 import LogsDocument from 'mongoDb/document/document';
 import { ResponseModel } from './response.model';
 import { Status } from './status.model';
@@ -10,7 +9,7 @@ export class DriverLiveData extends OmitType(ResponseModel, [
 ]) {
   constructor(
     data: LogsDocument | any,
-    lastEightDaysData?: PartialStatusesType,
+    lastEightDaysData?: any,
   ) {
     super(data);
     this.id = data.id;

@@ -1,14 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { LogsEntryDocument } from '../mongoDb/document/document';
-import { PartialStatusesType } from 'logs/types';
-import { AppDeviceType } from 'logs/Enums';
 
 export class LogEntryResponseModel {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
-  statusesData: PartialStatusesType;
+  statusesData: any;
 
   @ApiProperty()
   actionType: string;
