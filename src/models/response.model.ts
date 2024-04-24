@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Status } from './status.model';
 import LogsDocument, { LogsEntryDocument } from 'mongoDb/document/document';
-import { PartialStatusesType } from 'logs/types';
+
 import { LogEntryResponseModel } from './logEntry.response.model';
 export class ResponseModel {
   @ApiProperty()
@@ -60,7 +60,7 @@ export class ResponseModel {
 
   lastEntry?: LogsEntryDocument;
 
-  lastEightDaysData?: PartialStatusesType
+  lastEightDaysData?: any
 
   constructor(log: LogsDocument) {
     this.id = log.id;

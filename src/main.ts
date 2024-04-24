@@ -18,8 +18,11 @@ import * as requestIp from 'request-ip';
 import { json } from 'express';
 import { CustomInterceptor } from 'utils/customInterceptor';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  const app = await NestFactory.create(AppModule, { cors: true });
+//   app.enableCors({
+//     allowedHeaders:"*",
+//     origin: "*"
+// });
   app.useWebSocketAdapter(new IoAdapter(app));
   const logger = new Logger('Main');
   const globalPrefix = '/api';

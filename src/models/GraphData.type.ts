@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ViolationType } from 'logs/Enums';
+
 
 class driverObject {
   @ApiProperty()
@@ -36,8 +36,8 @@ export class GraphDataType {
   driver: driverObject;
   @ApiProperty()
   id: string;
-  @ApiProperty({ enum: ViolationType })
-  violations: Array<{ type: ViolationType; count: number }>;
+  @ApiProperty()
+  violations: Array<{ type: any; count: number }>;
   @ApiProperty()
   deviceType: string;
   @ApiProperty()
