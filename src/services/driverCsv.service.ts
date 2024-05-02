@@ -57,7 +57,7 @@ let Schema = mongoose.Schema;
 let globalIntermediates = {};
 global.globalIntermediatesArray = [];
 
-@Injectable({ scope: Scope.DEFAULT  })
+@Injectable({ scope: Scope.DEFAULT })
 export class DriverCsvService {
   private readonly logger = new Logger('DriverCsvService');
   constructor(
@@ -117,12 +117,11 @@ export class DriverCsvService {
         eventDate: '',
         eventTime: '',
       };
-      if(deviceCalculation.SHIFT_STARTED == true){
-
+      if (deviceCalculation.SHIFT_STARTED == true) {
         latestCSV.meta.pti = deviceCalculation.pti;
       }
-        latestCSV.meta.pti = "2";
-      
+      latestCSV.meta.pti = '2';
+
       if (
         deviceCalculation.CURRENT_STATUS != allHosRelatedStatuses[0].eventCode
       ) {
@@ -696,8 +695,8 @@ export class DriverCsvService {
 
             if (!csvPresent) {
               latestCSV = await this.createMissingCSV(latestCSV, user, date);
-            lastCalculations.pti = latestCSV.meta.pti;
-              
+              lastCalculations.pti = latestCSV.meta.pti;
+
               latestCSV = this.calculateHOS(latestCSV, lastCalculations, user);
               lastCalculations = latestCSV.meta.deviceCalculations;
 
@@ -723,7 +722,7 @@ export class DriverCsvService {
               }
             } else if (csvPresent) {
               latestCSV = await this.updateCSV(latestCSV, user, latestCSV.date);
-            lastCalculations.pti = latestCSV.meta.pti;
+              lastCalculations.pti = latestCSV.meta.pti;
 
               latestCSV = this.calculateHOS(latestCSV, lastCalculations, user);
               lastCalculations = latestCSV.meta.deviceCalculations;
@@ -3936,5 +3935,4 @@ export class DriverCsvService {
       throw error;
     }
   };
-
 }

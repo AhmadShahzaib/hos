@@ -184,10 +184,7 @@ export class DriverCsvController extends BaseController {
       let previousBody = JSON.parse(JSON.stringify(body));
       let resp;
       let reqBody;
-      // 2. if true
-      /**
-       * add to db
-       */
+
       const csvPresent = isSameDay(body.meta.dateTime, body.meta.dateTime);
 
       if (recentCSV != 2) {
@@ -197,15 +194,7 @@ export class DriverCsvController extends BaseController {
             moment().subtract(1, 'day').unix(),
             user.homeTerminalTimeZone.tzCode,
           );
-          let messagePatternUnit =
-            await firstValueFrom<MessagePatternResponseType>(
-              this.unitClient.send({ cmd: 'get_unit_by_driverId' }, user.id),
-            );
-          if (messagePatternUnit.isError) {
-            Logger.log(`Error while finding unit against driver`);
-            mapMessagePatternResponseToException(messagePatternUnit);
-          }
-          console.log(`All date of  ---- >>> `, datesBetween);
+
           for (const date of datesBetween) {
             Logger.log('Date +++++++++++++++++ \n\n\n' + date);
             reqBody = await this.driverCsvService.createMissingCSV(
@@ -240,23 +229,11 @@ export class DriverCsvController extends BaseController {
       // let dateOfQuery = moment(body.date);
       // dateOfQuery = dateOfQuery.subtract(1, 'days');
       // let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-      var query = {
-        start: body.date,
-        end: moment().tz(user.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD'),
-      };
-      let result = await this.driverCsvService.runCalculationOnDateHOS(
-        query,
-        user,
-      );
-      query = {
-        start: body.date,
-        end: body.date,
-      };
-      const respo: any = await this.driverCsvService.getFromDB(query, user);
+
       if (resp) {
         return response.status(200).send({
           message: 'Entry Added Successfully',
-          data: respo.graphData[0].meta,
+          data: resp,
         });
       } else {
         return response.status(400).send({
