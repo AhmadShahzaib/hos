@@ -202,7 +202,7 @@ export class DriverCsvController extends BaseController {
               user,
               date,
             );
-            // console.log(`In add date of  ---- >>> `, date);
+            console.log(`In add date of  ---- >>> `, date);
             await this.driverCsvService.addToDB(reqBody, user);
 
             // This code is to tpdate driver record need to add messagepattern to get unit  =  get_unit_by_driverId
@@ -210,6 +210,7 @@ export class DriverCsvController extends BaseController {
           }
         }
       }
+      console.log(`ouside date adding dataa`);
 
       resp = await this.driverCsvService.addToDB(body, user);
 
