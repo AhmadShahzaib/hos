@@ -1338,7 +1338,7 @@ export class DriverCsvService {
         .findOneAndUpdate({ month: month, day: day }, data, {
           upsert: true,
           new: true,
-        })
+        }).sort({ date: 1 })
         .lean();
       // }
       response = result;
