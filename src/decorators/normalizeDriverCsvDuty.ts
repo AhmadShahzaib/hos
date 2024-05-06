@@ -9,7 +9,7 @@ import {
 export default function NormalizeDriverCsvDuty() {
   const NormalizeDriverCsvDuty: Array<CombineDecoratorType> = [
     Patch('csv/normalize/:driverId'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', [HOS.CLOCK]),
     ApiParam({
       name: 'driverId',
       description: 'driverId is required',

@@ -11,7 +11,7 @@ export default function TransferLogs() {
  
   const TransferLogs: Array<CombineDecoratorType> = [
     Get('csv/transferLogs'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', [HOS.PROFILE]),
     ApiQuery({
       description: 'The driverId only for backoffice',
       name: 'driverId',

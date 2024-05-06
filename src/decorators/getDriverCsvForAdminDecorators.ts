@@ -9,7 +9,7 @@ export default function GetDriverCsvForAdminDecorators() {
 
   const GetDriverCsvDecorators: Array<CombineDecoratorType> = [
     Get('csv/log/'),
-    SetMetadata('permissions', [HOS.GRAPH]),
+    SetMetadata('permissions', [HOS.HISTORY]),
     ApiQuery({
       description: 'The driverId only for backoffice',
       name: 'driverId',
