@@ -81,7 +81,6 @@ export class WebsocketGateway
   async getSync(@MessageBody() queryParams: any): Promise<any> {
     try {
       const { query, params, driverId, socketId } = queryParams;
-    
 
       // this section is for getting driver data if the request is from admin.
       let user;
@@ -140,7 +139,17 @@ export class WebsocketGateway
       });
     }
   }
-
+  async notifyDriver(
+    SpecificClient,
+    mesaage,
+    responseMessage,
+    responseData,
+  ): Promise<any> {
+    this.server.to(SpecificClient).emit(mesaage, {
+      message: responseMessage,
+      data: responseData,
+    });
+  }
   @SubscribeMessage('addSync')
   async addDataDriver(@MessageBody() queryParams: any): Promise<any> {
     try {
@@ -161,6 +170,7 @@ export class WebsocketGateway
           data: {},
         });
       }
+      const SpecificClient = user.client;
       if (!user) {
         this.server.emit('dataAddResp', {
           message: 'Failed as no data is available against DriverId',

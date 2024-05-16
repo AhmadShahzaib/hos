@@ -8,7 +8,7 @@ import {
 export default function notifyDriverAboutCorrection() {
   const notifyDriverAboutCorrection = [
     Patch('notify/driver'),
-    SetMetadata('permissions', [HOS.EDIT_LOG]),
+    SetMetadata('permissions', [HOS.ADD_LOG]),
   ];
   return CombineDecorators(notifyDriverAboutCorrection);
 }
