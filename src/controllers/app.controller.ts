@@ -62,7 +62,7 @@ import {
   MessagePattern,
 } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-
+import {WebsocketGateway} from '../websocket/websocket.gateway';
 import GetFourteenDaysRecapDecorators, {
   GetFourteenDaysRecapDecoratorsMobile,
 } from 'decorators/getFourteenDaysRecapDecorators';
@@ -122,6 +122,7 @@ export class AppController extends BaseController {
     @Inject('UNIT_SERVICE') private readonly unitClient: ClientProxy,
     @Inject('DEVICE_SERVICE') private readonly deviceClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
+    // private readonly WebsocketGateway
   ) {
     super();
   }
@@ -844,7 +845,7 @@ export class AppController extends BaseController {
         user = messagePatternDriver?.data;
         user.companyTimeZone = parsedToken.companyTimeZone;
       }
-
+      let SpecificClient = user?.client
       // Creating dateTime for driver notification
       let dateTime = moment.tz(date, user?.homeTerminalTimeZone?.tzCode).unix();
 
@@ -858,21 +859,9 @@ export class AppController extends BaseController {
       /**
        * Push Notification - START
        */
-      let messagePatternUnit = await firstValueFrom<MessagePatternResponseType>(
-        this.unitClient.send({ cmd: 'get_unit_by_driverId' }, driverId),
-      );
-      if (messagePatternUnit.isError) {
-        Logger.log(`Error while finding unit against driver`);
-        mapMessagePatternResponseToException(messagePatternUnit);
-      }
 
-      const eldId = messagePatternUnit?.data?.deviceId;
 
-      let messagePatternDevice = await this.HOSService.getEldOnDeviceId(eldId);
-      let deviceToken = messagePatternDevice?.data?.deviceToken;
-      let deviceType = messagePatternDevice?.data?.deviceType;
-
-      const title = 'Edit Inset log!';
+      const mesaage = 'Edit Inset log!';
       const notificationObj = {
         logs: [],
         dateTime,
@@ -880,42 +869,40 @@ export class AppController extends BaseController {
         driverId: driverId,
         editStatusFromBO: 'save',
       };
-      const deviceInfo = {
-        deviceType: deviceType,
-        deviceToken: deviceToken,
-      };
+     
       const isSilent = false;
-
-      let notificationStatus = await dispatchNotification(
-        title,
-        notificationObj,
-        deviceInfo,
-        this.pushNotificationClient,
-        isSilent,
-      );
+      let WebsocketGateway: WebsocketGateway;
+      WebsocketGateway.notifyDriver(SpecificClient,"notifyDriver",mesaage,notificationObj)
+      // let notificationStatus = await dispatchNotification(
+      //   title,
+      //   notificationObj,
+      //   deviceInfo,
+      //   this.pushNotificationClient,
+      //   isSilent,
+      // );
       /**
        * Push Notification - END
        */
 
-      const isNotified = await this.HOSService.updateNotificationStatus(
-        driverId,
-        notificationStatus,
-        dateTime,
-      );
-      if (!isNotified) {
-        return response.status(200).send({
-          statusCode: 200,
-          message: 'Something went wrong while dispatching notification!',
-          data: {},
-        });
-      }
+      // const isNotified = await this.HOSService.updateNotificationStatus(
+      //   driverId,
+      //   notificationStatus,
+      //   dateTime,
+      // );
+      // if (!isNotified) {
+      //   return response.status(200).send({
+      //     statusCode: 200,
+      //     message: 'Something went wrong while dispatching notification!',
+      //     data: {},
+      //   });
+      // }
       return response.status(200).send({
         statusCode: 200,
-        message:
-          notificationStatus == 'Sent'
-            ? 'Notification dispatched!'
-            : 'Something went wrong while dispatching notification',
-        notificationStatus,
+        // message:
+        //   notificationStatus == 'Sent'
+        //     ? 'Notification dispatched!'
+        //     : 'Something went wrong while dispatching notification',
+        // notificationStatus,
         data: {},
       });
     } catch (error) {

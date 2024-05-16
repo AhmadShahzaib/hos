@@ -139,13 +139,13 @@ export class WebsocketGateway
       });
     }
   }
-  async notifyDriver(
+    async notifyDriver(
     SpecificClient,
     mesaage,
     responseMessage,
     responseData,
   ): Promise<any> {
-    this.server.to(SpecificClient).emit(mesaage, {
+   return await this.server.to(SpecificClient).emit(mesaage, {
       message: responseMessage,
       data: responseData,
     });
