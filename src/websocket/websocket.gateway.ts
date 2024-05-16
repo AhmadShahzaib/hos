@@ -52,7 +52,7 @@ export class WebsocketGateway
   ) {}
 
   @WebSocketServer() server: Server;
-
+  private clients: Map<string, any> = new Map();
   async handleConnection(client: Socket, ...args: any[]) {
     // Access the authorization token from the client's handshake
 
@@ -60,6 +60,16 @@ export class WebsocketGateway
       client.handshake.headers.authorization,
     );
     const user = JSON.parse(tokenPayload.sub);
+
+    let objectClient: any = { id: user.id, client: client.id };
+    // objectClient = JSON.stringify(objectClient);
+    try {
+      await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'update_driver_client' }, objectClient),
+      );
+    } catch (error) {
+      console.error('Error handling connection:', error);
+    }
     console.log('New client connected with token:');
   }
 
@@ -70,7 +80,9 @@ export class WebsocketGateway
   @SubscribeMessage('getSync')
   async getSync(@MessageBody() queryParams: any): Promise<any> {
     try {
-      const { query, params, driverId } = queryParams;
+      const { query, params, driverId, socketId } = queryParams;
+    
+
       // this section is for getting driver data if the request is from admin.
       let user;
       if (driverId) {
@@ -82,11 +94,12 @@ export class WebsocketGateway
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
+        user.client;
       } else {
-        this.server.emit('syncResponse', {
-          message: 'Please Add driver Id',
-          data: {},
-        });
+        // SpecificClient.emit('syncResponse', {
+        //   message: 'Please Add driver Id',
+        //   data: {},
+        // });
       }
       if (!user) {
         this.server.emit('syncResponse', {
@@ -94,13 +107,13 @@ export class WebsocketGateway
           data: {},
         });
       }
-
+      const SpecificClient = user.client;
       let result = await this.driverCsvService.runCalculationOnRecentHOS(
         query,
         user,
       );
       if (result == 2) {
-        this.server.emit('syncResponse', {
+        this.server.to(SpecificClient).emit('syncResponse', {
           message: 'Failed as no data is available',
           data: {},
         });
@@ -109,12 +122,13 @@ export class WebsocketGateway
       const resp: any = await this.driverCsvService.getFromDB(query, user);
 
       if (resp) {
-        this.server.emit('syncResponse', {
+        // this.server.to(socketId)
+        this.server.to(SpecificClient).emit('syncResponse', {
           message: 'Success',
           data: resp,
         });
       } else {
-        this.server.emit('syncResponse', {
+        this.server.to(SpecificClient).emit('syncResponse', {
           message: 'Failure',
           data: {},
         });
