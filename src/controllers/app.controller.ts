@@ -41,7 +41,7 @@ import GetDriverLiveDataDecorators from 'decorators/getDriverLiveData';
 import GetGraphDataDecorators, {
   GetDriverGraphDataDecorators,
 } from 'decorators/getGraphData';
-import { Response, Request } from 'express';
+import { Response, Request, query } from 'express';
 import { mapKeys, camelCase } from 'lodash';
 import LogsDocument from 'mongoDb/document/document';
 import { LogsService } from 'services/logs.service';
@@ -1345,50 +1345,42 @@ export class AppController extends BaseController {
    * Author : Farzan
    */
   @liveLocationHistory()
-  async addLiveLocation(@Req() req, @Res() res, @Body() reqBody: any) {
-    // @Body() reqBody: DriverLiveLocationDto,
+  async addLiveLocation(
+    @Req() req: any,
+    @Res() res: any,
+    @Query() queryParams: any,
+    @Body() reqBody: any,
+  ) {
     try {
       const { id, tenantId } = req.user;
       const { user } = req;
-      // let purifiedArray = [];
-      // if (reqBody.length > 12) {
-      //   reqBody.forEach((element, index) => {
-      //     if (index % 5 !== 0) {
-      //       purifiedArray.push(element);
-      //     }
-      //   });
-      // }
-      // Logger.log(
-      //   '------------------->>>>>>> Arraay Sorted' + purifiedArray.length,
-      // );
-      let sortedArray = await sortLiveLocations(reqBody?.data);
+      const { historyOfLocation, meta } = reqBody;
+      const { date } = queryParams;
 
-      const historyOfLocation =
-        sortedArray[sortedArray.length - 1]?.historyOfLocation;
-      Logger.log('------------------->>>>>>> Arraay Sorted');
-      // Logger.log(
-      //   'MERAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
-      //     JSON.stringify(reqBody.historyOfLocation),
-      // );
+      // Ascending order sorting wrt to date time
+      let sortedArray = await sortLiveLocations(historyOfLocation);
 
-      const meta = reqBody?.meta;
+      //  Get recent location
+      const recentHistory = sortedArray[sortedArray.length - 1];
+
+      // Meta object creation
       if (meta?.address == '') {
-        delete historyOfLocation?.address;
+        delete recentHistory?.address;
       }
       meta['lastActivity'] = {
-        odoMeterMillage: historyOfLocation?.odometer,
-        engineHours: historyOfLocation?.engineHours,
-        currentTime: historyOfLocation?.time,
-        currentDate: historyOfLocation?.date,
-        latitude: historyOfLocation?.latitude,
-        longitude: historyOfLocation?.longitude,
-        address: historyOfLocation?.address,
-        speed: historyOfLocation?.speed,
-        currentEventCode: historyOfLocation?.status || '1',
-        currentEventType: historyOfLocation?.eventType,
+        odoMeterMillage: recentHistory?.odometer,
+        engineHours: recentHistory?.engineHours,
+        currentTime: recentHistory?.time,
+        currentDate: recentHistory?.date,
+        latitude: recentHistory?.latitude,
+        longitude: recentHistory?.longitude,
+        address: recentHistory?.address,
+        speed: recentHistory?.speed,
+        currentEventCode: recentHistory?.status || '1',
+        currentEventType: recentHistory?.eventType,
       };
-      Logger.log('------------------->>>>>>> Meta Object Created');
 
+      // Assign recent location to units by message pattern
       const messagePatternUnits =
         await firstValueFrom<MessagePatternResponseType>(
           this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
@@ -1397,18 +1389,13 @@ export class AppController extends BaseController {
         mapMessagePatternResponseToException(messagePatternUnits);
       }
 
-      Logger.log('------------------->>>>>>> Unit updated');
-      let locationObj;
-
-      const obj = {
+      // Pass related data to the model
+      const response = await this.HOSService.addLiveLocation({
         driverId: id,
         tenantId,
-        sortedArray,
-      };
-
-      const response = this.HOSService.addLiveLocation(obj); // await removed
-
-      Logger.log('------------------->>>>>>> live  location done');
+        date,
+        historyOfLocation: sortedArray,
+      }); // await removed
 
       return res.status(200).send({ message: 'entry added successfully' });
     } catch (error) {
