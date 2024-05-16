@@ -9,6 +9,7 @@ import mongoose, {
   QueryOptions,
   QueryWithHelpers,
 } from 'mongoose';
+import { WebsocketGateway } from '../websocket/websocket.gateway';
 import {
   Inject,
   Injectable,
@@ -31,6 +32,7 @@ import LogsDocument, {
   LogsEntryDocument,
 } from 'mongoDb/document/document';
 import moment, { invalid } from 'moment-timezone';
+
 
 const ObjectId = mongoose.Types.ObjectId;
 import { groupBy, mapValues, update } from 'lodash';
@@ -62,7 +64,7 @@ export class AppService {
     @Inject('VEHICLE_SERVICE') private readonly client: ClientProxy,
     @Inject('DEVICE_SERVICE') private readonly deviceClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
-
+     
     private readonly configService: ConfigurationService,
   ) {}
 
@@ -101,7 +103,15 @@ export class AppService {
 
     return success;
   };
-
+//socket call
+notifyDriver= async (
+  SpecificClient,
+  mesaage,
+  responseMessage,
+  responseData,
+)=> {
+ 
+}
   // crud operations below.
 
   getEldOnDeviceId = async (eldId) => {

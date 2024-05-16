@@ -139,7 +139,7 @@ export class WebsocketGateway
       });
     }
   }
-    async notifyDriver(
+   async notifyDriver(
     SpecificClient,
     mesaage,
     responseMessage,
@@ -373,6 +373,7 @@ export class WebsocketGateway
   }
   @SubscribeMessage('message')
   async replyMessage(@MessageBody() queryParams: any): Promise<any> {
+    // this.notifyDriver("h23b4h2b34r5jh4","sbndjfd","jnbwdjfbnfs"{},)
     this.server.emit('message', {
       message: 'Success',
       data: 'data is here',

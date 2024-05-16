@@ -122,7 +122,8 @@ export class AppController extends BaseController {
     @Inject('UNIT_SERVICE') private readonly unitClient: ClientProxy,
     @Inject('DEVICE_SERVICE') private readonly deviceClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
-    // private readonly WebsocketGateway
+    private readonly gateway: WebsocketGateway,
+
   ) {
     super();
   }
@@ -831,11 +832,9 @@ export class AppController extends BaseController {
       let user;
 
       // Parsing token for timezone
-      const parsedToken = (request.user as any) ?? { tenantId: undefined };
+     
       let messagePatternDriver;
-      if (parsedToken.isDriver) {
-        user = parsedToken;
-      } else {
+    
         messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
           this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
         );
@@ -843,8 +842,8 @@ export class AppController extends BaseController {
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver?.data;
-        user.companyTimeZone = parsedToken.companyTimeZone;
-      }
+        // user.companyTimeZone = user.companyTimeZone;
+   
       let SpecificClient = user?.client
       // Creating dateTime for driver notification
       let dateTime = moment.tz(date, user?.homeTerminalTimeZone?.tzCode).unix();
@@ -871,8 +870,9 @@ export class AppController extends BaseController {
       };
      
       const isSilent = false;
-      let WebsocketGateway: WebsocketGateway;
-      WebsocketGateway.notifyDriver(SpecificClient,"notifyDriver",mesaage,notificationObj)
+      // let WebsocketGateway: WebsocketGateway;
+
+      this.gateway.notifyDriver(SpecificClient,"notifyDriver",mesaage,notificationObj)
       // let notificationStatus = await dispatchNotification(
       //   title,
       //   notificationObj,
