@@ -158,6 +158,7 @@ export class WebsocketGateway
     const resp: any = await this.driverCsvService.getFromDB(query, user);
 
     if (resp) {
+      Logger.log("sending sync");
       // this.server.to(socketId)
       this.server.to(SpecificClient).emit('syncResponse', {
         message: 'Success',
