@@ -858,11 +858,23 @@ export class AppController extends BaseController {
       /**
        * Push Notification - START
        */
+      let images;
 
+    
+
+    
+      // Get edited
+      const isEdit = await this.logService.getPendingRequests(user);
+      if (isEdit.length > 0) {
+        // Create csv pdf for before and after
+        const isConverted = await this.HOSService.generateCsvImages(user);
+        images = isConverted.data;
+      }
 
       const mesaage = 'Edit Inset log!';
       const notificationObj = {
         logs: [],
+        data: images != undefined ? [...images] : [],
         dateTime,
         notificationType: 1,
         driverId: driverId,
