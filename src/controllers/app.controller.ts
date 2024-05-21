@@ -814,6 +814,7 @@ Logger.log(user);
         editStatusFromBO: 'added',
         notificationType: 5,
       };
+      Logger.log("in unidentified")
     await this.gateway.syncDriver(SpecificClient,user,logs.date,notificationObj)
 
       return response.status(200).send({
