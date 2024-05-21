@@ -620,7 +620,7 @@ export class AppController extends BaseController {
       let messagePatternDriver;
 
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
-        this.driverClient.send({ cmd: 'get_driver_by_id' }, logs.driverId),
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, user._id),
       );
       if (messagePatternDriver?.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
@@ -637,7 +637,7 @@ export class AppController extends BaseController {
       await this.gateway.syncDriver(
         SpecificClient,
         user,
-        date.format('YYYY-MM-DD'),
+        date,
         notificationObj,
       );
       return response.status(200).send({});
