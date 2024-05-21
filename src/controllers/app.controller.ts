@@ -1141,8 +1141,8 @@ export class AppController extends BaseController {
         /**
          * Fetching driver's deviceToken
          */
-        const deviceToken = messagePatternDriver?.data?.deviceToken;
-        const deviceType = messagePatternDriver?.data?.deviceType;
+      
+        Logger.log("Running");
 
         // Initiating notificaion dispatch
         const title = `Edit request ${
