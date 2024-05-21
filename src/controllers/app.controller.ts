@@ -1155,7 +1155,7 @@ export class AppController extends BaseController {
           editStatusFromBO: 'cancel',
           notificationType: 5,
         };
-    await this.gateway.syncDriver(SpecificClient,driver,date,notificationObj)
+    await this.gateway.syncDriver(SpecificClient,driver,date.format('YYYY-MM-DD'),notificationObj)
 
       
         //comment

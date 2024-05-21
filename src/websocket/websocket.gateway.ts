@@ -152,8 +152,8 @@ export class WebsocketGateway
   }
 
   async syncDriver(SpecificClient, user, date, responseData): Promise<any> {
-    let end = moment().tz(user.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD');
-    let query = { start: date, end: end };
+    let end = moment().tz(user.homeTerminalTimeZone.tzCode);
+    let query = { start: date, end: end.format('YYYY-MM-DD') };
 
     const resp: any = await this.driverCsvService.getFromDB(query, user);
 
