@@ -509,10 +509,13 @@ export class AppController extends BaseController {
 
       // actionType = [1 == "Perform Edit", 2 == " Perform Insert"]
       if (data?.actionType == 1) {
+        Logger.log("before tasks of edit")
+
         const updatedLogs = await this.HOSService.performEditOnLogs(
           logs,
           dutyStatusList,
         );
+        Logger.log("done with all the tasks of edit")
 
         // Placing updated logs in csv header
         driverCsv[0].csv['eldEventListForDriversRecordOfDutyStatus'] =
@@ -613,7 +616,7 @@ export class AppController extends BaseController {
       //   end: dateQuery,
       // };
       // const resp: any = await this.driverCsvService.getFromDB(queryy, user);
-      Logger.log("doen with all the tasks")
+      Logger.log("done with all the tasks")
       let messagePatternDriver;
 
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
