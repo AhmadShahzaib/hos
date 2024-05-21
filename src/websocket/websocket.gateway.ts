@@ -159,6 +159,8 @@ export class WebsocketGateway
 
     if (resp) {
       Logger.log("sending sync");
+      Logger.log(SpecificClient);
+
       // this.server.to(socketId)
       this.server.to(SpecificClient).emit('syncResponse', {
         message: 'Success',
