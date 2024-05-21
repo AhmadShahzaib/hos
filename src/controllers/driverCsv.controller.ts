@@ -72,6 +72,8 @@ import { removeObjectByEventSequenceId } from 'utils/findLog';
 import { googleGeocode } from 'utils/googleGeocode';
 import getLatLngFromAddressDecorator from 'decorators/getLatLngFromAddressDecorator';
 import GetDriverRecords from 'decorators/getDriversRecord';
+import {WebsocketGateway} from '../websocket/websocket.gateway';
+
 import CreateMissingIntermediatesDecorator from 'decorators/createMissingIntermediatesDecorator';
 @Controller('HOS')
 @ApiTags('HOS')
@@ -91,6 +93,8 @@ export class DriverCsvController extends BaseController {
     @Inject('UNIT_SERVICE') private readonly unitClient: ClientProxy,
     @Inject('PUSH_NOTIFICATION_SERVICE')
     private readonly pushNotificationClient: ClientProxy,
+    private readonly gateway: WebsocketGateway,
+
   ) {
     super();
   }
@@ -459,7 +463,7 @@ export class DriverCsvController extends BaseController {
   ) {
     try {
       let user;
-
+      let SpecificClient;
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -469,6 +473,8 @@ export class DriverCsvController extends BaseController {
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
+       SpecificClient = user?.client
+
       }
       const resp = await this.driverCsvService.transferLog(
         sequenceId,
@@ -486,7 +492,7 @@ export class DriverCsvController extends BaseController {
       };
       await this.driverCsvService.runCalculationOnDateHOS(query, user);
       if (resp == 1) {
-        const title = 'Transfer logs executed!';
+     
         const notificationObj = {
           logs: [],
           dateTime: date,
@@ -494,18 +500,8 @@ export class DriverCsvController extends BaseController {
           notificationType: 4,
           editStatusFromBO: 'transfer',
         };
-        const deviceInfo = {
-          deviceToken: user.deviceToken,
-          deviceType: user.deviceType,
-        };
-        console.log('about to dispatch notification');
-        await dispatchNotification(
-          title,
-          notificationObj,
-          deviceInfo,
-          this.pushNotificationClient,
-          true,
-        );
+        await this.gateway.syncDriver(SpecificClient,user,date,notificationObj)
+       
         return response.status(200).send({
           message: 'Success',
           data: resp,
@@ -518,7 +514,7 @@ export class DriverCsvController extends BaseController {
         });
       }
       if (resp == 3) {
-        Logger.log('hi');
+       
         return response.send({
           message: 'Driver is created after this date so you cannot transfer ',
           data: resp,
@@ -779,7 +775,7 @@ export class DriverCsvController extends BaseController {
   ) {
     try {
       Logger.log('In Normalize Decorato Endpoint');
-
+      let SpecificClient;
       const { date, type, normalizationType } = queryParams;
       const { driverId } = params;
       const { eventSequenceIdNumber } = reqBody;
@@ -818,7 +814,7 @@ export class DriverCsvController extends BaseController {
       );
       // Initiation notificaion dispatch
 
-      const title = 'Normalization logs executed!';
+     
       const notificationObj = {
         logs: [],
         dateTime: date,
@@ -826,19 +822,8 @@ export class DriverCsvController extends BaseController {
         notificationType: 4,
         editStatusFromBO: 'normalize',
       };
-      const deviceInfo = {
-        deviceToken: user.deviceToken,
-        deviceType: user.deviceType,
-      };
-      if (Object.keys(normalizedResp.data).length > 0) {
-        await dispatchNotification(
-          title,
-          notificationObj,
-          deviceInfo,
-          this.pushNotificationClient,
-          true, // repressents notification is silent or not
-        );
-      }
+     
+    await this.gateway.syncDriver(SpecificClient,user,date,notificationObj)
       return res.status(normalizedResp.statusCode).send({
         statusCode: normalizedResp.statusCode,
         message: normalizedResp.message,

@@ -936,6 +936,7 @@ export class AppController extends BaseController {
   ) {
     try {
       console.log(`In accept/reject constroller >>>>>>>>>>>>>>>>`);
+      let SpecificClient;
 
       let driver, editedBy;
       const { dateTime, isApproved } = reqBody;
@@ -1154,18 +1155,11 @@ export class AppController extends BaseController {
           editStatusFromBO: 'cancel',
           notificationType: 5,
         };
-        const deviceInfo = {
-          deviceToken: deviceToken,
-          deviceType: deviceType,
-        };
+    await this.gateway.syncDriver(SpecificClient,driver,date,notificationObj)
+
+      
         //comment
-        notificationStatus = await dispatchNotification(
-          title,
-          notificationObj,
-          deviceInfo,
-          this.pushNotificationClient,
-          true, // repressents notification is silent or not
-        );
+        notificationStatus = true;
 
         // const { firstName, lastName } = messagePatternDriver?.data;
         driver = {
@@ -1191,27 +1185,11 @@ export class AppController extends BaseController {
         const deviceType = messagePatternDriver?.data?.deviceType;
 
         // Initiating notificaion dispatch
-        const title = `Edit request ${
-          isApproved == 'confirm' ? 'confirmed' : 'cancelled'
-        }!`;
-        const notificationObj = {
-          logs: [],
-          dateTime: dateTime,
-          driverId: driverId,
-          editStatusFromBO: 'cancel',
-          notificationType: 5,
-        };
-        const deviceInfo = {
-          deviceToken: deviceToken,
-          deviceType: deviceType,
-        };
-        notificationStatus = await dispatchNotification(
-          title,
-          notificationObj,
-          deviceInfo,
-          this.pushNotificationClient,
-          true, // repressents notification is silent or not
-        );
+        
+       
+
+        notificationStatus = true; // repressents notification is silent or not
+        
       }
 
       const response = await this.logService.responseToEditInsertLog(
@@ -1234,7 +1212,28 @@ export class AppController extends BaseController {
         isApproved: isApproved,
       };
       await this.logService.maintainHistory(historyObj);
-
+      if (isApproved !== 'confirm'){
+        let images;
+        const isEdit = await this.logService.getPendingRequests(user);
+        if (isEdit.length > 0) {
+          // Create csv pdf for before and after
+          const isConverted = await this.HOSService.generateCsvImages(user);
+          images = isConverted.data;
+        }
+        const title = `Edit request ${
+          isApproved == 'confirm' ? 'confirmed' : 'cancelled'
+        }!`;
+        const notificationObj = {
+          logs: [],
+          data: images != undefined ? [...images] : [],
+          dateTime: dateTime,
+          driverId: driverId,
+          editStatusFromBO: 'cancel',
+          notificationType: 5,
+        };
+       
+      await this.gateway.notifyDriver(SpecificClient,"notifyDriver",title,notificationObj)
+      }
       return res.status(response.statusCode).send({
         statusCode: response.statusCode,
         message: response.message,

@@ -139,16 +139,36 @@ export class WebsocketGateway
       });
     }
   }
-   async notifyDriver(
+  async notifyDriver(
     SpecificClient,
     mesaage,
     responseMessage,
     responseData,
   ): Promise<any> {
-   return await this.server.to(SpecificClient).emit(mesaage, {
+    return await this.server.to(SpecificClient).emit(mesaage, {
       message: responseMessage,
       data: responseData,
     });
+  }
+
+  async syncDriver(SpecificClient, user, date, responseData): Promise<any> {
+    let end = moment().tz(user.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD');
+    let query = { start: date, end: end };
+
+    const resp: any = await this.driverCsvService.getFromDB(query, user);
+
+    if (resp) {
+      // this.server.to(socketId)
+      this.server.to(SpecificClient).emit('syncResponse', {
+        message: 'Success',
+        data: resp,
+      });
+    } else {
+      this.server.to(SpecificClient).emit('syncResponse', {
+        message: 'Failure',
+        data: {},
+      });
+    }
   }
   @SubscribeMessage('addSync')
   async addDataDriver(@MessageBody() queryParams: any): Promise<any> {
