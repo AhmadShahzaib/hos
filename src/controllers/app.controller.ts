@@ -1273,6 +1273,8 @@ driverId=id;
       };
       await this.logService.maintainHistory(historyObj);
       if (isApproved !== 'confirm') {
+      user.id = user._id;
+
         let images;
         const isEdit = await this.logService.getPendingRequests(user);
         if (isEdit.length > 0) {
