@@ -613,6 +613,7 @@ export class AppController extends BaseController {
       //   end: dateQuery,
       // };
       // const resp: any = await this.driverCsvService.getFromDB(queryy, user);
+      Logger.log("doen with all the tasks")
       let messagePatternDriver;
 
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
