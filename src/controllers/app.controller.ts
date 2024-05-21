@@ -999,17 +999,19 @@ export class AppController extends BaseController {
       const { id, firstName, lastName } =
         request.user ?? ({ tenantId: undefined } as any);
       const user = request.user ?? ({ tenantId: undefined } as any);
-
+if(!driverId){
+driverId=id;
+}
       let messagePatternDriver;
-      if (!user.isDriver) {
+     
         messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
           this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
         );
         if (messagePatternDriver.isError) {
           mapMessagePatternResponseToException(messagePatternDriver);
         }
-      }
-      driver = user.isDriver ? user : messagePatternDriver?.data;
+      
+      driver =  messagePatternDriver?.data;
       SpecificClient = driver?.client; //client
       editedBy = {
         id: user.id ? user.id : user._id,
