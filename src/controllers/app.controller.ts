@@ -957,7 +957,7 @@ export class AppController extends BaseController {
         }
       }
       driver = user.isDriver ? user : messagePatternDriver?.data;
-
+      SpecificClient = driver?.client
       editedBy = {
         id: user.id ? user.id : user._id,
         name: user.firstName + ' ' + user.lastName,
