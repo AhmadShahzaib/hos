@@ -685,7 +685,6 @@ Logger.log(user);
           start: date,
           end: date,
         };
-      SpecificClient = user?.client//client
 
         const driverCsv = await this.driverCsvService.getGraphFromDB(
           query,
@@ -807,6 +806,17 @@ Logger.log(user);
       };
 
       const resp = await this.unidetifiedLogsService.respond(object);
+      let messagePatternDriver;
+    
+      messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
+      );
+      if (messagePatternDriver?.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      user = messagePatternDriver?.data;
+      SpecificClient = user?.client//client
+
       const notificationObj = {
         logs: [],
         dateTime:logs.date,
