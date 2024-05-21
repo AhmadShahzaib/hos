@@ -874,7 +874,7 @@ export class AppController extends BaseController {
 
     
 
-    
+    user.id= user._id
       // Get edited
       const isEdit = await this.logService.getPendingRequests(user);
       if (isEdit.length > 0) {
