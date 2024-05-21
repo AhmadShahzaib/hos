@@ -658,7 +658,7 @@ export class AppController extends BaseController {
       if (parsedToken.isDriver) {
         user = parsedToken;
       }
-
+Logger.log(user);
       if (isAccepted == 1) {
         let startEngineHours = unidentified.startEngineHour + '';
         let endEngineHours = unidentified?.endEngineHour + '';
