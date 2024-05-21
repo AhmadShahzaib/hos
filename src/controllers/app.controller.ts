@@ -886,7 +886,7 @@ Logger.log(user);
       const mesaage = 'Edit Inset log!';
       const notificationObj = {
         logs: [],
-        data: images != undefined ? [...images] : [],
+        editRequest: images != undefined ? [...images] : [],
         dateTime,
         notificationType: 1,
         driverId: driverId,
@@ -1237,7 +1237,7 @@ Logger.log(user);
         }!`;
         const notificationObj = {
           logs: [],
-          data: images != undefined ? [...images] : [],
+          editRequest: images != undefined ? [...images] : [],
           dateTime: dateTime,
           driverId: driverId,
           editStatusFromBO: 'cancel',
