@@ -159,6 +159,11 @@ export class WebsocketGateway
 
     if (resp) {
       Logger.log("sending sync");
+      if(!SpecificClient){
+        SpecificClient = user.client;
+      Logger.log(user.client);
+
+      }
       Logger.log(SpecificClient);
 
       // this.server.to(socketId)
