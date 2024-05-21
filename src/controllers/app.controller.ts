@@ -631,6 +631,7 @@ export class AppController extends BaseController {
     try {
       let user;
       const logs = data?.logs;
+      let SpecificClient;
       const driverId = data?.driverId;
       const unidentified = data?.unidentified;
       const {
@@ -684,6 +685,8 @@ export class AppController extends BaseController {
           start: date,
           end: date,
         };
+      SpecificClient = user?.client//client
+
         const driverCsv = await this.driverCsvService.getGraphFromDB(
           query,
           user,
@@ -804,6 +807,15 @@ export class AppController extends BaseController {
       };
 
       const resp = await this.unidetifiedLogsService.respond(object);
+      const notificationObj = {
+        logs: [],
+        dateTime:logs.date,
+        driverId: driverId,
+        editStatusFromBO: 'added',
+        notificationType: 5,
+      };
+    await this.gateway.syncDriver(SpecificClient,user,logs.date,notificationObj)
+
       return response.status(200).send({
         statusCode: 200,
         message: `Unidentified ${
