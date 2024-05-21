@@ -62,7 +62,7 @@ import {
   MessagePattern,
 } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import {WebsocketGateway} from '../websocket/websocket.gateway';
+import { WebsocketGateway } from '../websocket/websocket.gateway';
 import GetFourteenDaysRecapDecorators, {
   GetFourteenDaysRecapDecoratorsMobile,
 } from 'decorators/getFourteenDaysRecapDecorators';
@@ -123,7 +123,6 @@ export class AppController extends BaseController {
     @Inject('DEVICE_SERVICE') private readonly deviceClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
     private readonly gateway: WebsocketGateway,
-
   ) {
     super();
   }
@@ -606,15 +605,38 @@ export class AppController extends BaseController {
       };
       await this.driverCsvService.runCalculationOnDateHOS(queryy, user);
       // search
-      dateOfQuery = date;
+      // dateOfQuery = date;
 
-      dateQuery = moment().format('YYYY-MM-DD');
-      queryy = {
-        start: dateQuery,
-        end: dateQuery,
+      // dateQuery = moment().format('YYYY-MM-DD');
+      // queryy = {
+      //   start: dateQuery,
+      //   end: dateQuery,
+      // };
+      // const resp: any = await this.driverCsvService.getFromDB(queryy, user);
+      let messagePatternDriver;
+
+      messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, logs.driverId),
+      );
+      if (messagePatternDriver?.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      user = messagePatternDriver?.data;
+      let SpecificClient = user?.client; //client
+      const notificationObj = {
+        logs: [],
+        dateTime: dateTime,
+        driverId: data?.driverId,
+        editStatusFromBO: 'cancel',
+        notificationType: 5,
       };
-      const resp: any = await this.driverCsvService.getFromDB(queryy, user);
-      return response.status(200).send(resp);
+      await this.gateway.syncDriver(
+        SpecificClient,
+        user,
+        date.format('YYYY-MM-DD'),
+        notificationObj,
+      );
+      return response.status(200).send({});
     } catch (error) {
       Logger.error({ message: error.message, stack: error.stack });
       throw error;
@@ -658,7 +680,7 @@ export class AppController extends BaseController {
       if (parsedToken.isDriver) {
         user = parsedToken;
       }
-Logger.log(user);
+      Logger.log(user);
       if (isAccepted == 1) {
         let startEngineHours = unidentified.startEngineHour + '';
         let endEngineHours = unidentified?.endEngineHour + '';
@@ -807,7 +829,7 @@ Logger.log(user);
 
       const resp = await this.unidetifiedLogsService.respond(object);
       let messagePatternDriver;
-    
+
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
         this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
       );
@@ -815,17 +837,22 @@ Logger.log(user);
         mapMessagePatternResponseToException(messagePatternDriver);
       }
       user = messagePatternDriver?.data;
-      SpecificClient = user?.client//client
+      SpecificClient = user?.client; //client
 
       const notificationObj = {
         logs: [],
-        dateTime:logs.date,
+        dateTime: logs.date,
         driverId: driverId,
         editStatusFromBO: 'added',
         notificationType: 5,
       };
-      Logger.log("in unidentified")
-    await this.gateway.syncDriver(SpecificClient,user,logs.date,notificationObj)
+      Logger.log('in unidentified');
+      await this.gateway.syncDriver(
+        SpecificClient,
+        user,
+        logs.date,
+        notificationObj,
+      );
 
       return response.status(200).send({
         statusCode: 200,
@@ -855,19 +882,19 @@ Logger.log(user);
       let user;
 
       // Parsing token for timezone
-     
+
       let messagePatternDriver;
-    
-        messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
-          this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
-        );
-        if (messagePatternDriver?.isError) {
-          mapMessagePatternResponseToException(messagePatternDriver);
-        }
-        user = messagePatternDriver?.data;
-        // user.companyTimeZone = user.companyTimeZone;
-   
-      let SpecificClient = user?.client
+
+      messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
+      );
+      if (messagePatternDriver?.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      user = messagePatternDriver?.data;
+      // user.companyTimeZone = user.companyTimeZone;
+
+      let SpecificClient = user?.client;
       // Creating dateTime for driver notification
       let dateTime = moment.tz(date, user?.homeTerminalTimeZone?.tzCode).unix();
 
@@ -883,9 +910,7 @@ Logger.log(user);
        */
       let images;
 
-    
-
-    user.id= user._id
+      user.id = user._id;
       // Get edited
       const isEdit = await this.logService.getPendingRequests(user);
       if (isEdit.length > 0) {
@@ -903,11 +928,16 @@ Logger.log(user);
         driverId: driverId,
         editStatusFromBO: 'save',
       };
-     
+
       const isSilent = false;
       // let WebsocketGateway: WebsocketGateway;
 
-      this.gateway.notifyDriver(SpecificClient,"notifyDriver",mesaage,notificationObj)
+      this.gateway.notifyDriver(
+        SpecificClient,
+        'notifyDriver',
+        mesaage,
+        notificationObj,
+      );
       // let notificationStatus = await dispatchNotification(
       //   title,
       //   notificationObj,
@@ -980,7 +1010,7 @@ Logger.log(user);
         }
       }
       driver = user.isDriver ? user : messagePatternDriver?.data;
-      SpecificClient = driver?.client//client
+      SpecificClient = driver?.client; //client
       editedBy = {
         id: user.id ? user.id : user._id,
         name: user.firstName + ' ' + user.lastName,
@@ -1164,8 +1194,8 @@ Logger.log(user);
         /**
          * Fetching driver's deviceToken
          */
-      
-        Logger.log("Running");
+
+        Logger.log('Running');
 
         // Initiating notificaion dispatch
         const title = `Edit request ${
@@ -1178,9 +1208,13 @@ Logger.log(user);
           editStatusFromBO: 'cancel',
           notificationType: 5,
         };
-    await this.gateway.syncDriver(SpecificClient,driver,date.format('YYYY-MM-DD'),notificationObj)
+        await this.gateway.syncDriver(
+          SpecificClient,
+          driver,
+          date.format('YYYY-MM-DD'),
+          notificationObj,
+        );
 
-      
         //comment
         notificationStatus = true;
 
@@ -1208,11 +1242,8 @@ Logger.log(user);
         const deviceType = messagePatternDriver?.data?.deviceType;
 
         // Initiating notificaion dispatch
-        
-       
 
         notificationStatus = true; // repressents notification is silent or not
-        
       }
 
       const response = await this.logService.responseToEditInsertLog(
@@ -1235,7 +1266,7 @@ Logger.log(user);
         isApproved: isApproved,
       };
       await this.logService.maintainHistory(historyObj);
-      if (isApproved !== 'confirm'){
+      if (isApproved !== 'confirm') {
         let images;
         const isEdit = await this.logService.getPendingRequests(user);
         if (isEdit.length > 0) {
@@ -1254,8 +1285,13 @@ Logger.log(user);
           editStatusFromBO: 'cancel',
           notificationType: 5,
         };
-       
-      await this.gateway.notifyDriver(SpecificClient,"notifyDriver",title,notificationObj)
+
+        await this.gateway.notifyDriver(
+          SpecificClient,
+          'notifyDriver',
+          title,
+          notificationObj,
+        );
       }
       return res.status(response.statusCode).send({
         statusCode: response.statusCode,
