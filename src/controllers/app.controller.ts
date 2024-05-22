@@ -1277,9 +1277,14 @@ driverId=id;
 
         let images;
         const isEdit = await this.logService.getPendingRequests(user);
+        Logger.log(isEdit);
         if (isEdit.length > 0) {
+        Logger.log("Create csv pdf");
+
           // Create csv pdf for before and after
           const isConverted = await this.HOSService.generateCsvImages(user);
+        Logger.log("after");
+
           images = isConverted.data;
         }
         const title = `Edit request ${
