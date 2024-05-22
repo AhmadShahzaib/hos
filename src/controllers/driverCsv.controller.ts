@@ -351,6 +351,24 @@ export class DriverCsvController extends BaseController {
   }
 
   @UseInterceptors(new MessagePatternResponseInterceptor())
+  @MessagePattern({ cmd: 'call_sync' })
+  async callSync(data: any): Promise<any> {
+    try {
+      const { SpecificClient,
+        user,date,notificationObj } = data;
+     
+      await this.gateway.syncDriver(
+        SpecificClient,
+        user,
+        date,
+        notificationObj,
+      );
+      return true;
+    } catch (error) {
+      return error;
+    }
+  }
+  @UseInterceptors(new MessagePatternResponseInterceptor())
   @MessagePattern({ cmd: 'get_length_of_data' })
   async getLengthOfData(requestParam: any): Promise<any> {
     try {
