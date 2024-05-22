@@ -189,7 +189,7 @@ export class WebsocketGateway
 
       let user;
       const { historyOfLocation, meta } = reqBody;
-      const { date, driverId, tenantId } = queryParams;
+      const { date, driverId } = queryParams;
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -201,6 +201,8 @@ export class WebsocketGateway
         user = messagePatternDriver.data;
       }
       const SpecificClient = user.client;
+      const tenantId = user.tenantId;
+      
       // Ascending order sorting wrt to date time
       let sortedArray = await sortLiveLocations(historyOfLocation);
 
@@ -435,7 +437,7 @@ export class WebsocketGateway
         }
         user = messagePatternDriver.data;
       }
-      let SpecificClient = user.client
+      let SpecificClient = user.client;
       const inputDate = moment(queryParams.date).format('YYYY-MM-DD');
       let query = {
         start: inputDate,
