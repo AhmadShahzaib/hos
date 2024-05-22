@@ -182,10 +182,10 @@ export class WebsocketGateway
   @SubscribeMessage('addLocation')
   async addLiveLocation(
     @MessageBody()
-    data
+    data,
   ) {
     try {
-const    { queryParams, reqBody }= data;
+      const { queryParams, reqBody } = data;
 
       let user;
       const { historyOfLocation, meta } = reqBody;
@@ -263,52 +263,52 @@ const    { queryParams, reqBody }= data;
         }
         user = messagePatternDriver.data;
       } else {
-        this.server.emit('dataAddResp', {
-          message: 'Please Add driver Id',
-          data: {},
-        });
+        // this.server.to(SpecificClient).emit('dataAddResp', {
+        //   message: 'Please Add driver Id',
+        //   data: {},
+        // });
       }
       const SpecificClient = user.client;
       if (!user) {
-        this.server.emit('dataAddResp', {
+        this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Failed as no data is available against DriverId',
           data: {},
         });
       }
       if (!body.meta) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry in meta is rejected as meta is not available',
           data: {},
         });
       }
       if (!body.meta.deviceCalculations) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry in  rejected as deviceCalculations is not available',
           data: {},
         });
       }
       if (!body.meta.dateTime) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message:
             'Entry in  rejected as deviceCalculations.isDataFound is not available',
           data: {},
         });
       }
       if (!body.csv) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry in meta is rejected as csv is not available',
           data: {},
         });
       }
       if (!body.csv.timePlaceLine) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message:
             'Entry in meta is rejected as csv timeplaceline is not available',
           data: {},
         });
       }
       if (!body.meta.pti) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry in meta is rejected as PTI is not available',
           data: {},
         });
@@ -365,7 +365,7 @@ const    { queryParams, reqBody }= data;
 
       resp = await this.driverCsvService.addToDB(body, user);
       if (resp?.error) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: resp.message,
           data: {},
         });
@@ -395,12 +395,12 @@ const    { queryParams, reqBody }= data;
       };
       const respo: any = await this.driverCsvService.getFromDB(query, user);
       if (resp) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry Added Successfully',
           data: respo.graphData[0].meta,
         });
       } else {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: resp,
         });
       }
@@ -435,6 +435,7 @@ const    { queryParams, reqBody }= data;
         }
         user = messagePatternDriver.data;
       }
+      let SpecificClient = user.client
       const inputDate = moment(queryParams.date).format('YYYY-MM-DD');
       let query = {
         start: inputDate,
@@ -442,7 +443,7 @@ const    { queryParams, reqBody }= data;
       };
       let response = await this.driverCsvService.getFromDB(query, user);
       if (!response.graphData[0].originalLogs) {
-        this.server.emit('message', {
+        this.server.to(SpecificClient).emit('message', {
           message: 'Please get latest Build ',
           data: {},
         });
@@ -461,7 +462,7 @@ const    { queryParams, reqBody }= data;
       let resp = {
         csvBeforeUpdate: { csv: csv, violations: violations },
       };
-      this.server.emit('sendOrignal', {
+      this.server.to(SpecificClient).emit('sendOrignal', {
         message: 'Success',
         data: resp,
       });
@@ -469,50 +470,50 @@ const    { queryParams, reqBody }= data;
       throw error;
     }
   }
-  @SubscribeMessage('message')
-  async replyMessage(@MessageBody() queryParams: any): Promise<any> {
-    // this.notifyDriver("h23b4h2b34r5jh4","sbndjfd","jnbwdjfbnfs"{},)
-    this.server.emit('message', {
-      message: 'Success',
-      data: 'data is here',
-    });
-  }
-  @SubscribeMessage('getLive')
-  async handleMessage(@MessageBody() request: any): Promise<any> {
-    try {
-      const { body, user, id } = request;
+  // @SubscribeMessage('message')
+  // async replyMessage(@MessageBody() queryParams: any): Promise<any> {
+  //   // this.notifyDriver("h23b4h2b34r5jh4","sbndjfd","jnbwdjfbnfs"{},)
+  //   this.server.emit('message', {
+  //     message: 'Success',
+  //     data: 'data is here',
+  //   });
+  // }
+  // @SubscribeMessage('getLive')
+  // async handleMessage(@MessageBody() request: any): Promise<any> {
+  //   try {
+  //     const { body, user, id } = request;
 
-      if (id) {
-        const messagePatternUnits = await firstValueFrom(
-          this.unitClient.send({ cmd: 'get_unit_by_vehicleID' }, id),
-        );
-      }
-      const messagePatternUnits =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { body, user }),
-        );
-      let reply = {
-        message: 'Entry rejected ',
-        data: {},
-        statusCode: 400,
-      };
-      if (messagePatternUnits.isError) {
-        mapMessagePatternResponseToException(messagePatternUnits);
-      } else {
-        this.server.emit('message', reply);
-      }
-      reply.message = 'Entry Added Successfully';
-      reply.statusCode = 201;
+  //     if (id) {
+  //       const messagePatternUnits = await firstValueFrom(
+  //         this.unitClient.send({ cmd: 'get_unit_by_vehicleID' }, id),
+  //       );
+  //     }
+  //     const messagePatternUnits =
+  //       await firstValueFrom<MessagePatternResponseType>(
+  //         this.unitClient.send({ cmd: 'assign_meta_to_units' }, { body, user }),
+  //       );
+  //     let reply = {
+  //       message: 'Entry rejected ',
+  //       data: {},
+  //       statusCode: 400,
+  //     };
+  //     if (messagePatternUnits.isError) {
+  //       mapMessagePatternResponseToException(messagePatternUnits);
+  //     } else {
+  //       this.server.emit('message', reply);
+  //     }
+  //     reply.message = 'Entry Added Successfully';
+  //     reply.statusCode = 201;
 
-      this.server.emit('message', reply);
-    } catch (error) {
-      this.server.emit('message', {
-        message: error,
-        data: {},
-        statusCode: 400,
-      });
-    }
+  //     this.server.emit('message', reply);
+  //   } catch (error) {
+  //     this.server.emit('message', {
+  //       message: error,
+  //       data: {},
+  //       statusCode: 400,
+  //     });
+  //   }
 
-    // Broadcast the received message to all connected clients
-  }
+  //   // Broadcast the received message to all connected clients
+  // }
 }
