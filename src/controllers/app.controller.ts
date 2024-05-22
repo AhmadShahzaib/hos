@@ -1291,7 +1291,7 @@ driverId=id;
           dateTime: dateTime,
           driverId: driverId,
           editStatusFromBO: 'cancel',
-          notificationType: 5,
+          notificationType: 1,
         };
 
         await this.gateway.notifyDriver(
