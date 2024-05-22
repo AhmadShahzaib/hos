@@ -533,6 +533,7 @@ export class UnidentifiedLogsController {
           //"notifcationType:1 = editLog|| 2= unidentifiedLog || 3 = insertLog"
           const notificationObj = {
             logs: [response.data],
+            editRequest:[],
             dateTime: unixDateTime,
             driverId: object.driverId,
             notificationType: 2,
