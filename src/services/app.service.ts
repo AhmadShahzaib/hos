@@ -46,6 +46,7 @@ import {
   removeDuplicateConsecutiveLogss,
 } from 'utils/removeDuplicateConsecutiveLogs';
 import { getIntermediateType } from 'utils/getIntermediateType';
+import { encodePolyline } from 'utils/polyline_encode';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AppService {
@@ -126,8 +127,6 @@ notifyDriver= async (
 
     return messagePatternDevice;
   };
-
- 
 
   // ): Promise<any[]> => {
 
@@ -257,12 +256,6 @@ notifyDriver= async (
   //   }
   // };
 
- 
-
-
-
- 
-
   updateDataInUnits = async (data) => {
     const messagePatternFirstValue = await firstValueFrom(
       this.unitsClient.emit({ cmd: 'update_hos_data' }, data),
@@ -277,7 +270,6 @@ notifyDriver= async (
    * @param options nested level query filters
    * @returns
    */
-
 
   addEditLogRequestHistory = async (data, user, editedDay, requestStatus) => {
     try {
@@ -324,38 +316,78 @@ notifyDriver= async (
     }
   };
 
+  // Helper function for <addLiveLocation> function to extract latitudes and longitudes from historyOfLocation array
+  extractLatLng = (historyOfLocations) => {
+    let coordinates = [];
+
+    for (let i = 0; i < historyOfLocations.length; i++) {
+      const lat = historyOfLocations[i].latitude;
+      const lng = historyOfLocations[i].longitude;
+      coordinates.push([lat, lng]);
+    }
+
+    return coordinates;
+  };
+
   /**
    * driver live location - V2
    * Author : Farzan
    */
   addLiveLocation = async (obj) => {
+    const { driverId, tenantId, date, historyOfLocation } = obj;
+
+    // Collect data for current date
     const driverLiveLocationTrackable =
       await this.driverLiveLocationModel.findOne({
-        driverId: obj?.driverId,
+        driverId: driverId,
+        date: date,
       });
-    if (driverLiveLocationTrackable) {
-      for (let i = 0; i < obj.sortedArray.length; i++) {
-        const historyOfLocation = obj.sortedArray[i]?.historyOfLocation;
-        historyOfLocation.meta = {};
-        driverLiveLocationTrackable.historyOfLocation.push(historyOfLocation);
-      }
 
+    // Append latest locations to the previous ones
+    if (driverLiveLocationTrackable) {
+      driverLiveLocationTrackable.historyOfLocation = [
+        ...driverLiveLocationTrackable.historyOfLocation,
+        ...historyOfLocation,
+      ];
+
+      // Update the latest changes
       await driverLiveLocationTrackable.save();
     } else {
-      await this.driverLiveLocationModel.create([obj]);
-      const firstTimeLocation = await this.driverLiveLocationModel.findOne({
-        driverId: obj?.driverId,
+      // If record not exists, create a new one
+      const isCreated = await this.driverLiveLocationModel.create({
+        driverId,
+        tenantId,
+        date,
+        historyOfLocation,
+        encryptedHistoryOfLocation: '',
       });
-      if (firstTimeLocation) {
-        for (let i = 0; i < obj.sortedArray.length; i++) {
-          const historyOfLocation = obj.sortedArray[i]?.historyOfLocation;
-          historyOfLocation.meta = {};
-          firstTimeLocation.historyOfLocation.push(historyOfLocation);
-        }
 
-        await firstTimeLocation.save();
+      // Fetch previous day record to encrypt data
+      const aDayPreviousDate = moment
+        .tz(date)
+        .subtract(1, 'day')
+        .format(`YYYY-MM-DD`);
+      const aDayPreviosData = await this.driverLiveLocationModel.findOne({
+        driverId: driverId,
+        date: aDayPreviousDate,
+      });
+
+      if (aDayPreviosData) {
+        // Extract lat, lng and encode the data
+        const coordinates = this.extractLatLng(
+          aDayPreviosData.historyOfLocation,
+        );
+        const encryptedCoordinatesString = encodePolyline(coordinates);
+
+        // Empty the historyOfLocation list and assign encrypted string
+        aDayPreviosData.historyOfLocation = [];
+        aDayPreviosData.encryptedHistoryOfLocation = encryptedCoordinatesString;
+
+        // Save the latest changes
+        await aDayPreviosData.save();
       }
     }
+
     return {
       statusCode: 200,
       message: 'Live location updated successfully!',

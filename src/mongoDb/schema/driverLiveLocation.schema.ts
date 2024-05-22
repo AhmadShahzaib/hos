@@ -1,11 +1,24 @@
 import mongoose from 'mongoose';
 
+const historyOfLocation = new mongoose.Schema({
+  address: { type: String },
+  date: { type: String },
+  engineHours: { type: String },
+  latitude: { type: String },
+  longitude: { type: String },
+  odometer: { type: String },
+  speed: { type: String },
+  status: { type: String },
+  time: { type: String },
+});
+
 export const DriverLiveLocationSchema = new mongoose.Schema(
   {
     driverId: { type: String, required: true },
-    // unitId: String,
     tenantId: { type: String, required: true },
-    historyOfLocation: [{}],
+    date: { type: String, rquired: true }, // YYYY-MM-DD
+    historyOfLocation: [historyOfLocation],
+    encryptedHistoryOfLocation: { type: String },
   },
   {
     timestamps: true,
