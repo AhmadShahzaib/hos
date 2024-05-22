@@ -200,7 +200,9 @@ export class WebsocketGateway
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
+        
       }
+      const SpecificClient = user.client;
       // Ascending order sorting wrt to date time
       let sortedArray = await sortLiveLocations(historyOfLocation);
 
@@ -240,7 +242,7 @@ export class WebsocketGateway
         date,
         historyOfLocation: sortedArray,
       }); // await removed
-      this.server.emit('locationAdd', {
+      this.server.to(SpecificClient).emit('locationAdd', {
         message: 'entry added successfully',
         data: {},
       });
