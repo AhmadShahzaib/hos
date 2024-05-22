@@ -19,6 +19,8 @@ import { CreateUnidentifiedLogsDto } from 'dto/createUnidentifiedLogs.dto';
 import { PaginationDto } from 'dto/pagination.dto';
 import { UpdateUnidentifiedLogsDto } from 'dto/updateUnidentifiedLogs.dto';
 import { UnidentifiedLogsService } from '../services/unidentifiedLogs.service';
+import { WebsocketGateway } from '../websocket/websocket.gateway';
+
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ClientProxy } from '@nestjs/microservices';
 import {
@@ -40,6 +42,7 @@ export class UnidentifiedLogsController {
     @Inject('UNIT_SERVICE')
     private readonly unitClient: ClientProxy,
     @Inject('DRIVER_SERVICE') private readonly driverClient: ClientProxy,
+    private readonly gateway: WebsocketGateway,
     @Inject('VEHICLE_SERVICE') private readonly vehicleClient: ClientProxy,
     @Inject('DEVICE_SERVICE') private readonly deviceClient: ClientProxy,
   ) {}
@@ -480,7 +483,13 @@ export class UnidentifiedLogsController {
           data: {},
         });
       }
-
+      const messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
+      );
+      if (messagePatternDriver?.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      let user = messagePatternDriver?.data;
       let extractedUserFromToken;
       if (req.headers.authorization) {
         let token = req.headers.authorization.split(' ')[1];
@@ -508,40 +517,12 @@ export class UnidentifiedLogsController {
           unidentifiedLogId,
           object,
         );
-        console.log(`response -------------- `, response);
+        
 
         if (response.statusCode == 200) {
-          const getEld: any = await this.unidetifiedLogsService.findById(
-            unidentifiedLogId,
-          );
-          console.log(`getELD ===================== `, getEld);
+         
+         
 
-          const eldNo = getEld?.data?.eldNumber;
-
-          console.log(`EldNo ============================= `, eldNo);
-
-          const messagePatternEld =
-            await firstValueFrom<MessagePatternResponseType>(
-              this.deviceClient.send({ cmd: 'get_device_by_no' }, eldNo),
-            );
-          if (messagePatternEld.isError) {
-            mapMessagePatternResponseToException(messagePatternEld);
-          }
-
-          console.log(
-            `messagePatternEld ============================= `,
-            messagePatternEld,
-          );
-
-          /**
-           * Fetching driver's deviceToken
-           */
-          const deviceToken = messagePatternEld?.data?.deviceToken;
-          const deviceType = messagePatternEld?.data?.deviceType;
-
-          /**
-           * Push Notification - Initiate!
-           */
           const currentYear = new Date().getFullYear();
           const dateStr = response?.data?.eventDate;
           const timeStr = response?.data?.eventTime;
@@ -557,65 +538,22 @@ export class UnidentifiedLogsController {
             notificationType: 2,
             editStatusFromBO: 'assign',
           };
+          let SpecificClient = user?.client;
 
-          let messagePatternPushNotification;
-          if (deviceToken) {
-            if (deviceType == 'IOS') {
-              Logger.log(
-                `About to emit an event 'send_notification' to notification-service `,
-              );
-
-              this.pushNotificationClient.connect();
-              messagePatternPushNotification =
-                await firstValueFrom<MessagePatternResponseType>(
-                  this.pushNotificationClient.send(
-                    { cmd: 'send_notification_IOS' },
-                    {
-                      deviceToken: deviceToken,
-                      data: {
-                        title: 'Log Assign Unidentified Miles Request!',
-                        notificationObj,
-                      },
-                    },
-                  ),
-                );
-
-              if (messagePatternPushNotification.isError) {
-                Logger.log(`Error while sending notification to IOS`);
-                mapMessagePatternResponseToException(
-                  messagePatternPushNotification,
-                );
-              }
-              this.pushNotificationClient.close();
-            } else {
-              Logger.log(
-                `About to emit an event 'send_notification' to notification-service `,
-              );
-
-              this.pushNotificationClient.connect();
-              messagePatternPushNotification =
-                await firstValueFrom<MessagePatternResponseType>(
-                  this.pushNotificationClient.send(
-                    { cmd: 'send_notification' },
-                    {
-                      deviceToken: deviceToken,
-                      data: {
-                        title: 'Log Assign Unidentified Miles Request!',
-                        notificationObj,
-                      },
-                    },
-                  ),
-                );
-
-              if (messagePatternPushNotification.isError) {
-                Logger.log(`Error while sending notification`);
-                mapMessagePatternResponseToException(
-                  messagePatternPushNotification,
-                );
-              }
-              this.pushNotificationClient.close();
-            }
-          }
+         
+          const mesaage = 'Driver assigned!';
+        
+    
+        
+          // let WebsocketGateway: WebsocketGateway;
+    
+          this.gateway.notifyDriver(
+            SpecificClient,
+            'notifyDriver',
+            mesaage,
+            notificationObj,
+          );
+       
 
           return res.status(response.statusCode).send(response);
         }
