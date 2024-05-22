@@ -159,11 +159,10 @@ export class WebsocketGateway
     const resp: any = await this.driverCsvService.getFromDB(query, user);
 
     if (resp) {
-      Logger.log("sending sync");
-      if(!SpecificClient){
+      Logger.log('sending sync');
+      if (!SpecificClient) {
         SpecificClient = user.client;
-      Logger.log(user.client);
-
+        Logger.log(user.client);
       }
       Logger.log(SpecificClient);
 
@@ -181,16 +180,16 @@ export class WebsocketGateway
   }
 
   @SubscribeMessage('addLocation')
-  async addLiveLocation(@MessageBody()
-   
-    queryParams: any,
-    reqBody: any,
+  async addLiveLocation(
+    @MessageBody()
+    data
   ) {
     try {
-     
-     let user;
+const    { queryParams, reqBody }= data;
+
+      let user;
       const { historyOfLocation, meta } = reqBody;
-      const { date,driverId, tenantId } = queryParams;
+      const { date, driverId, tenantId } = queryParams;
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -200,7 +199,6 @@ export class WebsocketGateway
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
-        
       }
       const SpecificClient = user.client;
       // Ascending order sorting wrt to date time
@@ -246,7 +244,6 @@ export class WebsocketGateway
         message: 'entry added successfully',
         data: {},
       });
-    
     } catch (error) {
       throw error;
     }
