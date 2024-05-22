@@ -33,7 +33,6 @@ import LogsDocument, {
 } from 'mongoDb/document/document';
 import moment, { invalid } from 'moment-timezone';
 
-
 const ObjectId = mongoose.Types.ObjectId;
 import { groupBy, mapValues, update } from 'lodash';
 import { LogsController } from 'controllers/logs.controller';
@@ -65,7 +64,7 @@ export class AppService {
     @Inject('VEHICLE_SERVICE') private readonly client: ClientProxy,
     @Inject('DEVICE_SERVICE') private readonly deviceClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
-     
+
     private readonly configService: ConfigurationService,
   ) {}
 
@@ -104,15 +103,13 @@ export class AppService {
 
     return success;
   };
-//socket call
-notifyDriver= async (
-  SpecificClient,
-  mesaage,
-  responseMessage,
-  responseData,
-)=> {
- 
-}
+  //socket call
+  notifyDriver = async (
+    SpecificClient,
+    mesaage,
+    responseMessage,
+    responseData,
+  ) => {};
   // crud operations below.
 
   getEldOnDeviceId = async (eldId) => {
@@ -362,29 +359,23 @@ notifyDriver= async (
         encryptedHistoryOfLocation: '',
       });
 
-      // Fetch previous day record to encrypt data
-      const aDayPreviousDate = moment
-        .tz(date)
-        .subtract(1, 'day')
-        .format(`YYYY-MM-DD`);
-      const aDayPreviosData = await this.driverLiveLocationModel.findOne({
+      // Fetch last added record to encrypt data
+      const allRecords = await this.driverLiveLocationModel.find({
         driverId: driverId,
-        date: aDayPreviousDate,
       });
+      const lastRecord = allRecords[allRecords.length - 2]; // Get entry before of the latest
 
-      if (aDayPreviosData) {
+      if (lastRecord) {
         // Extract lat, lng and encode the data
-        const coordinates = this.extractLatLng(
-          aDayPreviosData.historyOfLocation,
-        );
+        const coordinates = this.extractLatLng(lastRecord.historyOfLocation);
         const encryptedCoordinatesString = encodePolyline(coordinates);
 
         // Empty the historyOfLocation list and assign encrypted string
-        aDayPreviosData.historyOfLocation = [];
-        aDayPreviosData.encryptedHistoryOfLocation = encryptedCoordinatesString;
+        lastRecord.historyOfLocation = [];
+        lastRecord.encryptedHistoryOfLocation = encryptedCoordinatesString;
 
         // Save the latest changes
-        await aDayPreviosData.save();
+        await lastRecord.save();
       }
     }
 
