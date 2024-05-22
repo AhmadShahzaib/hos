@@ -1295,7 +1295,7 @@ driverId=id;
           editRequest: images != undefined ? [...images] : [],
           dateTime: dateTime,
           driverId: driverId,
-          editStatusFromBO: 'cancel',
+          editStatusFromBO: 'cancelBO',
           notificationType: 1,
         };
 
