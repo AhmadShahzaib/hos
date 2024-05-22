@@ -1278,13 +1278,13 @@ driverId=id;
       driverData.id = driverData._id;
         let images;
         const isEdit = await this.logService.getPendingRequests(driverData);
-        Logger.log(isEdit);
+        // Logger.log(isEdit);
         if (isEdit.length > 0) {
-        Logger.log("Create csv pdf");
+        // Logger.log("Create csv pdf");
 
           // Create csv pdf for before and after
           const isConverted = await this.HOSService.generateCsvImages(driverData);
-        Logger.log("after");
+        // Logger.log("after");
 
           images = isConverted.data;
         }
