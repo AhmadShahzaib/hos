@@ -1274,15 +1274,16 @@ driverId=id;
       await this.logService.maintainHistory(historyObj);
       if (isApproved !== 'confirm') {
       // user.id = user._id;// this id is updated
-
+      let driverData = messagePatternDriver.data
+      driverData.id = driverData._id;
         let images;
-        const isEdit = await this.logService.getPendingRequests(user);
+        const isEdit = await this.logService.getPendingRequests(driverData);
         Logger.log(isEdit);
         if (isEdit.length > 0) {
         Logger.log("Create csv pdf");
 
           // Create csv pdf for before and after
-          const isConverted = await this.HOSService.generateCsvImages(user);
+          const isConverted = await this.HOSService.generateCsvImages(driverData);
         Logger.log("after");
 
           images = isConverted.data;
