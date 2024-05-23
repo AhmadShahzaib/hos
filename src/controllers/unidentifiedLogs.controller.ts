@@ -116,11 +116,11 @@ export class UnidentifiedLogsController {
   async cancelUnidentified(@Query() query, @Req() req, @Res() res) {
     try {
       const unidentifiedLogId = query.id;
-
+      let user;
       let extractedUserFromToken;
       if (req.headers.authorization) {
         let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -137,6 +137,41 @@ export class UnidentifiedLogsController {
         };
 
         const response = await this.unidetifiedLogsService.cancel(object);
+        if (response?.currentDriver) {
+          const messagePatternDriver =
+            await firstValueFrom<MessagePatternResponseType>(
+              this.driverClient.send(
+                { cmd: 'get_driver_by_id' },
+                response?.currentDriver,
+              ),
+            );
+          if (messagePatternDriver?.isError) {
+            mapMessagePatternResponseToException(messagePatternDriver);
+          }
+          let driver = messagePatternDriver?.data;
+
+          const notificationObj = {
+            logs: [response.data],
+            editRequest: [],
+            dateTime: '',
+            driverId: driver?._id,
+            notificationType: 2,
+            editStatusFromBO: 'unassign',
+          };
+          let SpecificClient = driver?.client;
+
+          const mesaage = 'Driver assigned!';
+
+          // let WebsocketGateway: WebsocketGateway;
+
+          this.gateway.notifyDriver(
+            SpecificClient,
+            'notifyDriver',
+            mesaage,
+            notificationObj,
+          );
+        }
+
         return res.status(response.statusCode).send(response);
       } else {
         return res.status(403).send({
@@ -313,7 +348,7 @@ export class UnidentifiedLogsController {
           // because tenantId is not available yet
           // tenantId: {
           //   $eq: extractedUserFromToken.tenantId,
-          // }, 
+          // },
         };
         // query.tenantId=extractedUserFromToken.tenantId
         const response = await this.unidetifiedLogsService.findAll(
@@ -369,10 +404,10 @@ export class UnidentifiedLogsController {
   @Get('/vin')
   async findAllVin(
     @Query()
-    /**
+    query: /**
      * To strip of any irrelevent field
      */
-    query: PaginationDto,
+    PaginationDto,
     @Res() res,
     @Req() req,
   ) {
@@ -483,9 +518,10 @@ export class UnidentifiedLogsController {
           data: {},
         });
       }
-      const messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
-        this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
-      );
+      const messagePatternDriver =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
+        );
       if (messagePatternDriver?.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
@@ -517,12 +553,8 @@ export class UnidentifiedLogsController {
           unidentifiedLogId,
           object,
         );
-        
 
         if (response.statusCode == 200) {
-         
-         
-
           const currentYear = new Date().getFullYear();
           const dateStr = response?.data?.eventDate;
           const timeStr = response?.data?.eventTime;
@@ -533,7 +565,7 @@ export class UnidentifiedLogsController {
           //"notifcationType:1 = editLog|| 2= unidentifiedLog || 3 = insertLog"
           const notificationObj = {
             logs: [response.data],
-            editRequest:[],
+            editRequest: [],
             dateTime: unixDateTime,
             driverId: object.driverId,
             notificationType: 2,
@@ -541,20 +573,16 @@ export class UnidentifiedLogsController {
           };
           let SpecificClient = user?.client;
 
-         
           const mesaage = 'Driver assigned!';
-        
-    
-        
+
           // let WebsocketGateway: WebsocketGateway;
-    
+
           this.gateway.notifyDriver(
             SpecificClient,
             'notifyDriver',
             mesaage,
             notificationObj,
           );
-       
 
           return res.status(response.statusCode).send(response);
         }

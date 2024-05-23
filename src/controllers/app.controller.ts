@@ -1273,13 +1273,19 @@ export class AppController extends BaseController {
       };
       await this.logService.maintainHistory(historyObj);
       if (isApproved !== 'confirm') {
-        user.id = user._id;
-
+      // user.id = user._id;// this id is updated
+      let driverData = messagePatternDriver.data
+      driverData.id = driverData._id;
         let images;
-        const isEdit = await this.logService.getPendingRequests(user);
+        const isEdit = await this.logService.getPendingRequests(driverData);
+        // Logger.log(isEdit);
         if (isEdit.length > 0) {
+        // Logger.log("Create csv pdf");
+
           // Create csv pdf for before and after
-          const isConverted = await this.HOSService.generateCsvImages(user);
+          const isConverted = await this.HOSService.generateCsvImages(driverData);
+        // Logger.log("after");
+
           images = isConverted.data;
         }
         const title = `Edit request ${
@@ -1290,10 +1296,29 @@ export class AppController extends BaseController {
           editRequest: images != undefined ? [...images] : [],
           dateTime: dateTime,
           driverId: driverId,
-          editStatusFromBO: 'cancel',
-          notificationType: 5,
+          editStatusFromBO: 'cancelBO',
+          notificationType: 1,
         };
 
+        await this.gateway.notifyDriver(
+          SpecificClient,
+          'notifyDriver',
+          title,
+          notificationObj,
+        );
+      }
+      if (isApproved == 'confirm') {
+        const title = `Edit request ${
+          isApproved == 'confirm' ? 'confirmed' : 'cancelled'
+        }!`;
+        const notificationObj = {
+          logs: [],
+          editRequest:  [],
+          dateTime: dateTime,
+          driverId: driverId,
+          editStatusFromBO: 'cancelBO',
+          notificationType: 3,
+        };
         await this.gateway.notifyDriver(
           SpecificClient,
           'notifyDriver',
