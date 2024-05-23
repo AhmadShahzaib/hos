@@ -1307,6 +1307,25 @@ driverId=id;
           notificationObj,
         );
       }
+      if (isApproved == 'confirm') {
+        const title = `Edit request ${
+          isApproved == 'confirm' ? 'confirmed' : 'cancelled'
+        }!`;
+        const notificationObj = {
+          logs: [],
+          editRequest:  [],
+          dateTime: dateTime,
+          driverId: driverId,
+          editStatusFromBO: 'cancelBO',
+          notificationType: 3,
+        };
+        await this.gateway.notifyDriver(
+          SpecificClient,
+          'notifyDriver',
+          title,
+          notificationObj,
+        );
+      }
       return res.status(response.statusCode).send({
         statusCode: response.statusCode,
         message: response.message,
