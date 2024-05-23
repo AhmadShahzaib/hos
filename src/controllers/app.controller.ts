@@ -509,13 +509,13 @@ export class AppController extends BaseController {
 
       // actionType = [1 == "Perform Edit", 2 == " Perform Insert"]
       if (data?.actionType == 1) {
-        Logger.log("before tasks of edit")
+        Logger.log('before tasks of edit');
 
         const updatedLogs = await this.HOSService.performEditOnLogs(
           logs,
           dutyStatusList,
         );
-        Logger.log("done with all the tasks of edit")
+        Logger.log('done with all the tasks of edit');
 
         // Placing updated logs in csv header
         driverCsv[0].csv['eldEventListForDriversRecordOfDutyStatus'] =
@@ -616,7 +616,7 @@ export class AppController extends BaseController {
       //   end: dateQuery,
       // };
       // const resp: any = await this.driverCsvService.getFromDB(queryy, user);
-      Logger.log("done with all the tasks")
+      Logger.log('done with all the tasks');
       let messagePatternDriver;
 
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
@@ -1003,19 +1003,19 @@ export class AppController extends BaseController {
       const { id, firstName, lastName } =
         request.user ?? ({ tenantId: undefined } as any);
       const user = request.user ?? ({ tenantId: undefined } as any);
-if(!driverId){
-driverId=id;
-}
+      if (!driverId) {
+        driverId = id;
+      }
       let messagePatternDriver;
-     
-        messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
-          this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
-        );
-        if (messagePatternDriver.isError) {
-          mapMessagePatternResponseToException(messagePatternDriver);
-        }
-      
-      driver =  messagePatternDriver?.data;
+
+      messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+      );
+      if (messagePatternDriver.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+
+      driver = messagePatternDriver?.data;
       SpecificClient = driver?.client; //client
       editedBy = {
         id: user.id ? user.id : user._id,
@@ -1273,7 +1273,7 @@ driverId=id;
       };
       await this.logService.maintainHistory(historyObj);
       if (isApproved !== 'confirm') {
-      user.id = user._id;
+        user.id = user._id;
 
         let images;
         const isEdit = await this.logService.getPendingRequests(user);
@@ -1474,16 +1474,15 @@ driverId=id;
   @specificDaytripDecorators()
   async specificDay(
     @Query('driverId') driverId: String,
-    @Query('date') date: string = moment().format('MMDDYY'),
+    @Query('date') date: string = moment().format('YYYY-MM-DD'),
 
     @Res() res,
     @Req() request: Request,
   ) {
     try {
       const queryObj = {
-        driverId: driverId ? driverId : null,
-        date: date ? moment(date).format('MMDDYY') : null,
-        time: null,
+        driverId: driverId,
+        date: date,
       };
 
       const messagePatternDriver =
@@ -1495,11 +1494,9 @@ driverId=id;
       }
 
       const response = await this.HOSService.getLiveLocation(queryObj);
-      Logger.log(
-        '-------------------------------------' + response.data.length,
-      );
-      let locations = [];
 
+      // -----------------------------------------------------------------
+      let locations = [];
       function convertToSeconds(time) {
         const hours = parseInt(time.slice(0, 2));
         const minutes = parseInt(time.slice(2, 4));
@@ -1546,6 +1543,7 @@ driverId=id;
           (element.status != '2' && element.eventType != '3')
         );
       });
+
       // add google api here and calculate address of otherThenDriving statuses
       for (let i = 0; i < otherThenDriving.length; i++) {
         let address = await this.driverCsvService.getAddress(
@@ -1556,7 +1554,13 @@ driverId=id;
       }
       let responseArray = [...otherThenDriving, ...driving];
       responseArray = responseArray.sort((a, b) => a.time - b.time);
-      return res.status(response.statusCode).send(responseArray);
+      // ------------------------------------------------------------------------
+
+      return res.status(response.statusCode).send({
+        statusCode: response.statusCode,
+        message: response.message,
+        data: responseArray,
+      });
     } catch (error) {
       throw error;
     }
