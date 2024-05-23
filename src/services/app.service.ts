@@ -45,7 +45,8 @@ import {
   removeDuplicateConsecutiveLogss,
 } from 'utils/removeDuplicateConsecutiveLogs';
 import { getIntermediateType } from 'utils/getIntermediateType';
-import { encodePolyline } from 'utils/polyline_encode';
+import { encrypt } from 'utils/encrypt';
+import { decrypt } from 'utils/decrypt';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AppService {
@@ -314,17 +315,17 @@ export class AppService {
   };
 
   // Helper function for <addLiveLocation> function to extract latitudes and longitudes from historyOfLocation array
-  extractLatLng = (historyOfLocations) => {
-    let coordinates = [];
+  // extractLatLng = (historyOfLocations) => {
+  //   let coordinates = [];
 
-    for (let i = 0; i < historyOfLocations.length; i++) {
-      const lat = historyOfLocations[i].latitude;
-      const lng = historyOfLocations[i].longitude;
-      coordinates.push([lat, lng]);
-    }
+  //   for (let i = 0; i < historyOfLocations.length; i++) {
+  //     const lat = historyOfLocations[i].latitude;
+  //     const lng = historyOfLocations[i].longitude;
+  //     coordinates.push([lat, lng]);
+  //   }
 
-    return coordinates;
-  };
+  //   return coordinates;
+  // };
 
   /**
    * driver live location - V2
@@ -367,12 +368,13 @@ export class AppService {
 
       if (lastRecord) {
         // Extract lat, lng and encode the data
-        const coordinates = this.extractLatLng(lastRecord.historyOfLocation);
-        const encryptedCoordinatesString = encodePolyline(coordinates);
+        // const coordinates = this.extractLatLng(lastRecord.historyOfLocation);
+        const textToEncrypt = lastRecord.historyOfLocation;
+        const encryptedString = await encrypt(textToEncrypt);
 
         // Empty the historyOfLocation list and assign encrypted string
         lastRecord.historyOfLocation = [];
-        lastRecord.encryptedHistoryOfLocation = encryptedCoordinatesString;
+        lastRecord.encryptedHistoryOfLocation = encryptedString;
 
         // Save the latest changes
         await lastRecord.save();
@@ -389,72 +391,37 @@ export class AppService {
   };
 
   /**
-   * driver live location  : GET- V2
+   * driver specific day trips
    * Author : Farzan
    */
   getLiveLocation = async (obj) => {
-    let query;
+    let query = {
+      driverId: obj.driverId,
+      date: obj.date, // YYYY-MM-DD
+    };
 
-    if (obj?.time && obj?.date == null) {
-      query = {
-        driverId: `${obj?.driverId}`,
-        'historyOfLocation.time': `${obj?.time}`,
-      };
-    } else if (obj?.date && obj?.time == null) {
-      query = {
-        driverId: `${obj?.driverId}`,
-        'historyOfLocation.date': `${obj?.date}`,
-      };
-    } else if (obj?.time && obj?.date) {
-      query = {
-        driverId: `${obj?.driverId}`,
-        'historyOfLocation.time': `${obj?.time}`,
-        'historyOfLocation.date': `${obj?.date}`,
-      };
-    } else {
-      query = {
-        driverId: obj?.driverId,
-      };
+    const specificDayTrip = await this.driverLiveLocationModel.findOne(query);
+
+    let decodedHistoryOfLocation;
+    if (specificDayTrip) {
+      // length == 0, indicates the previous day trips that are encrypted.
+      // length != 0, indicates the current day trip. The current day trip is not encrypted.
+      if (specificDayTrip.historyOfLocation.length == 0) {
+        let encryptedHistoryOfLocation =
+          specificDayTrip.encryptedHistoryOfLocation;
+        decodedHistoryOfLocation = await decrypt(encryptedHistoryOfLocation);
+      } else {
+        decodedHistoryOfLocation = specificDayTrip.historyOfLocation;
+      }
     }
 
-    let driverLiveLocationTrackable =
-      await this.driverLiveLocationModel.aggregate(
-        [
-          // Unwind the array field to deconstruct the array elements
-          { $unwind: '$historyOfLocation' },
-          // Match only the documents that have an object in the array with myField equal to "specificValue"
-          {
-            $match: query,
-          },
-          // Group the results by _id to reconstruct the array field
-          {
-            $group: {
-              _id: '$_id',
-              historyOfLocation: { $push: '$historyOfLocation' },
-              // Add other fields that you want to include in the results
-            },
-          },
-        ],
-        function (err, docs) {
-          if (err) {
-            return err;
-          }
-        },
-      );
-    if (driverLiveLocationTrackable.length == 0) {
-      return {
-        statusCode: 200,
-        message: 'No live locations available!',
-        data: [],
-      };
-    }
-
-    driverLiveLocationTrackable =
-      driverLiveLocationTrackable[0]?.historyOfLocation;
     return {
       statusCode: 200,
       message: 'Live location fetched successfully!',
-      data: driverLiveLocationTrackable,
+      data:
+        decodedHistoryOfLocation && decodedHistoryOfLocation.length > 0
+          ? decodedHistoryOfLocation
+          : [],
     };
   };
 
