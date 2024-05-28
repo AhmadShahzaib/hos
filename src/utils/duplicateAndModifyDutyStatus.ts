@@ -14,7 +14,7 @@ export const duplicateAndModifyDutyStatus = (
 
   dutyStatusObject['eventRecordStatus'] = '1';
   dutyStatusObject['eventRecordOrigin'] = '3';
-  // dutyStatusObject['shippingId'] =
+  dutyStatusObject['shippingId'] =
   boolean == true ? payloadLog?.shippingId : editedIndex?.shippingId;
   dutyStatusObject['trailerId'] =
   boolean == true ? payloadLog?.trailerId : editedIndex?.trailerId;
