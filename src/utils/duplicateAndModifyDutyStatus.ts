@@ -14,10 +14,10 @@ export const duplicateAndModifyDutyStatus = (
 
   dutyStatusObject['eventRecordStatus'] = '1';
   dutyStatusObject['eventRecordOrigin'] = '3';
-  dutyStatusObject['shippingId'] =
-  boolean == true ? payloadLog?.shippingId : editedIndex?.shippingId;
-  dutyStatusObject['trailerId'] =
-  boolean == true ? payloadLog?.trailerId : editedIndex?.trailerId;
+  // dutyStatusObject['shippingId'] =
+  // boolean == true ? payloadLog?.shippingId : editedIndex?.shippingId;
+  // dutyStatusObject['trailerId'] =
+  // boolean == true ? payloadLog?.trailerId : editedIndex?.trailerId;
   dutyStatusObject['state'] =
     boolean == true ? payloadLog.state : editedIndex.state;
   dutyStatusObject['eventCode'] =
