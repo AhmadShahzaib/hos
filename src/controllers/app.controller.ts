@@ -1444,7 +1444,7 @@ export class AppController extends BaseController {
     try {
       const { id, tenantId } = req.user;
       const { user } = req;
-      const { historyOfLocation, meta } = reqBody;
+      const { historyOfLocation } = reqBody;
       const { date } = queryParams;
 
       // Ascending order sorting wrt to date time
@@ -1453,10 +1453,7 @@ export class AppController extends BaseController {
       //  Get recent location
       const recentHistory = sortedArray[sortedArray.length - 1];
 
-      // Meta object creation
-      if (meta?.address == '') {
-        delete recentHistory?.address;
-      }
+      let meta = {};
       meta['lastActivity'] = {
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
@@ -1469,7 +1466,6 @@ export class AppController extends BaseController {
         currentEventCode: recentHistory?.status || '1',
         currentEventType: recentHistory?.eventType,
       };
-
       // Assign recent location to units by message pattern
       const messagePatternUnits =
         await firstValueFrom<MessagePatternResponseType>(
