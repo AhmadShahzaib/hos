@@ -723,8 +723,8 @@ export class AppService {
         // If status, start and end time are not changed, only lat, lng, odom etc are edited!dth d
         dutyStatusList[index]['eventRecordOrigin'] = '3';
 
-        // dutyStatusList[index]['shippingId'] = payloadLog.shippingId;
-        // dutyStatusList[index]['trailerId'] = payloadLog.trailerId;
+        dutyStatusList[index]['shippingId'] = payloadLog.shippingId;
+        dutyStatusList[index]['trailerId'] = payloadLog.trailerId;
         dutyStatusList[index]['eventLatitude'] = payloadLog.eventLatitude;        
         dutyStatusList[index]['eventLongitude'] = payloadLog.eventLongitude;
         dutyStatusList[index]['totalVehicleMilesDutyStatus'] =
