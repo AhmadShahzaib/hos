@@ -6,6 +6,7 @@ interface HistoryOfLocation {
   longitude?: string;
   odometer?: string;
   speed?: string;
+  eventType: string,
   status?: string;
   time?: string;
 }
