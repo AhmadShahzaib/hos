@@ -188,7 +188,8 @@ export class WebsocketGateway
       const { queryParams, reqBody } = data;
 
       let user;
-      const { historyOfLocation, meta } = reqBody;
+      let {meta} = reqBody
+      const { historyOfLocation } = reqBody;
       const { date, driverId } = queryParams;
       if (driverId) {
         const messagePatternDriver =
@@ -212,6 +213,9 @@ export class WebsocketGateway
       // Meta object creation
       if (meta?.address == '') {
         delete recentHistory?.address;
+      }
+      if (!meta) {
+        meta = {};
       }
       meta['lastActivity'] = {
         odoMeterMillage: recentHistory?.odometer,
