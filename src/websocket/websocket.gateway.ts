@@ -248,7 +248,7 @@ export class WebsocketGateway
       }); // await removed
       this.server.to(SpecificClient).emit('locationAdd', {
         message: 'entry added successfully',
-        data: {},
+        data: {meta},
       });
     } catch (error) {
       throw error;
