@@ -188,7 +188,7 @@ export class WebsocketGateway
       const { queryParams, reqBody } = data;
 
       let user;
-      let {meta} = reqBody
+      let { meta } = reqBody;
       const { historyOfLocation } = reqBody;
       const { date, driverId } = queryParams;
       if (driverId) {
@@ -203,7 +203,7 @@ export class WebsocketGateway
       }
       const SpecificClient = user.client;
       const tenantId = user.tenantId;
-      
+
       // Ascending order sorting wrt to date time
       let sortedArray = await sortLiveLocations(historyOfLocation);
 
@@ -229,7 +229,7 @@ export class WebsocketGateway
         currentEventCode: recentHistory?.status || '1',
         currentEventType: recentHistory?.eventType,
       };
-
+      user.id = user.id ? user.id : user._id;
       // Assign recent location to units by message pattern
       const messagePatternUnits =
         await firstValueFrom<MessagePatternResponseType>(
@@ -248,7 +248,7 @@ export class WebsocketGateway
       }); // await removed
       this.server.to(SpecificClient).emit('locationAdd', {
         message: 'entry added successfully',
-        data: {meta},
+        data: { meta },
       });
     } catch (error) {
       throw error;
