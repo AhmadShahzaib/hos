@@ -8,6 +8,7 @@ const historyOfLocation = new mongoose.Schema({
   longitude: { type: String },
   odometer: { type: String },
   speed: { type: String },
+  eventType: { type: String },
   status: { type: String },
   time: { type: String },
 });
