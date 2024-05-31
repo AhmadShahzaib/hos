@@ -69,7 +69,7 @@ export class UnidentifiedLogsService {
         data: {},
       };
     }
-
+const currentDriver=  unidentifiedLog.driverId;
     unidentifiedLog.driverId = 'unidentified';
     unidentifiedLog.type = 'unidentified-unassigned';
     await unidentifiedLog.save();
@@ -78,6 +78,7 @@ export class UnidentifiedLogsService {
       statusCode: 200,
       message: 'Unidenitfied log assignment cancelled successfully!.',
       data: unidentifiedLog,
+      currentDriver:currentDriver
     };
   };
 

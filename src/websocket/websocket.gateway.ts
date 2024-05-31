@@ -31,6 +31,7 @@ import {
   isSameDay,
 } from 'utils/getDatesBetweenUnixTimestamps';
 import { Server, Socket } from 'socket.io';
+import { sortLiveLocations } from 'utils/sortLiveLocations';
 import { JwtPayload } from 'jsonwebtoken';
 import { DriverCsvService } from 'services/driverCsv.service';
 import { AppService } from '../services/app.service';
@@ -52,7 +53,7 @@ export class WebsocketGateway
   ) {}
 
   @WebSocketServer() server: Server;
-
+  private clients: Map<string, any> = new Map();
   async handleConnection(client: Socket, ...args: any[]) {
     // Access the authorization token from the client's handshake
 
@@ -60,6 +61,16 @@ export class WebsocketGateway
       client.handshake.headers.authorization,
     );
     const user = JSON.parse(tokenPayload.sub);
+
+    let objectClient: any = { id: user.id, client: client.id };
+    // objectClient = JSON.stringify(objectClient);
+    try {
+      await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'update_driver_client' }, objectClient),
+      );
+    } catch (error) {
+      console.error('Error handling connection:', error);
+    }
     console.log('New client connected with token:');
   }
 
@@ -70,7 +81,8 @@ export class WebsocketGateway
   @SubscribeMessage('getSync')
   async getSync(@MessageBody() queryParams: any): Promise<any> {
     try {
-      const { query, params, driverId } = queryParams;
+      const { query, params, driverId, socketId } = queryParams;
+
       // this section is for getting driver data if the request is from admin.
       let user;
       if (driverId) {
@@ -82,11 +94,12 @@ export class WebsocketGateway
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
+        user.client;
       } else {
-        this.server.emit('syncResponse', {
-          message: 'Please Add driver Id',
-          data: {},
-        });
+        // SpecificClient.emit('syncResponse', {
+        //   message: 'Please Add driver Id',
+        //   data: {},
+        // });
       }
       if (!user) {
         this.server.emit('syncResponse', {
@@ -94,13 +107,13 @@ export class WebsocketGateway
           data: {},
         });
       }
-
+      const SpecificClient = user.client;
       let result = await this.driverCsvService.runCalculationOnRecentHOS(
         query,
         user,
       );
       if (result == 2) {
-        this.server.emit('syncResponse', {
+        this.server.to(SpecificClient).emit('syncResponse', {
           message: 'Failed as no data is available',
           data: {},
         });
@@ -109,12 +122,13 @@ export class WebsocketGateway
       const resp: any = await this.driverCsvService.getFromDB(query, user);
 
       if (resp) {
-        this.server.emit('syncResponse', {
+        // this.server.to(socketId)
+        this.server.to(SpecificClient).emit('syncResponse', {
           message: 'Success',
           data: resp,
         });
       } else {
-        this.server.emit('syncResponse', {
+        this.server.to(SpecificClient).emit('syncResponse', {
           message: 'Failure',
           data: {},
         });
@@ -126,7 +140,120 @@ export class WebsocketGateway
       });
     }
   }
+  async notifyDriver(
+    SpecificClient,
+    mesaage,
+    responseMessage,
+    responseData,
+  ): Promise<any> {
+    return await this.server.to(SpecificClient).emit(mesaage, {
+      message: responseMessage,
+      data: responseData,
+    });
+  }
 
+  async syncDriver(SpecificClient, user, date, responseData): Promise<any> {
+    let end = moment().tz(user.homeTerminalTimeZone.tzCode);
+    let query = { start: date, end: end.format('YYYY-MM-DD') };
+
+    const resp: any = await this.driverCsvService.getFromDB(query, user);
+
+    if (resp) {
+      Logger.log('sending sync');
+      if (!SpecificClient) {
+        SpecificClient = user.client;
+        Logger.log(user.client);
+      }
+      Logger.log(SpecificClient);
+
+      // this.server.to(socketId)
+      this.server.to(SpecificClient).emit('syncResponse', {
+        message: 'Success',
+        data: resp,
+      });
+    } else {
+      this.server.to(SpecificClient).emit('syncResponse', {
+        message: 'Failure',
+        data: {},
+      });
+    }
+  }
+
+  @SubscribeMessage('addLocation')
+  async addLiveLocation(
+    @MessageBody()
+    data,
+  ) {
+    try {
+      const { queryParams, reqBody } = data;
+
+      let user;
+      let { meta } = reqBody;
+      const { historyOfLocation } = reqBody;
+      const { date, driverId } = queryParams;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+      }
+      const SpecificClient = user.client;
+      const tenantId = user.tenantId;
+
+      // Ascending order sorting wrt to date time
+      let sortedArray = await sortLiveLocations(historyOfLocation);
+
+      //  Get recent location
+      const recentHistory = sortedArray[sortedArray.length - 1];
+
+      // Meta object creation
+      if (meta?.address == '') {
+        delete recentHistory?.address;
+      }
+      if (!meta) {
+        meta = {};
+      }
+      meta['lastActivity'] = {
+        odoMeterMillage: recentHistory?.odometer,
+        engineHours: recentHistory?.engineHours,
+        currentTime: recentHistory?.time,
+        currentDate: recentHistory?.date,
+        latitude: recentHistory?.latitude,
+        longitude: recentHistory?.longitude,
+        address: recentHistory?.address,
+        speed: recentHistory?.speed,
+        currentEventCode: recentHistory?.status || '1',
+        currentEventType: recentHistory?.eventType,
+      };
+      user.id = user.id ? user.id : user._id;
+      // Assign recent location to units by message pattern
+      const messagePatternUnits =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+        );
+      if (messagePatternUnits.isError) {
+        mapMessagePatternResponseToException(messagePatternUnits);
+      }
+
+      // Pass related data to the model
+      const response = await this.HOSService.addLiveLocation({
+        driverId: driverId,
+        tenantId,
+        date,
+        historyOfLocation: sortedArray,
+      }); // await removed
+      this.server.to(SpecificClient).emit('locationAdd', {
+        message: 'entry added successfully',
+        data: {  },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
   @SubscribeMessage('addSync')
   async addDataDriver(@MessageBody() queryParams: any): Promise<any> {
     try {
@@ -142,51 +269,52 @@ export class WebsocketGateway
         }
         user = messagePatternDriver.data;
       } else {
-        this.server.emit('dataAddResp', {
-          message: 'Please Add driver Id',
-          data: {},
-        });
+        // this.server.to(SpecificClient).emit('dataAddResp', {
+        //   message: 'Please Add driver Id',
+        //   data: {},
+        // });
       }
+      const SpecificClient = user.client;
       if (!user) {
-        this.server.emit('dataAddResp', {
+        this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Failed as no data is available against DriverId',
           data: {},
         });
       }
       if (!body.meta) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry in meta is rejected as meta is not available',
           data: {},
         });
       }
       if (!body.meta.deviceCalculations) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry in  rejected as deviceCalculations is not available',
           data: {},
         });
       }
       if (!body.meta.dateTime) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message:
             'Entry in  rejected as deviceCalculations.isDataFound is not available',
           data: {},
         });
       }
       if (!body.csv) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry in meta is rejected as csv is not available',
           data: {},
         });
       }
       if (!body.csv.timePlaceLine) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message:
             'Entry in meta is rejected as csv timeplaceline is not available',
           data: {},
         });
       }
       if (!body.meta.pti) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry in meta is rejected as PTI is not available',
           data: {},
         });
@@ -243,7 +371,7 @@ export class WebsocketGateway
 
       resp = await this.driverCsvService.addToDB(body, user);
       if (resp?.error) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: resp.message,
           data: {},
         });
@@ -273,12 +401,12 @@ export class WebsocketGateway
       };
       const respo: any = await this.driverCsvService.getFromDB(query, user);
       if (resp) {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: 'Entry Added Successfully',
           data: respo.graphData[0].meta,
         });
       } else {
-        return this.server.emit('dataAddResp', {
+        return this.server.to(SpecificClient).emit('dataAddResp', {
           message: resp,
         });
       }
@@ -313,6 +441,7 @@ export class WebsocketGateway
         }
         user = messagePatternDriver.data;
       }
+      let SpecificClient = user.client;
       const inputDate = moment(queryParams.date).format('YYYY-MM-DD');
       let query = {
         start: inputDate,
@@ -320,7 +449,7 @@ export class WebsocketGateway
       };
       let response = await this.driverCsvService.getFromDB(query, user);
       if (!response.graphData[0].originalLogs) {
-        this.server.emit('message', {
+        this.server.to(SpecificClient).emit('message', {
           message: 'Please get latest Build ',
           data: {},
         });
@@ -339,7 +468,7 @@ export class WebsocketGateway
       let resp = {
         csvBeforeUpdate: { csv: csv, violations: violations },
       };
-      this.server.emit('sendOrignal', {
+      this.server.to(SpecificClient).emit('sendOrignal', {
         message: 'Success',
         data: resp,
       });
@@ -347,49 +476,50 @@ export class WebsocketGateway
       throw error;
     }
   }
-  @SubscribeMessage('message')
-  async replyMessage(@MessageBody() queryParams: any): Promise<any> {
-    this.server.emit('message', {
-      message: 'Success',
-      data: 'data is here',
-    });
-  }
-  @SubscribeMessage('getLive')
-  async handleMessage(@MessageBody() request: any): Promise<any> {
-    try {
-      const { body, user, id } = request;
+  // @SubscribeMessage('message')
+  // async replyMessage(@MessageBody() queryParams: any): Promise<any> {
+  //   // this.notifyDriver("h23b4h2b34r5jh4","sbndjfd","jnbwdjfbnfs"{},)
+  //   this.server.emit('message', {
+  //     message: 'Success',
+  //     data: 'data is here',
+  //   });
+  // }
+  // @SubscribeMessage('getLive')
+  // async handleMessage(@MessageBody() request: any): Promise<any> {
+  //   try {
+  //     const { body, user, id } = request;
 
-      if (id) {
-        const messagePatternUnits = await firstValueFrom(
-          this.unitClient.send({ cmd: 'get_unit_by_vehicleID' }, id),
-        );
-      }
-      const messagePatternUnits =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { body, user }),
-        );
-      let reply = {
-        message: 'Entry rejected ',
-        data: {},
-        statusCode: 400,
-      };
-      if (messagePatternUnits.isError) {
-        mapMessagePatternResponseToException(messagePatternUnits);
-      } else {
-        this.server.emit('message', reply);
-      }
-      reply.message = 'Entry Added Successfully';
-      reply.statusCode = 201;
+  //     if (id) {
+  //       const messagePatternUnits = await firstValueFrom(
+  //         this.unitClient.send({ cmd: 'get_unit_by_vehicleID' }, id),
+  //       );
+  //     }
+  //     const messagePatternUnits =
+  //       await firstValueFrom<MessagePatternResponseType>(
+  //         this.unitClient.send({ cmd: 'assign_meta_to_units' }, { body, user }),
+  //       );
+  //     let reply = {
+  //       message: 'Entry rejected ',
+  //       data: {},
+  //       statusCode: 400,
+  //     };
+  //     if (messagePatternUnits.isError) {
+  //       mapMessagePatternResponseToException(messagePatternUnits);
+  //     } else {
+  //       this.server.emit('message', reply);
+  //     }
+  //     reply.message = 'Entry Added Successfully';
+  //     reply.statusCode = 201;
 
-      this.server.emit('message', reply);
-    } catch (error) {
-      this.server.emit('message', {
-        message: error,
-        data: {},
-        statusCode: 400,
-      });
-    }
+  //     this.server.emit('message', reply);
+  //   } catch (error) {
+  //     this.server.emit('message', {
+  //       message: error,
+  //       data: {},
+  //       statusCode: 400,
+  //     });
+  //   }
 
-    // Broadcast the received message to all connected clients
-  }
+  //   // Broadcast the received message to all connected clients
+  // }
 }

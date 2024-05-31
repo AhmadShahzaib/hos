@@ -22,7 +22,7 @@ export default function approveOrRejectEditRequestDecorator() {
 
   const approveOrRejectEditRequestDecorator = [
     Post('isapproved'),
-    SetMetadata('permissions', [HOS.EDIT_LOG]),
+    SetMetadata('permissions', [HOS.LIVE]),
     ApiQuery({
       description: 'The driverId only for backoffice',
       name: 'driverId',

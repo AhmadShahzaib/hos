@@ -41,7 +41,7 @@ import GetDriverLiveDataDecorators from 'decorators/getDriverLiveData';
 import GetGraphDataDecorators, {
   GetDriverGraphDataDecorators,
 } from 'decorators/getGraphData';
-import { Response, Request } from 'express';
+import { Response, Request, query } from 'express';
 import { mapKeys, camelCase } from 'lodash';
 import LogsDocument from 'mongoDb/document/document';
 import { LogsService } from 'services/logs.service';
@@ -62,7 +62,7 @@ import {
   MessagePattern,
 } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-
+import { WebsocketGateway } from '../websocket/websocket.gateway';
 import GetFourteenDaysRecapDecorators, {
   GetFourteenDaysRecapDecoratorsMobile,
 } from 'decorators/getFourteenDaysRecapDecorators';
@@ -122,6 +122,7 @@ export class AppController extends BaseController {
     @Inject('UNIT_SERVICE') private readonly unitClient: ClientProxy,
     @Inject('DEVICE_SERVICE') private readonly deviceClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
+    private readonly gateway: WebsocketGateway,
   ) {
     super();
   }
@@ -341,8 +342,8 @@ export class AppController extends BaseController {
           logs.totalVehicleMilesDutyStatus,
           logs.totalEngineHoursDutyStatus,
           logs.truck,
-          logs.shippingDocument,
-          logs.trailerNumber,
+          logs.shippingId,
+          logs.trailerId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -508,10 +509,13 @@ export class AppController extends BaseController {
 
       // actionType = [1 == "Perform Edit", 2 == " Perform Insert"]
       if (data?.actionType == 1) {
+        Logger.log('before tasks of edit');
+
         const updatedLogs = await this.HOSService.performEditOnLogs(
           logs,
           dutyStatusList,
         );
+        Logger.log('done with all the tasks of edit');
 
         // Placing updated logs in csv header
         driverCsv[0].csv['eldEventListForDriversRecordOfDutyStatus'] =
@@ -604,15 +608,39 @@ export class AppController extends BaseController {
       };
       await this.driverCsvService.runCalculationOnDateHOS(queryy, user);
       // search
-      dateOfQuery = date;
+      // dateOfQuery = date;
 
-      dateQuery = moment().format('YYYY-MM-DD');
-      queryy = {
-        start: dateQuery,
-        end: dateQuery,
+      // dateQuery = moment().format('YYYY-MM-DD');
+      // queryy = {
+      //   start: dateQuery,
+      //   end: dateQuery,
+      // };
+      // const resp: any = await this.driverCsvService.getFromDB(queryy, user);
+      Logger.log('done with all the tasks');
+      let messagePatternDriver;
+
+      messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, user._id),
+      );
+      if (messagePatternDriver?.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      user = messagePatternDriver?.data;
+      let SpecificClient = user?.client; //client
+      const notificationObj = {
+        logs: [],
+        dateTime: dateTime,
+        driverId: data?.driverId,
+        editStatusFromBO: 'cancel',
+        notificationType: 5,
       };
-      const resp: any = await this.driverCsvService.getFromDB(queryy, user);
-      return response.status(200).send(resp);
+      await this.gateway.syncDriver(
+        SpecificClient,
+        user,
+        date,
+        notificationObj,
+      );
+      return response.status(200).send({});
     } catch (error) {
       Logger.error({ message: error.message, stack: error.stack });
       throw error;
@@ -629,6 +657,7 @@ export class AppController extends BaseController {
     try {
       let user;
       const logs = data?.logs;
+      let SpecificClient;
       const driverId = data?.driverId;
       const unidentified = data?.unidentified;
       const {
@@ -655,7 +684,7 @@ export class AppController extends BaseController {
       if (parsedToken.isDriver) {
         user = parsedToken;
       }
-
+      Logger.log(user);
       if (isAccepted == 1) {
         let startEngineHours = unidentified.startEngineHour + '';
         let endEngineHours = unidentified?.endEngineHour + '';
@@ -682,6 +711,7 @@ export class AppController extends BaseController {
           start: date,
           end: date,
         };
+
         const driverCsv = await this.driverCsvService.getGraphFromDB(
           query,
           user,
@@ -802,6 +832,32 @@ export class AppController extends BaseController {
       };
 
       const resp = await this.unidetifiedLogsService.respond(object);
+      let messagePatternDriver;
+
+      messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
+      );
+      if (messagePatternDriver?.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      user = messagePatternDriver?.data;
+      SpecificClient = user?.client; //client
+
+      const notificationObj = {
+        logs: [],
+        dateTime: logs.date,
+        driverId: driverId,
+        editStatusFromBO: 'added',
+        notificationType: 5,
+      };
+      Logger.log('in unidentified');
+      await this.gateway.syncDriver(
+        SpecificClient,
+        user,
+        logs.date,
+        notificationObj,
+      );
+
       return response.status(200).send({
         statusCode: 200,
         message: `Unidentified ${
@@ -830,21 +886,19 @@ export class AppController extends BaseController {
       let user;
 
       // Parsing token for timezone
-      const parsedToken = (request.user as any) ?? { tenantId: undefined };
-      let messagePatternDriver;
-      if (parsedToken.isDriver) {
-        user = parsedToken;
-      } else {
-        messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
-          this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
-        );
-        if (messagePatternDriver?.isError) {
-          mapMessagePatternResponseToException(messagePatternDriver);
-        }
-        user = messagePatternDriver?.data;
-        user.companyTimeZone = parsedToken.companyTimeZone;
-      }
 
+      let messagePatternDriver;
+
+      messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
+      );
+      if (messagePatternDriver?.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      user = messagePatternDriver?.data;
+      // user.companyTimeZone = user.companyTimeZone;
+
+      let SpecificClient = user?.client;
       // Creating dateTime for driver notification
       let dateTime = moment.tz(date, user?.homeTerminalTimeZone?.tzCode).unix();
 
@@ -858,64 +912,66 @@ export class AppController extends BaseController {
       /**
        * Push Notification - START
        */
-      let messagePatternUnit = await firstValueFrom<MessagePatternResponseType>(
-        this.unitClient.send({ cmd: 'get_unit_by_driverId' }, driverId),
-      );
-      if (messagePatternUnit.isError) {
-        Logger.log(`Error while finding unit against driver`);
-        mapMessagePatternResponseToException(messagePatternUnit);
+      let images;
+
+      user.id = user._id;
+      // Get edited
+      const isEdit = await this.logService.getPendingRequests(user);
+      if (isEdit.length > 0) {
+        // Create csv pdf for before and after
+        const isConverted = await this.HOSService.generateCsvImages(user);
+        images = isConverted.data;
       }
 
-      const eldId = messagePatternUnit?.data?.deviceId;
-
-      let messagePatternDevice = await this.HOSService.getEldOnDeviceId(eldId);
-      let deviceToken = messagePatternDevice?.data?.deviceToken;
-      let deviceType = messagePatternDevice?.data?.deviceType;
-
-      const title = 'Edit Inset log!';
+      const mesaage = 'Edit Inset log!';
       const notificationObj = {
         logs: [],
+        editRequest: images != undefined ? [...images] : [],
         dateTime,
         notificationType: 1,
         driverId: driverId,
         editStatusFromBO: 'save',
       };
-      const deviceInfo = {
-        deviceType: deviceType,
-        deviceToken: deviceToken,
-      };
-      const isSilent = false;
 
-      let notificationStatus = await dispatchNotification(
-        title,
+      const isSilent = false;
+      // let WebsocketGateway: WebsocketGateway;
+
+      this.gateway.notifyDriver(
+        SpecificClient,
+        'notifyDriver',
+        mesaage,
         notificationObj,
-        deviceInfo,
-        this.pushNotificationClient,
-        isSilent,
       );
+      // let notificationStatus = await dispatchNotification(
+      //   title,
+      //   notificationObj,
+      //   deviceInfo,
+      //   this.pushNotificationClient,
+      //   isSilent,
+      // );
       /**
        * Push Notification - END
        */
 
-      const isNotified = await this.HOSService.updateNotificationStatus(
-        driverId,
-        notificationStatus,
-        dateTime,
-      );
-      if (!isNotified) {
-        return response.status(200).send({
-          statusCode: 200,
-          message: 'Something went wrong while dispatching notification!',
-          data: {},
-        });
-      }
+      // const isNotified = await this.HOSService.updateNotificationStatus(
+      //   driverId,
+      //   notificationStatus,
+      //   dateTime,
+      // );
+      // if (!isNotified) {
+      //   return response.status(200).send({
+      //     statusCode: 200,
+      //     message: 'Something went wrong while dispatching notification!',
+      //     data: {},
+      //   });
+      // }
       return response.status(200).send({
         statusCode: 200,
-        message:
-          notificationStatus == 'Sent'
-            ? 'Notification dispatched!'
-            : 'Something went wrong while dispatching notification',
-        notificationStatus,
+        // message:
+        //   notificationStatus == 'Sent'
+        //     ? 'Notification dispatched!'
+        //     : 'Something went wrong while dispatching notification',
+        // notificationStatus,
         data: {},
       });
     } catch (error) {
@@ -937,6 +993,7 @@ export class AppController extends BaseController {
   ) {
     try {
       console.log(`In accept/reject constroller >>>>>>>>>>>>>>>>`);
+      let SpecificClient;
 
       let driver, editedBy;
       const { dateTime, isApproved } = reqBody;
@@ -946,18 +1003,20 @@ export class AppController extends BaseController {
       const { id, firstName, lastName } =
         request.user ?? ({ tenantId: undefined } as any);
       const user = request.user ?? ({ tenantId: undefined } as any);
-
-      let messagePatternDriver;
-      if (!user.isDriver) {
-        messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
-          this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
-        );
-        if (messagePatternDriver.isError) {
-          mapMessagePatternResponseToException(messagePatternDriver);
-        }
+      if (!driverId) {
+        driverId = id;
       }
-      driver = user.isDriver ? user : messagePatternDriver?.data;
+      let messagePatternDriver;
 
+      messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
+        this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+      );
+      if (messagePatternDriver.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+
+      driver = messagePatternDriver?.data;
+      SpecificClient = driver?.client; //client
       editedBy = {
         id: user.id ? user.id : user._id,
         name: user.firstName + ' ' + user.lastName,
@@ -1141,8 +1200,8 @@ export class AppController extends BaseController {
         /**
          * Fetching driver's deviceToken
          */
-        const deviceToken = messagePatternDriver?.data?.deviceToken;
-        const deviceType = messagePatternDriver?.data?.deviceType;
+
+        Logger.log('Running');
 
         // Initiating notificaion dispatch
         const title = `Edit request ${
@@ -1155,18 +1214,15 @@ export class AppController extends BaseController {
           editStatusFromBO: 'cancel',
           notificationType: 5,
         };
-        const deviceInfo = {
-          deviceToken: deviceToken,
-          deviceType: deviceType,
-        };
-        //comment
-        notificationStatus = await dispatchNotification(
-          title,
+        await this.gateway.syncDriver(
+          SpecificClient,
+          driver,
+          date.format('YYYY-MM-DD'),
           notificationObj,
-          deviceInfo,
-          this.pushNotificationClient,
-          true, // repressents notification is silent or not
         );
+
+        //comment
+        notificationStatus = true;
 
         // const { firstName, lastName } = messagePatternDriver?.data;
         driver = {
@@ -1192,27 +1248,8 @@ export class AppController extends BaseController {
         const deviceType = messagePatternDriver?.data?.deviceType;
 
         // Initiating notificaion dispatch
-        const title = `Edit request ${
-          isApproved == 'confirm' ? 'confirmed' : 'cancelled'
-        }!`;
-        const notificationObj = {
-          logs: [],
-          dateTime: dateTime,
-          driverId: driverId,
-          editStatusFromBO: 'cancel',
-          notificationType: 5,
-        };
-        const deviceInfo = {
-          deviceToken: deviceToken,
-          deviceType: deviceType,
-        };
-        notificationStatus = await dispatchNotification(
-          title,
-          notificationObj,
-          deviceInfo,
-          this.pushNotificationClient,
-          true, // repressents notification is silent or not
-        );
+
+        notificationStatus = true; // repressents notification is silent or not
       }
 
       const response = await this.logService.responseToEditInsertLog(
@@ -1235,7 +1272,60 @@ export class AppController extends BaseController {
         isApproved: isApproved,
       };
       await this.logService.maintainHistory(historyObj);
+      if (isApproved !== 'confirm') {
+      // user.id = user._id;// this id is updated
+      let driverData = messagePatternDriver.data
+      driverData.id = driverData._id;
+        let images;
+        const isEdit = await this.logService.getPendingRequests(driverData);
+        // Logger.log(isEdit);
+        if (isEdit.length > 0) {
+        // Logger.log("Create csv pdf");
 
+          // Create csv pdf for before and after
+          const isConverted = await this.HOSService.generateCsvImages(driverData);
+        // Logger.log("after");
+
+          images = isConverted.data;
+        }
+        const title = `Edit request ${
+          isApproved == 'confirm' ? 'confirmed' : 'cancelled'
+        }!`;
+        const notificationObj = {
+          logs: [],
+          editRequest: images != undefined ? [...images] : [],
+          dateTime: dateTime,
+          driverId: driverId,
+          editStatusFromBO: 'cancelBO',
+          notificationType: 1,
+        };
+
+        await this.gateway.notifyDriver(
+          SpecificClient,
+          'notifyDriver',
+          title,
+          notificationObj,
+        );
+      }
+      if (isApproved == 'confirm') {
+        const title = `Edit request ${
+          isApproved == 'confirm' ? 'confirmed' : 'cancelled'
+        }!`;
+        const notificationObj = {
+          logs: [],
+          editRequest:  [],
+          dateTime: dateTime,
+          driverId: driverId,
+          editStatusFromBO: 'cancelBO',
+          notificationType: 3,
+        };
+        await this.gateway.notifyDriver(
+          SpecificClient,
+          'notifyDriver',
+          title,
+          notificationObj,
+        );
+      }
       return res.status(response.statusCode).send({
         statusCode: response.statusCode,
         message: response.message,
@@ -1345,50 +1435,38 @@ export class AppController extends BaseController {
    * Author : Farzan
    */
   @liveLocationHistory()
-  async addLiveLocation(@Req() req, @Res() res, @Body() reqBody: any) {
-    // @Body() reqBody: DriverLiveLocationDto,
+  async addLiveLocation(
+    @Req() req: any,
+    @Res() res: any,
+    @Query() queryParams: any,
+    @Body() reqBody: any,
+  ) {
     try {
       const { id, tenantId } = req.user;
       const { user } = req;
-      // let purifiedArray = [];
-      // if (reqBody.length > 12) {
-      //   reqBody.forEach((element, index) => {
-      //     if (index % 5 !== 0) {
-      //       purifiedArray.push(element);
-      //     }
-      //   });
-      // }
-      // Logger.log(
-      //   '------------------->>>>>>> Arraay Sorted' + purifiedArray.length,
-      // );
-      let sortedArray = await sortLiveLocations(reqBody?.data);
+      const { historyOfLocation } = reqBody;
+      const { date } = queryParams;
 
-      const historyOfLocation =
-        sortedArray[sortedArray.length - 1]?.historyOfLocation;
-      Logger.log('------------------->>>>>>> Arraay Sorted');
-      // Logger.log(
-      //   'MERAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
-      //     JSON.stringify(reqBody.historyOfLocation),
-      // );
+      // Ascending order sorting wrt to date time
+      let sortedArray = await sortLiveLocations(historyOfLocation);
 
-      const meta = reqBody?.meta;
-      if (meta?.address == '') {
-        delete historyOfLocation?.address;
-      }
+      //  Get recent location
+      const recentHistory = sortedArray[sortedArray.length - 1];
+
+      let meta = {};
       meta['lastActivity'] = {
-        odoMeterMillage: historyOfLocation?.odometer,
-        engineHours: historyOfLocation?.engineHours,
-        currentTime: historyOfLocation?.time,
-        currentDate: historyOfLocation?.date,
-        latitude: historyOfLocation?.latitude,
-        longitude: historyOfLocation?.longitude,
-        address: historyOfLocation?.address,
-        speed: historyOfLocation?.speed,
-        currentEventCode: historyOfLocation?.status || '1',
-        currentEventType: historyOfLocation?.eventType,
+        odoMeterMillage: recentHistory?.odometer,
+        engineHours: recentHistory?.engineHours,
+        currentTime: recentHistory?.time,
+        currentDate: recentHistory?.date,
+        latitude: recentHistory?.latitude,
+        longitude: recentHistory?.longitude,
+        address: recentHistory?.address,
+        speed: recentHistory?.speed,
+        currentEventCode: recentHistory?.status || '1',
+        currentEventType: recentHistory?.eventType,
       };
-      Logger.log('------------------->>>>>>> Meta Object Created');
-
+      // Assign recent location to units by message pattern
       const messagePatternUnits =
         await firstValueFrom<MessagePatternResponseType>(
           this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
@@ -1397,18 +1475,13 @@ export class AppController extends BaseController {
         mapMessagePatternResponseToException(messagePatternUnits);
       }
 
-      Logger.log('------------------->>>>>>> Unit updated');
-      let locationObj;
-
-      const obj = {
+      // Pass related data to the model
+      const response = await this.HOSService.addLiveLocation({
         driverId: id,
         tenantId,
-        sortedArray,
-      };
-
-      const response = this.HOSService.addLiveLocation(obj); // await removed
-
-      Logger.log('------------------->>>>>>> live  location done');
+        date,
+        historyOfLocation: sortedArray,
+      }); // await removed
 
       return res.status(200).send({ message: 'entry added successfully' });
     } catch (error) {
@@ -1422,16 +1495,15 @@ export class AppController extends BaseController {
   @specificDaytripDecorators()
   async specificDay(
     @Query('driverId') driverId: String,
-    @Query('date') date: string = moment().format('MMDDYY'),
+    @Query('date') date: string = moment().format('YYYY-MM-DD'),
 
     @Res() res,
     @Req() request: Request,
   ) {
     try {
       const queryObj = {
-        driverId: driverId ? driverId : null,
-        date: date ? moment(date).format('MMDDYY') : null,
-        time: null,
+        driverId: driverId,
+        date: date,
       };
 
       const messagePatternDriver =
@@ -1443,11 +1515,9 @@ export class AppController extends BaseController {
       }
 
       const response = await this.HOSService.getLiveLocation(queryObj);
-      Logger.log(
-        '-------------------------------------' + response.data.length,
-      );
-      let locations = [];
 
+      // -----------------------------------------------------------------
+      let locations = [];
       function convertToSeconds(time) {
         const hours = parseInt(time.slice(0, 2));
         const minutes = parseInt(time.slice(2, 4));
@@ -1494,6 +1564,7 @@ export class AppController extends BaseController {
           (element.status != '2' && element.eventType != '3')
         );
       });
+
       // add google api here and calculate address of otherThenDriving statuses
       for (let i = 0; i < otherThenDriving.length; i++) {
         let address = await this.driverCsvService.getAddress(
@@ -1504,7 +1575,13 @@ export class AppController extends BaseController {
       }
       let responseArray = [...otherThenDriving, ...driving];
       responseArray = responseArray.sort((a, b) => a.time - b.time);
-      return res.status(response.statusCode).send(responseArray);
+      // ------------------------------------------------------------------------
+
+      return res.status(response.statusCode).send({
+        statusCode: response.statusCode,
+        message: response.message,
+        data: responseArray,
+      });
     } catch (error) {
       throw error;
     }

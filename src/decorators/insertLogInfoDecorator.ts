@@ -9,7 +9,7 @@ import {
 export default function InsertLogDriverCsvLogDecorator() {
   const InsertLogDriverCsvLogDecorator: Array<CombineDecoratorType> = [
     Post('csv/insertLogInfo'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', [HOS.GRAPH]),
     ApiParam({
         name: 'driverId',
         description: "driverId is required",

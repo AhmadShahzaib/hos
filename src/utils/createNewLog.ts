@@ -13,6 +13,9 @@ export async function createNewLog(
   address,
   odometer,
   engineHour,
+  truck,
+  shippingDocument,
+  tralier,
   timezone,
   notes,
   state
@@ -41,6 +44,9 @@ const formattedDate = `${month}${day}${year.slice(-2)}`;
     eventLongitude: long,
     eventRecordOrigin: '3',
     eventRecordStatus: '1',
+    shippingId:shippingDocument ,
+    trailerId: tralier,
+    // truck add here.
     eventSequenceIdNumber: generateUniqueHexId(), // Use appropriate value
     eventTime: startTime, // Extract HHMMSS from startTime
     eventType,

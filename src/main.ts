@@ -13,6 +13,7 @@ import {
 import { Transport } from '@nestjs/microservices';
 import configureSwagger from './swaggerConfigurations';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { CustomIoAdapter } from './customAdopter'; 
 // import { SnakeCaseInterceptor } from './shared/interceptors/snake-case.interceptor';
 import * as requestIp from 'request-ip';
 import { json } from 'express';
@@ -23,7 +24,8 @@ async function bootstrap() {
 //     allowedHeaders:"*",
 //     origin: "*"
 // });
-  app.useWebSocketAdapter(new IoAdapter(app));
+
+  app.useWebSocketAdapter(new CustomIoAdapter(app));
   const logger = new Logger('Main');
   const globalPrefix = '/api';
   const conf = app.get<ConfigurationService>(ConfigurationService);

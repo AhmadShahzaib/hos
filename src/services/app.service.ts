@@ -9,6 +9,7 @@ import mongoose, {
   QueryOptions,
   QueryWithHelpers,
 } from 'mongoose';
+import { WebsocketGateway } from '../websocket/websocket.gateway';
 import {
   Inject,
   Injectable,
@@ -44,6 +45,8 @@ import {
   removeDuplicateConsecutiveLogss,
 } from 'utils/removeDuplicateConsecutiveLogs';
 import { getIntermediateType } from 'utils/getIntermediateType';
+import { encrypt } from 'utils/encrypt';
+import { decrypt } from 'utils/decrypt';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AppService {
@@ -101,7 +104,13 @@ export class AppService {
 
     return success;
   };
-
+  //socket call
+  notifyDriver = async (
+    SpecificClient,
+    mesaage,
+    responseMessage,
+    responseData,
+  ) => {};
   // crud operations below.
 
   getEldOnDeviceId = async (eldId) => {
@@ -116,8 +125,6 @@ export class AppService {
 
     return messagePatternDevice;
   };
-
- 
 
   // ): Promise<any[]> => {
 
@@ -247,12 +254,6 @@ export class AppService {
   //   }
   // };
 
- 
-
-
-
- 
-
   updateDataInUnits = async (data) => {
     const messagePatternFirstValue = await firstValueFrom(
       this.unitsClient.emit({ cmd: 'update_hos_data' }, data),
@@ -267,7 +268,6 @@ export class AppService {
    * @param options nested level query filters
    * @returns
    */
-
 
   addEditLogRequestHistory = async (data, user, editedDay, requestStatus) => {
     try {
@@ -314,38 +314,73 @@ export class AppService {
     }
   };
 
+  // Helper function for <addLiveLocation> function to extract latitudes and longitudes from historyOfLocation array
+  // extractLatLng = (historyOfLocations) => {
+  //   let coordinates = [];
+
+  //   for (let i = 0; i < historyOfLocations.length; i++) {
+  //     const lat = historyOfLocations[i].latitude;
+  //     const lng = historyOfLocations[i].longitude;
+  //     coordinates.push([lat, lng]);
+  //   }
+
+  //   return coordinates;
+  // };
+
   /**
    * driver live location - V2
    * Author : Farzan
    */
   addLiveLocation = async (obj) => {
+    const { driverId, tenantId, date, historyOfLocation } = obj;
+
+    // Collect data for current date
     const driverLiveLocationTrackable =
       await this.driverLiveLocationModel.findOne({
-        driverId: obj?.driverId,
+        driverId: driverId,
+        date: date,
       });
-    if (driverLiveLocationTrackable) {
-      for (let i = 0; i < obj.sortedArray.length; i++) {
-        const historyOfLocation = obj.sortedArray[i]?.historyOfLocation;
-        historyOfLocation.meta = {};
-        driverLiveLocationTrackable.historyOfLocation.push(historyOfLocation);
-      }
 
+    // Append latest locations to the previous ones
+    if (driverLiveLocationTrackable) {
+      driverLiveLocationTrackable.historyOfLocation = [
+        ...driverLiveLocationTrackable.historyOfLocation,
+        ...historyOfLocation,
+      ];
+
+      // Update the latest changes
       await driverLiveLocationTrackable.save();
     } else {
-      await this.driverLiveLocationModel.create([obj]);
-      const firstTimeLocation = await this.driverLiveLocationModel.findOne({
-        driverId: obj?.driverId,
+      // If record not exists, create a new one
+      const isCreated = await this.driverLiveLocationModel.create({
+        driverId,
+        tenantId,
+        date,
+        historyOfLocation,
+        encryptedHistoryOfLocation: '',
       });
-      if (firstTimeLocation) {
-        for (let i = 0; i < obj.sortedArray.length; i++) {
-          const historyOfLocation = obj.sortedArray[i]?.historyOfLocation;
-          historyOfLocation.meta = {};
-          firstTimeLocation.historyOfLocation.push(historyOfLocation);
-        }
 
-        await firstTimeLocation.save();
+      // Fetch last added record to encrypt data
+      const allRecords = await this.driverLiveLocationModel.find({
+        driverId: driverId,
+      });
+      const lastRecord = allRecords[allRecords.length - 2]; // Get entry before of the latest
+
+      if (lastRecord) {
+        // Extract lat, lng and encode the data
+        // const coordinates = this.extractLatLng(lastRecord.historyOfLocation);
+        const textToEncrypt = lastRecord.historyOfLocation;
+        const encryptedString = await encrypt(textToEncrypt);
+
+        // Empty the historyOfLocation list and assign encrypted string
+        lastRecord.historyOfLocation = [];
+        lastRecord.encryptedHistoryOfLocation = encryptedString;
+
+        // Save the latest changes
+        await lastRecord.save();
       }
     }
+
     return {
       statusCode: 200,
       message: 'Live location updated successfully!',
@@ -356,72 +391,37 @@ export class AppService {
   };
 
   /**
-   * driver live location  : GET- V2
+   * driver specific day trips
    * Author : Farzan
    */
   getLiveLocation = async (obj) => {
-    let query;
+    let query = {
+      driverId: obj.driverId,
+      date: obj.date, // YYYY-MM-DD
+    };
 
-    if (obj?.time && obj?.date == null) {
-      query = {
-        driverId: `${obj?.driverId}`,
-        'historyOfLocation.time': `${obj?.time}`,
-      };
-    } else if (obj?.date && obj?.time == null) {
-      query = {
-        driverId: `${obj?.driverId}`,
-        'historyOfLocation.date': `${obj?.date}`,
-      };
-    } else if (obj?.time && obj?.date) {
-      query = {
-        driverId: `${obj?.driverId}`,
-        'historyOfLocation.time': `${obj?.time}`,
-        'historyOfLocation.date': `${obj?.date}`,
-      };
-    } else {
-      query = {
-        driverId: obj?.driverId,
-      };
+    const specificDayTrip = await this.driverLiveLocationModel.findOne(query);
+
+    let decodedHistoryOfLocation;
+    if (specificDayTrip) {
+      // length == 0, indicates the previous day trips that are encrypted.
+      // length != 0, indicates the current day trip. The current day trip is not encrypted.
+      if (specificDayTrip.historyOfLocation.length == 0) {
+        let encryptedHistoryOfLocation =
+          specificDayTrip.encryptedHistoryOfLocation;
+        decodedHistoryOfLocation = await decrypt(encryptedHistoryOfLocation);
+      } else {
+        decodedHistoryOfLocation = specificDayTrip.historyOfLocation;
+      }
     }
 
-    let driverLiveLocationTrackable =
-      await this.driverLiveLocationModel.aggregate(
-        [
-          // Unwind the array field to deconstruct the array elements
-          { $unwind: '$historyOfLocation' },
-          // Match only the documents that have an object in the array with myField equal to "specificValue"
-          {
-            $match: query,
-          },
-          // Group the results by _id to reconstruct the array field
-          {
-            $group: {
-              _id: '$_id',
-              historyOfLocation: { $push: '$historyOfLocation' },
-              // Add other fields that you want to include in the results
-            },
-          },
-        ],
-        function (err, docs) {
-          if (err) {
-            return err;
-          }
-        },
-      );
-    if (driverLiveLocationTrackable.length == 0) {
-      return {
-        statusCode: 200,
-        message: 'No live locations available!',
-        data: [],
-      };
-    }
-
-    driverLiveLocationTrackable =
-      driverLiveLocationTrackable[0]?.historyOfLocation;
     return {
       statusCode: 200,
       message: 'Live location fetched successfully!',
-      data: driverLiveLocationTrackable,
+      data:
+        decodedHistoryOfLocation && decodedHistoryOfLocation.length > 0
+          ? decodedHistoryOfLocation
+          : [],
     };
   };
 
@@ -722,7 +722,10 @@ export class AppService {
       } else {
         // If status, start and end time are not changed, only lat, lng, odom etc are edited!dth d
         dutyStatusList[index]['eventRecordOrigin'] = '3';
-        dutyStatusList[index]['eventLatitude'] = payloadLog.eventLatitude;
+
+        dutyStatusList[index]['shippingId'] = payloadLog.shippingId;
+        dutyStatusList[index]['trailerId'] = payloadLog.trailerId;
+        dutyStatusList[index]['eventLatitude'] = payloadLog.eventLatitude;        
         dutyStatusList[index]['eventLongitude'] = payloadLog.eventLongitude;
         dutyStatusList[index]['totalVehicleMilesDutyStatus'] =
           payloadLog.totalVehicleMilesDutyStatus;

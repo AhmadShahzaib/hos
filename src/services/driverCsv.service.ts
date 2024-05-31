@@ -57,7 +57,7 @@ let Schema = mongoose.Schema;
 let globalIntermediates = {};
 global.globalIntermediatesArray = [];
 
-@Injectable({ scope: Scope.DEFAULT  })
+@Injectable({ scope: Scope.DEFAULT })
 export class DriverCsvService {
   private readonly logger = new Logger('DriverCsvService');
   constructor(
@@ -117,12 +117,11 @@ export class DriverCsvService {
         eventDate: '',
         eventTime: '',
       };
-      if(deviceCalculation.SHIFT_STARTED == true){
-
+      if (deviceCalculation.SHIFT_STARTED == true) {
         latestCSV.meta.pti = deviceCalculation.pti;
       }
-        latestCSV.meta.pti = "2";
-      
+      latestCSV.meta.pti = '2';
+
       if (
         deviceCalculation.CURRENT_STATUS != allHosRelatedStatuses[0].eventCode
       ) {
@@ -696,8 +695,8 @@ export class DriverCsvService {
 
             if (!csvPresent) {
               latestCSV = await this.createMissingCSV(latestCSV, user, date);
-            lastCalculations.pti = latestCSV.meta.pti;
-              
+              lastCalculations.pti = latestCSV.meta.pti;
+
               latestCSV = this.calculateHOS(latestCSV, lastCalculations, user);
               lastCalculations = latestCSV.meta.deviceCalculations;
 
@@ -723,7 +722,7 @@ export class DriverCsvService {
               }
             } else if (csvPresent) {
               latestCSV = await this.updateCSV(latestCSV, user, latestCSV.date);
-            lastCalculations.pti = latestCSV.meta.pti;
+              lastCalculations.pti = latestCSV.meta.pti;
 
               latestCSV = this.calculateHOS(latestCSV, lastCalculations, user);
               lastCalculations = latestCSV.meta.deviceCalculations;
@@ -1010,6 +1009,33 @@ export class DriverCsvService {
     const recentCSV = await this.getFromDB(query, user); // this line is for getting the previous csv available for the given driver
     await this.flowOfHOSForPrevious(recentCSV.graphData, user);
   };
+
+//**************************************** */
+  // this is the main function for getting Logform
+  getLogform = async (query, user) => {
+    const recentCSV = await this.getFromDB(query, user); // this line is for getting the previous csv available for the given driver
+    const csvOfDate= recentCSV.graphData[0];
+    const csvDataOfDutyStatus =
+    csvOfDate.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
+    csvDataOfDutyStatus.sort((a, b) =>
+    a.eventTime.localeCompare(b.eventTime),
+  );
+
+  let shippingIds = [];
+  let trailerIds =[];
+  csvDataOfDutyStatus.forEach(record => {
+    if (!shippingIds.includes(record.shippingId)) {
+        shippingIds.push(record.shippingId);
+    }
+    if (!trailerIds.includes(record.trailerId)) {
+        trailerIds.push(record.trailerId);
+    }
+});
+return {shippingIds,trailerIds}
+
+  };
+
+  
   transferLog = async (sequenceId, date, duration, user, type) => {
     // console.log('this is the date of status==========>', date);
 
@@ -1339,7 +1365,7 @@ export class DriverCsvService {
         .findOneAndUpdate({ month: month, day: day }, data, {
           upsert: true,
           new: true,
-        })
+        }).sort({ date: 1 })
         .lean();
       // }
       response = result;
@@ -3815,6 +3841,9 @@ export class DriverCsvService {
         address,
         odometer,
         engineHour,
+        truck,
+        shippingDocument,
+        tralier,
         timezone,
         notes,
         state,
@@ -3936,5 +3965,4 @@ export class DriverCsvService {
       throw error;
     }
   };
-
 }

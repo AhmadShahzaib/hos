@@ -50,6 +50,9 @@ import { NormalizeBodyDto } from 'dto/normalizeBody.dto';
 import { NormalizeQueryDto } from 'dto/normalizeQuery.dto';
 import { dispatchNotification } from 'utils/dispatchNotification';
 import InsertLogDriverCsvLogDecorator from 'decorators/insertLogInfoDecorator';
+
+import GetLogformDecorators from 'decorators/getLogForm';
+
 import { InsertLogInfoBodyDto } from 'dto/insertLogInfo.dto';
 import { getLog } from 'utils/findObj';
 import { findSqID } from 'utils/findSquenceId';
@@ -72,6 +75,8 @@ import { removeObjectByEventSequenceId } from 'utils/findLog';
 import { googleGeocode } from 'utils/googleGeocode';
 import getLatLngFromAddressDecorator from 'decorators/getLatLngFromAddressDecorator';
 import GetDriverRecords from 'decorators/getDriversRecord';
+import { WebsocketGateway } from '../websocket/websocket.gateway';
+
 import CreateMissingIntermediatesDecorator from 'decorators/createMissingIntermediatesDecorator';
 @Controller('HOS')
 @ApiTags('HOS')
@@ -91,6 +96,7 @@ export class DriverCsvController extends BaseController {
     @Inject('UNIT_SERVICE') private readonly unitClient: ClientProxy,
     @Inject('PUSH_NOTIFICATION_SERVICE')
     private readonly pushNotificationClient: ClientProxy,
+    private readonly gateway: WebsocketGateway,
   ) {
     super();
   }
@@ -184,10 +190,7 @@ export class DriverCsvController extends BaseController {
       let previousBody = JSON.parse(JSON.stringify(body));
       let resp;
       let reqBody;
-      // 2. if true
-      /**
-       * add to db
-       */
+
       const csvPresent = isSameDay(body.meta.dateTime, body.meta.dateTime);
 
       if (recentCSV != 2) {
@@ -197,15 +200,7 @@ export class DriverCsvController extends BaseController {
             moment().subtract(1, 'day').unix(),
             user.homeTerminalTimeZone.tzCode,
           );
-          let messagePatternUnit =
-            await firstValueFrom<MessagePatternResponseType>(
-              this.unitClient.send({ cmd: 'get_unit_by_driverId' }, user.id),
-            );
-          if (messagePatternUnit.isError) {
-            Logger.log(`Error while finding unit against driver`);
-            mapMessagePatternResponseToException(messagePatternUnit);
-          }
-          console.log(`All date of  ---- >>> `, datesBetween);
+
           for (const date of datesBetween) {
             Logger.log('Date +++++++++++++++++ \n\n\n' + date);
             reqBody = await this.driverCsvService.createMissingCSV(
@@ -213,14 +208,18 @@ export class DriverCsvController extends BaseController {
               user,
               date,
             );
-            // console.log(`In add date of  ---- >>> `, date);
+            console.log(`In add date of  ---- >>> `, date);
             await this.driverCsvService.addToDB(reqBody, user);
 
             // This code is to tpdate driver record need to add messagepattern to get unit  =  get_unit_by_driverId
             await this.driverCsvService.updateRecordMade(user, reqBody);
           }
         }
+        // else if(recentCSV.length > 0){
+        // if ever want to oder the first time sort issue
+        // }
       }
+      console.log(`ouside date adding dataa`);
 
       resp = await this.driverCsvService.addToDB(body, user);
 
@@ -240,23 +239,11 @@ export class DriverCsvController extends BaseController {
       // let dateOfQuery = moment(body.date);
       // dateOfQuery = dateOfQuery.subtract(1, 'days');
       // let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-      var query = {
-        start: body.date,
-        end: moment().tz(user.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD'),
-      };
-      let result = await this.driverCsvService.runCalculationOnDateHOS(
-        query,
-        user,
-      );
-      query = {
-        start: body.date,
-        end: body.date,
-      };
-      const respo: any = await this.driverCsvService.getFromDB(query, user);
+
       if (resp) {
         return response.status(200).send({
           message: 'Entry Added Successfully',
-          data: respo.graphData[0].meta,
+          data: resp,
         });
       } else {
         return response.status(400).send({
@@ -364,7 +351,56 @@ export class DriverCsvController extends BaseController {
       throw error;
     }
   }
+  @GetLogformDecorators()
+  async getLogform(
+    @Query('driverId') driverId: string,
+    @Query('date') date: string,
+    @Res() res,
+    @Req() req,
+  ) {
+    try {
+      let user;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+      }
+      let query = {
+        start: date,
+        end: date,
+      };
+      const resp = await this.driverCsvService.getLogform(query, user);
+      
+      return res.status(200).send({
+        message: 'Success',
+        data: resp,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+  @UseInterceptors(new MessagePatternResponseInterceptor())
+  @MessagePattern({ cmd: 'call_sync' })
+  async callSync(data: any): Promise<any> {
+    try {
+      const { SpecificClient, user, date, notificationObj } = data;
 
+      await this.gateway.syncDriver(
+        SpecificClient,
+        user,
+        date,
+        notificationObj,
+      );
+      return true;
+    } catch (error) {
+      return error;
+    }
+  }
   @UseInterceptors(new MessagePatternResponseInterceptor())
   @MessagePattern({ cmd: 'get_length_of_data' })
   async getLengthOfData(requestParam: any): Promise<any> {
@@ -478,7 +514,7 @@ export class DriverCsvController extends BaseController {
   ) {
     try {
       let user;
-
+      let SpecificClient;
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -488,6 +524,7 @@ export class DriverCsvController extends BaseController {
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
+        SpecificClient = user?.client;
       }
       const resp = await this.driverCsvService.transferLog(
         sequenceId,
@@ -505,7 +542,6 @@ export class DriverCsvController extends BaseController {
       };
       await this.driverCsvService.runCalculationOnDateHOS(query, user);
       if (resp == 1) {
-        const title = 'Transfer logs executed!';
         const notificationObj = {
           logs: [],
           dateTime: date,
@@ -513,18 +549,13 @@ export class DriverCsvController extends BaseController {
           notificationType: 4,
           editStatusFromBO: 'transfer',
         };
-        const deviceInfo = {
-          deviceToken: user.deviceToken,
-          deviceType: user.deviceType,
-        };
-        console.log('about to dispatch notification');
-        await dispatchNotification(
-          title,
+        await this.gateway.syncDriver(
+          SpecificClient,
+          user,
+          date,
           notificationObj,
-          deviceInfo,
-          this.pushNotificationClient,
-          true,
         );
+
         return response.status(200).send({
           message: 'Success',
           data: resp,
@@ -537,7 +568,6 @@ export class DriverCsvController extends BaseController {
         });
       }
       if (resp == 3) {
-        Logger.log('hi');
         return response.send({
           message: 'Driver is created after this date so you cannot transfer ',
           data: resp,
@@ -798,7 +828,7 @@ export class DriverCsvController extends BaseController {
   ) {
     try {
       Logger.log('In Normalize Decorato Endpoint');
-
+      let SpecificClient;
       const { date, type, normalizationType } = queryParams;
       const { driverId } = params;
       const { eventSequenceIdNumber } = reqBody;
@@ -837,7 +867,6 @@ export class DriverCsvController extends BaseController {
       );
       // Initiation notificaion dispatch
 
-      const title = 'Normalization logs executed!';
       const notificationObj = {
         logs: [],
         dateTime: date,
@@ -845,19 +874,13 @@ export class DriverCsvController extends BaseController {
         notificationType: 4,
         editStatusFromBO: 'normalize',
       };
-      const deviceInfo = {
-        deviceToken: user.deviceToken,
-        deviceType: user.deviceType,
-      };
-      if (Object.keys(normalizedResp.data).length > 0) {
-        await dispatchNotification(
-          title,
-          notificationObj,
-          deviceInfo,
-          this.pushNotificationClient,
-          true, // repressents notification is silent or not
-        );
-      }
+
+      await this.gateway.syncDriver(
+        SpecificClient,
+        user,
+        date,
+        notificationObj,
+      );
       return res.status(normalizedResp.statusCode).send({
         statusCode: normalizedResp.statusCode,
         message: normalizedResp.message,
@@ -2002,6 +2025,9 @@ export class DriverCsvController extends BaseController {
           address,
           odometer,
           engineHour,
+          truck,
+          shippingDocument,
+          tralier,
           companyTimeZone,
           notes,
           state,

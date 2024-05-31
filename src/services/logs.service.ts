@@ -123,7 +123,7 @@ export class LogsService {
       .find({
         driverId: driverInfo.id,
         isApproved: 'pending',
-        requestStatus: { $in: ['Sent'] },
+        // requestStatus: { $in: ['Sent'] },
       })
       .lean();
 
