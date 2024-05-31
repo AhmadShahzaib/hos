@@ -11,7 +11,7 @@ export default function unidentifiedEdit() {
  
   const unidentifiedEdit: Array<CombineDecoratorType> = [
     Put('/assignunidentified'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', ["30c7dbwq"]),
     ApiExtraModels(LogEntryRequestModel, Array<LogEntryRequestModel>),
     
     ApiOkResponse({

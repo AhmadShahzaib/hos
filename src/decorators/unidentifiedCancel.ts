@@ -24,7 +24,7 @@ import moment from 'moment';
 export default function unidentifiedCancel() {
   const unidentifiedCancel: Array<CombineDecoratorType> = [
     Put('/cancel'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', ["30c7dbwq"]),
     ApiExtraModels(LogEntryRequestModel, Array<LogEntryRequestModel>),
 
     ApiOkResponse({

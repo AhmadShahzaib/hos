@@ -11,7 +11,7 @@ export default function unidentifiedRespond() {
  
   const unidentifiedRespond: Array<CombineDecoratorType> = [
     Put('/respond'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', ["30c7dbwq"]),
     ApiExtraModels(LogEntryRequestModel, Array<LogEntryRequestModel>),
     
     ApiOkResponse({

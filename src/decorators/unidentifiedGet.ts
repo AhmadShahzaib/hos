@@ -11,7 +11,7 @@ export default function unidentifiedGet() {
  
   const unidentifiedGet: Array<CombineDecoratorType> = [
     Get('/'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', ["30q7dblas"]),
     ApiExtraModels(LogEntryRequestModel, Array<LogEntryRequestModel>),
     
     ApiOkResponse({

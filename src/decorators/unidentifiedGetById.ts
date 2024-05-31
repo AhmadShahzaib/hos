@@ -11,7 +11,7 @@ export default function unidentifiedGetById() {
  
   const unidentifiedGetById: Array<CombineDecoratorType> = [
     Get('/:id'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', ["30q7dblas"]),
     ApiExtraModels(LogEntryRequestModel, Array<LogEntryRequestModel>),
    
     ApiParam({
