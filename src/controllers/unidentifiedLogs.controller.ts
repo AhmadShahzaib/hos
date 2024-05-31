@@ -20,7 +20,14 @@ import { PaginationDto } from 'dto/pagination.dto';
 import { UpdateUnidentifiedLogsDto } from 'dto/updateUnidentifiedLogs.dto';
 import { UnidentifiedLogsService } from '../services/unidentifiedLogs.service';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
+import unidentifiedCancel from '../decorators/unidentifiedCancel'
+import  unidentifiedRespond from '../decorators/unidentifiedRespond'
+import  unidentifiedAdd from '../decorators/unidentifiedAdd'
+import  unidentifiedGet from '../decorators/unidentifiedGet'
+import  unidentifiedGetById from '../decorators/unidentifiedGetById'
+import  unidentifiedEdit from '../decorators/unidentifiedEdit'
 
+unidentifiedEdit
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ClientProxy } from '@nestjs/microservices';
 import {
@@ -47,7 +54,7 @@ export class UnidentifiedLogsController {
     @Inject('DEVICE_SERVICE') private readonly deviceClient: ClientProxy,
   ) {}
 
-  @Put('/respond')
+  @unidentifiedRespond()
   async respondUnidentified(@Body() reqBody, @Req() req, @Res() res) {
     try {
       const {
@@ -112,7 +119,7 @@ export class UnidentifiedLogsController {
    * Cancel assignment of unidentified log from BO - V2
    * Author Farzan
    */
-  @Put('/cancel')
+  @unidentifiedCancel()
   async cancelUnidentified(@Query() query, @Req() req, @Res() res) {
     try {
       const unidentifiedLogId = query.id;
@@ -189,7 +196,7 @@ export class UnidentifiedLogsController {
    * create unidentified logs - V2
    * Author Farzan
    */
-  @Post('/')
+  @unidentifiedAdd()
   /**
    * CreateUnidentifiedLogsDto : File for validating req body
    */
@@ -283,7 +290,7 @@ export class UnidentifiedLogsController {
    * @param res
    * @returns
    */
-  @Get('/')
+  @unidentifiedGet()
   async findAll(
     @Query(
       /**
@@ -495,7 +502,7 @@ export class UnidentifiedLogsController {
    *            Currently the api is designed to assign unidentified log to driver by admin
    * Author : Farzan
    */
-  @Put('/assignunidentified')
+  @unidentifiedEdit()
   async assignUnidentified(
     @Body() data,
     @Query() queryParams,
@@ -646,7 +653,7 @@ export class UnidentifiedLogsController {
    *
    * Author Farzan
    */
-  @Get('/:id')
+  @unidentifiedGetById()
   async findById(@Param() params, @Res() res, @Req() req) {
     try {
       const { id } = params;
