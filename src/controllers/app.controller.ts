@@ -1273,18 +1273,20 @@ export class AppController extends BaseController {
       };
       await this.logService.maintainHistory(historyObj);
       if (isApproved !== 'confirm') {
-      // user.id = user._id;// this id is updated
-      let driverData = messagePatternDriver.data
-      driverData.id = driverData._id;
+        // user.id = user._id;// this id is updated
+        let driverData = messagePatternDriver.data;
+        driverData.id = driverData._id;
         let images;
         const isEdit = await this.logService.getPendingRequests(driverData);
         // Logger.log(isEdit);
         if (isEdit.length > 0) {
-        // Logger.log("Create csv pdf");
+          // Logger.log("Create csv pdf");
 
           // Create csv pdf for before and after
-          const isConverted = await this.HOSService.generateCsvImages(driverData);
-        // Logger.log("after");
+          const isConverted = await this.HOSService.generateCsvImages(
+            driverData,
+          );
+          // Logger.log("after");
 
           images = isConverted.data;
         }
@@ -1313,7 +1315,7 @@ export class AppController extends BaseController {
         }!`;
         const notificationObj = {
           logs: [],
-          editRequest:  [],
+          editRequest: [],
           dateTime: dateTime,
           driverId: driverId,
           editStatusFromBO: 'cancelBO',
@@ -1566,13 +1568,13 @@ export class AppController extends BaseController {
       });
 
       // add google api here and calculate address of otherThenDriving statuses
-      for (let i = 0; i < otherThenDriving.length; i++) {
-        let address = await this.driverCsvService.getAddress(
-          otherThenDriving[i].latitude,
-          otherThenDriving[i].longitude,
-        );
-        otherThenDriving[i].address = address;
-      }
+      // for (let i = 0; i < otherThenDriving.length; i++) {
+      //   let address = await this.driverCsvService.getAddress(
+      //     otherThenDriving[i].latitude,
+      //     otherThenDriving[i].longitude,
+      //   );
+      //   otherThenDriving[i].address = address;
+      // }
       let responseArray = [...otherThenDriving, ...driving];
       responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
