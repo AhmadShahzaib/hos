@@ -10,6 +10,7 @@ export const RecordTableSchema = new mongoose.Schema(
     shippingId: { type: String, require: false },
     status: {},
     lastKnownActivity: {},
+    clock: {},
     signature: { type: String, require: false },
     hoursWorked: { type: Number, require: true },
     distance: { type: String, require: false },
