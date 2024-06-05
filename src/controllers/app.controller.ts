@@ -1515,7 +1515,7 @@ export class AppController extends BaseController {
       if (messagePatternDriver.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
-
+// query to get all tracking records of that day.
       const response = await this.HOSService.getLiveLocation(queryObj);
 
       // -----------------------------------------------------------------
@@ -1529,6 +1529,7 @@ export class AppController extends BaseController {
       }
 
       let allLocations = JSON.parse(JSON.stringify(response.data));
+      //filter all driving events except ON OFF SB
       let driving = allLocations.filter((element) => {
         return (
           (element.status == '3' && element.eventType == '1') ||
@@ -1540,6 +1541,7 @@ export class AppController extends BaseController {
       let newArray = [];
       let totalTime = 0;
       for (let i = 1; i < allLocations.length; i++) {
+        // if previous status and current status are not same same.
         if (allLocations[i].status != prevLog.status) {
           const prevTime = convertToSeconds(prevLog.time);
           const currentTime = convertToSeconds(allLocations[i].time);
@@ -1550,6 +1552,7 @@ export class AppController extends BaseController {
           prevLog = allLocations[i];
           totalTime = 0;
         }
+        // if the location object is last object
         if (i == allLocations.length - 1) {
           const prevTime = convertToSeconds(prevLog.time);
           const currentTime = convertToSeconds(allLocations[i].time);
