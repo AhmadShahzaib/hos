@@ -1515,7 +1515,7 @@ export class AppController extends BaseController {
       if (messagePatternDriver.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
-// query to get all tracking records of that day.
+      // query to get all tracking records of that day.
       const response = await this.HOSService.getLiveLocation(queryObj);
 
       // -----------------------------------------------------------------
@@ -1564,9 +1564,9 @@ export class AppController extends BaseController {
       }
       let otherThenDriving = newArray.filter((element) => {
         return (
-          (element.status != '3' && element.eventType != '1') ||
-          (element.status != '1' && element.eventType != '3') ||
-          (element.status != '2' && element.eventType != '3')
+          (element.status == '2' && element.eventType == '1') ||
+          (element.status == '1' && element.eventType == '1') ||
+          (element.status == '4' && element.eventType == '1')
         );
       });
 
