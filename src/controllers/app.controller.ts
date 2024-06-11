@@ -1273,18 +1273,20 @@ export class AppController extends BaseController {
       };
       await this.logService.maintainHistory(historyObj);
       if (isApproved !== 'confirm') {
-      // user.id = user._id;// this id is updated
-      let driverData = messagePatternDriver.data
-      driverData.id = driverData._id;
+        // user.id = user._id;// this id is updated
+        let driverData = messagePatternDriver.data;
+        driverData.id = driverData._id;
         let images;
         const isEdit = await this.logService.getPendingRequests(driverData);
         // Logger.log(isEdit);
         if (isEdit.length > 0) {
-        // Logger.log("Create csv pdf");
+          // Logger.log("Create csv pdf");
 
           // Create csv pdf for before and after
-          const isConverted = await this.HOSService.generateCsvImages(driverData);
-        // Logger.log("after");
+          const isConverted = await this.HOSService.generateCsvImages(
+            driverData,
+          );
+          // Logger.log("after");
 
           images = isConverted.data;
         }
@@ -1313,7 +1315,7 @@ export class AppController extends BaseController {
         }!`;
         const notificationObj = {
           logs: [],
-          editRequest:  [],
+          editRequest: [],
           dateTime: dateTime,
           driverId: driverId,
           editStatusFromBO: 'cancelBO',
@@ -1513,7 +1515,7 @@ export class AppController extends BaseController {
       if (messagePatternDriver.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
-
+      // query to get all tracking records of that day.
       const response = await this.HOSService.getLiveLocation(queryObj);
 
       // -----------------------------------------------------------------
@@ -1527,54 +1529,59 @@ export class AppController extends BaseController {
       }
 
       let allLocations = JSON.parse(JSON.stringify(response.data));
-      let driving = allLocations.filter((element) => {
-        return (
-          (element.status == '3' && element.eventType == '1') ||
-          (element.status == '1' && element.eventType == '3') ||
-          (element.status == '2' && element.eventType == '3')
-        );
-      });
-      let prevLog = allLocations[0];
-      let newArray = [];
-      let totalTime = 0;
-      for (let i = 1; i < allLocations.length; i++) {
-        if (allLocations[i].status != prevLog.status) {
-          const prevTime = convertToSeconds(prevLog.time);
-          const currentTime = convertToSeconds(allLocations[i].time);
-          totalTime = currentTime - prevTime;
-          let newLog = JSON.parse(JSON.stringify(prevLog));
-          newLog.duration = totalTime;
-          newArray.push(newLog);
-          prevLog = allLocations[i];
-          totalTime = 0;
-        }
-        if (i == allLocations.length - 1) {
-          const prevTime = convertToSeconds(prevLog.time);
-          const currentTime = convertToSeconds(allLocations[i].time);
-          totalTime = currentTime - prevTime;
-          let newLog = JSON.parse(JSON.stringify(prevLog));
-          newLog.duration = totalTime;
-          newArray.push(newLog);
-        }
-      }
-      let otherThenDriving = newArray.filter((element) => {
-        return (
-          (element.status != '3' && element.eventType != '1') ||
-          (element.status != '1' && element.eventType != '3') ||
-          (element.status != '2' && element.eventType != '3')
-        );
-      });
-
+      //filter all driving events except ON OFF SB
+      // let driving = allLocations.filter((element) => {
+      //   return (
+      //     (element.status == '3' && element.eventType == '1') ||
+      //     (element.status == '1' && element.eventType == '3') ||
+      //     (element.status == '2' && element.eventType == '3')
+      //   );
+      // });
+      // let prevLog = allLocations[0];
+      // let newArray = [];
+      // let totalTime = 0;
+      // for (let i = 1; i < allLocations.length; i++) {
+      //   // if previous status and current status are not same same.
+      //   if (allLocations[i].status != prevLog.status) {
+      //     const prevTime = convertToSeconds(prevLog.time);
+      //     const currentTime = convertToSeconds(allLocations[i].time);
+      //     totalTime = currentTime - prevTime;
+      //     let newLog = JSON.parse(JSON.stringify(prevLog));
+      //     newLog.duration = totalTime;
+      //     newArray.push(newLog);
+      //     prevLog = allLocations[i];
+      //     totalTime = 0;
+      //   }
+      //   // if the location object is last object
+      //   if (i == allLocations.length - 1) {
+      //     const prevTime = convertToSeconds(prevLog.time);
+      //     const currentTime = convertToSeconds(allLocations[i].time);
+      //     totalTime = currentTime - prevTime;
+      //     let newLog = JSON.parse(JSON.stringify(prevLog));
+      //     newLog.duration = totalTime;
+      //     newArray.push(newLog);
+      //   }
+      // }
+      // let otherThenDriving = newArray.filter((element) => {
+      //   return (
+      //     (element.status == '2' && element.eventType == '1') ||
+      //     (element.status == '1' && element.eventType == '1') ||
+      //     (element.status == '4' && element.eventType == '1')
+      //   );
+      // });
+// mayble will later on it
       // add google api here and calculate address of otherThenDriving statuses
-      for (let i = 0; i < otherThenDriving.length; i++) {
-        let address = await this.driverCsvService.getAddress(
-          otherThenDriving[i].latitude,
-          otherThenDriving[i].longitude,
-        );
-        otherThenDriving[i].address = address;
-      }
-      let responseArray = [...otherThenDriving, ...driving];
-      responseArray = responseArray.sort((a, b) => a.time - b.time);
+      // for (let i = 0; i < otherThenDriving.length; i++) {
+      //   let address = await this.driverCsvService.getAddress(
+      //     otherThenDriving[i].latitude,
+      //     otherThenDriving[i].longitude,
+      //   );
+      //   otherThenDriving[i].address = address;
+      // }
+      // let responseArray = [...otherThenDriving, ...driving];
+      let responseArray = allLocations;
+
+      // responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
 
       return res.status(response.statusCode).send({

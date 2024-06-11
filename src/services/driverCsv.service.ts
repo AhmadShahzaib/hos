@@ -771,7 +771,7 @@ export class DriverCsvService {
       distance: '0',
       violations: [],
       status: {},
-      // lastKnownActivity: {},
+      clock: {},
       // homeTerminalTimeZone: {},
       // tenantId: '',
       isPti: '',
@@ -810,7 +810,7 @@ export class DriverCsvService {
     // recordMade.homeTerminalTimeZone = user?.homeTerminalTimeZone;
     // recordMade.tenantId = user?.tenantId;
     //Add violations here
-
+    recordMade.clock = latestCSV.meta.clockData;
     recordMade.violations = latestCSV.meta.voilations;
     recordMade.isPti = latestCSV?.meta?.pti;
 

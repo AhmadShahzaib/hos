@@ -10,6 +10,7 @@ export default interface RecordTable extends Document {
   violations: [];
   status: {};
   lastKnownActivity: {};
+  clock: {};
   homeTerminalTimeZone: {};
   tenantId: String;
   isPti: { type: String; default: '-1' };
