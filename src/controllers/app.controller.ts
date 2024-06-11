@@ -1569,7 +1569,7 @@ export class AppController extends BaseController {
           (element.status == '4' && element.eventType == '1')
         );
       });
-
+// mayble will later on it
       // add google api here and calculate address of otherThenDriving statuses
       // for (let i = 0; i < otherThenDriving.length; i++) {
       //   let address = await this.driverCsvService.getAddress(
