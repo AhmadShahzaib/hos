@@ -1530,45 +1530,45 @@ export class AppController extends BaseController {
 
       let allLocations = JSON.parse(JSON.stringify(response.data));
       //filter all driving events except ON OFF SB
-      let driving = allLocations.filter((element) => {
-        return (
-          (element.status == '3' && element.eventType == '1') ||
-          (element.status == '1' && element.eventType == '3') ||
-          (element.status == '2' && element.eventType == '3')
-        );
-      });
-      let prevLog = allLocations[0];
-      let newArray = [];
-      let totalTime = 0;
-      for (let i = 1; i < allLocations.length; i++) {
-        // if previous status and current status are not same same.
-        if (allLocations[i].status != prevLog.status) {
-          const prevTime = convertToSeconds(prevLog.time);
-          const currentTime = convertToSeconds(allLocations[i].time);
-          totalTime = currentTime - prevTime;
-          let newLog = JSON.parse(JSON.stringify(prevLog));
-          newLog.duration = totalTime;
-          newArray.push(newLog);
-          prevLog = allLocations[i];
-          totalTime = 0;
-        }
-        // if the location object is last object
-        if (i == allLocations.length - 1) {
-          const prevTime = convertToSeconds(prevLog.time);
-          const currentTime = convertToSeconds(allLocations[i].time);
-          totalTime = currentTime - prevTime;
-          let newLog = JSON.parse(JSON.stringify(prevLog));
-          newLog.duration = totalTime;
-          newArray.push(newLog);
-        }
-      }
-      let otherThenDriving = newArray.filter((element) => {
-        return (
-          (element.status == '2' && element.eventType == '1') ||
-          (element.status == '1' && element.eventType == '1') ||
-          (element.status == '4' && element.eventType == '1')
-        );
-      });
+      // let driving = allLocations.filter((element) => {
+      //   return (
+      //     (element.status == '3' && element.eventType == '1') ||
+      //     (element.status == '1' && element.eventType == '3') ||
+      //     (element.status == '2' && element.eventType == '3')
+      //   );
+      // });
+      // let prevLog = allLocations[0];
+      // let newArray = [];
+      // let totalTime = 0;
+      // for (let i = 1; i < allLocations.length; i++) {
+      //   // if previous status and current status are not same same.
+      //   if (allLocations[i].status != prevLog.status) {
+      //     const prevTime = convertToSeconds(prevLog.time);
+      //     const currentTime = convertToSeconds(allLocations[i].time);
+      //     totalTime = currentTime - prevTime;
+      //     let newLog = JSON.parse(JSON.stringify(prevLog));
+      //     newLog.duration = totalTime;
+      //     newArray.push(newLog);
+      //     prevLog = allLocations[i];
+      //     totalTime = 0;
+      //   }
+      //   // if the location object is last object
+      //   if (i == allLocations.length - 1) {
+      //     const prevTime = convertToSeconds(prevLog.time);
+      //     const currentTime = convertToSeconds(allLocations[i].time);
+      //     totalTime = currentTime - prevTime;
+      //     let newLog = JSON.parse(JSON.stringify(prevLog));
+      //     newLog.duration = totalTime;
+      //     newArray.push(newLog);
+      //   }
+      // }
+      // let otherThenDriving = newArray.filter((element) => {
+      //   return (
+      //     (element.status == '2' && element.eventType == '1') ||
+      //     (element.status == '1' && element.eventType == '1') ||
+      //     (element.status == '4' && element.eventType == '1')
+      //   );
+      // });
 // mayble will later on it
       // add google api here and calculate address of otherThenDriving statuses
       // for (let i = 0; i < otherThenDriving.length; i++) {
@@ -1578,8 +1578,10 @@ export class AppController extends BaseController {
       //   );
       //   otherThenDriving[i].address = address;
       // }
-      let responseArray = [...otherThenDriving, ...driving];
-      responseArray = responseArray.sort((a, b) => a.time - b.time);
+      // let responseArray = [...otherThenDriving, ...driving];
+      let responseArray = allLocations;
+
+      // responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
 
       return res.status(response.statusCode).send({
