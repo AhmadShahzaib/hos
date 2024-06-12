@@ -22,7 +22,7 @@ export class LogEntryRequestModel {
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  actionDate: Number;
+  actionDate: number;
 
   @ApiProperty()
   geoLocation?: {
@@ -65,7 +65,7 @@ export class LogEntryRequestModel {
   annotation?: number;
 
   @ApiPropertyOptional()
-  isEdited?: Boolean;
+  isEdited?: boolean;
 
   @ApiProperty()
   @IsOptional()

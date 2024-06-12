@@ -2,24 +2,24 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class InsertInfoLog {
   @IsNotEmpty({ message: 'Driver ID  is a required field!' })
-  Time: String;
+  Time: string;
 
   @IsNotEmpty()
-  status: String;
+  status: string;
     @IsNotEmpty()
-    eventType: String;
+    eventType: string;
     @IsNotEmpty()
-  eventCode: String;
+  eventCode: string;
     @IsNotEmpty()
-    lat: String;
+    lat: string;
     @IsNotEmpty()
-  long: String;
+  long: string;
     @IsNotEmpty()
-    address: String;
+    address: string;
     @IsNotEmpty()
-  odometer: String;
+  odometer: string;
     @IsNotEmpty()
-    engineHour: String;
+    engineHour: string;
     @IsOptional()
     truck: string
      @IsOptional()

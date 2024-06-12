@@ -1,8 +1,8 @@
 import { generateUniqueHexId } from './generateEventSeqId';
 
 export async function calculateAccumulatedMiles(csvs) {
-  let data = JSON.parse(JSON.stringify(csvs));
-  let csv = JSON.parse(JSON.stringify(csvs.csvAfterUpdate.csv));
+  const data = JSON.parse(JSON.stringify(csvs));
+  const csv = JSON.parse(JSON.stringify(csvs.csvAfterUpdate.csv));
   let dutyLogs = csv.eldEventListForDriversRecordOfDutyStatus.filter(
     (element) => {
       return element.eventRecordStatus != '2';

@@ -68,8 +68,8 @@ export class UnidentifiedLogsController {
 
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -126,7 +126,7 @@ export class UnidentifiedLogsController {
       let user;
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
+        const token = req.headers.authorization.split(' ')[1];
         user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
@@ -155,7 +155,7 @@ export class UnidentifiedLogsController {
           if (messagePatternDriver?.isError) {
             mapMessagePatternResponseToException(messagePatternDriver);
           }
-          let driver = messagePatternDriver?.data;
+          const driver = messagePatternDriver?.data;
 
           const notificationObj = {
             logs: [response.data],
@@ -165,7 +165,7 @@ export class UnidentifiedLogsController {
             notificationType: 2,
             editStatusFromBO: 'unassign',
           };
-          let SpecificClient = driver?.client;
+          const SpecificClient = driver?.client;
 
           const mesaage = 'Driver assigned!';
 
@@ -311,8 +311,8 @@ export class UnidentifiedLogsController {
 
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -424,8 +424,8 @@ export class UnidentifiedLogsController {
 
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -532,11 +532,11 @@ export class UnidentifiedLogsController {
       if (messagePatternDriver?.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
-      let user = messagePatternDriver?.data;
+      const user = messagePatternDriver?.data;
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -578,7 +578,7 @@ export class UnidentifiedLogsController {
             notificationType: 2,
             editStatusFromBO: 'assign',
           };
-          let SpecificClient = user?.client;
+          const SpecificClient = user?.client;
 
           const mesaage = 'Driver assigned!';
 
@@ -618,8 +618,8 @@ export class UnidentifiedLogsController {
     try {
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -661,8 +661,8 @@ export class UnidentifiedLogsController {
 
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({

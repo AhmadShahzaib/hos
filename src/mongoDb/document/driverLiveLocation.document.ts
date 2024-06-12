@@ -11,9 +11,9 @@ interface HistoryOfLocation {
   time?: string;
 }
 export default interface DriverLiveLocationDocument extends Document {
-  driverId: String;
-  tenantId: String;
-  date: String; // YYYY-MM-DD
+  driverId: string;
+  tenantId: string;
+  date: string; // YYYY-MM-DD
   historyOfLocation: HistoryOfLocation[];
-  encryptedHistoryOfLocation: String;
+  encryptedHistoryOfLocation: string;
 }

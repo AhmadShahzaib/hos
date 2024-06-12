@@ -12,7 +12,7 @@ export class LogEntryResponseModel {
   actionType: string;
 
   @ApiProperty()
-  actionDate: Number;
+  actionDate: number;
 
   @ApiProperty()
   geoLocation?: {
@@ -46,28 +46,28 @@ export class LogEntryResponseModel {
   notes?: string;
 
   @ApiProperty()
-  OSversion?: String;
+  OSversion?: string;
 
   @ApiProperty()
-  deviceVersion?: String;
+  deviceVersion?: string;
 
   @ApiProperty()
-  appVersion?: String;
+  appVersion?: string;
 
   @ApiProperty()
-  deviceType: String;
+  deviceType: string;
 
   @ApiPropertyOptional()
   sequenceNumber?: number;
 
   @ApiPropertyOptional()
-  deviceModel?: String;
+  deviceModel?: string;
 
   @ApiPropertyOptional()
-  eldType?: String;
+  eldType?: string;
 
   @ApiPropertyOptional()
-  malfunction?: String;
+  malfunction?: string;
 
   constructor(logEntry: LogsEntryDocument) {
     this.id = logEntry.id;

@@ -80,7 +80,7 @@ export async function getIntermediateLocationsWithSpeed(
   let point2 = [];
   let accumulatedDistance = 0;
   let distanceBetweenPoints = 0;
-  let desiredDistance = speedMph;
+  const desiredDistance = speedMph;
 
   for (let i = 0; i < decodedPoints.length - 1; i++) {
     point1 =

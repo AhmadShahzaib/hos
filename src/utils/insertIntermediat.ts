@@ -10,7 +10,7 @@ export function insertIntermediat(
   time,
   timezone,
 ) {
-  let sqID = generateUniqueHexId();
+  const sqID = generateUniqueHexId();
   let odometer;
   let Ehours;
   let intType;

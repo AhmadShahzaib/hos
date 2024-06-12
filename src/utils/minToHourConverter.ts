@@ -5,7 +5,7 @@ export function minToHourConverter(str) {
   const inputDuration = str;
   const durationParts = inputDuration.split(' ');
 
-  let totalDuration = moment.duration(0);
+  const totalDuration = moment.duration(0);
 
   for (let i = 0; i < durationParts.length; i += 2) {
     const value = parseInt(durationParts[i]);

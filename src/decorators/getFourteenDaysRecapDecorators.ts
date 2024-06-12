@@ -8,12 +8,12 @@ import {
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 
 export default function GetFourteenDaysRecapDecorators() {
-  let response1 = {
+  const response1 = {
     message: 'No Data Found',
     data: {},
   };
 
-  let response2 = {
+  const response2 = {
     message: 'Data Found',
     data: {
       '2022-08-18': {
@@ -51,12 +51,12 @@ export default function GetFourteenDaysRecapDecorators() {
 }
 
 export function GetFourteenDaysRecapDecoratorsMobile() {
-  let response1 = {
+  const response1 = {
     message: 'No Data Found',
     data: {},
   };
 
-  let response2 = {
+  const response2 = {
     message: 'Data Found',
     data: {
       '2022-08-18': {

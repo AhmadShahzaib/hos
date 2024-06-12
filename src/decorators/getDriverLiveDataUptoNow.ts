@@ -7,13 +7,13 @@ import {
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 
 export default function GetDriverLiveDataUptoNow() {
-  let response1 = {
+  const response1 = {
     statusCode: 404,
     message: 'No Data found for this driver',
     error: 'Not Found',
   };
 
-  let response2 = {
+  const response2 = {
     message: 'Last Data Found.',
     data: {
       id: '62d515a51e17696a8021230a',
@@ -40,7 +40,7 @@ export default function GetDriverLiveDataUptoNow() {
     },
   };
 
-  let response3 = {
+  const response3 = {
     message: 'Last Data Found.',
     data: {
       id: '62d515a51e17696a8021230a',
@@ -73,7 +73,7 @@ export default function GetDriverLiveDataUptoNow() {
     },
   };
 
-  let response4 = {
+  const response4 = {
     message: 'Last Data Found.',
     data: {
       id: '62d515a51e17696a8021230a',

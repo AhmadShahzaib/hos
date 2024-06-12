@@ -2,12 +2,12 @@ import { generateUniqueHexId } from "./generateEventSeqId";
 // import { Length } from '../../../logEld-TenantBackendMicroservices-Assets-Future/src/models/length.model';
 
 export async function insertLog(logs, newLog, startTime, endTime) {
-    let updatedLogs = [...logs];
+    const updatedLogs = [...logs];
     let newArray
     if (updatedLogs.length == 1) { 
         
          updatedLogs.push(newLog)
-        let log = JSON.parse(JSON.stringify(updatedLogs[0]))
+        const log = JSON.parse(JSON.stringify(updatedLogs[0]))
         log.eventSequenceIdNumber = generateUniqueHexId()
         updatedLogs.push(log)
         updatedLogs[2].eventTime = endTime
@@ -51,7 +51,7 @@ export async function insertLog(logs, newLog, startTime, endTime) {
         }
         let afterIndex = logs.length-1
         for (let i = beforeIndex; i < logs.length; i++) {
-            let stime = logs[i].eventTime;
+            const stime = logs[i].eventTime;
             // if (i == logs.length - 1) { 
             //          stime = '240000';
             // }
@@ -92,7 +92,7 @@ export async function insertLog(logs, newLog, startTime, endTime) {
              flag=false
          }
         if (array1[array1.length - 1].eventTime == array2[0].eventTime) { 
-            let last = JSON.parse(JSON.stringify(array2.splice(0, 1)[0]))
+            const last = JSON.parse(JSON.stringify(array2.splice(0, 1)[0]))
             const first = array1.pop();
             last.eventTime = endTime 
             last.eventSequenceIdNumber = generateUniqueHexId()
@@ -103,7 +103,7 @@ export async function insertLog(logs, newLog, startTime, endTime) {
             newArray =[]
             // const a = logs.slice(0, beforeIndex + 1); // Slicing from the beginning to index1 (inclusive)
             const b = logs.slice(afterIndex,logs.length);
-            let last = JSON.parse(JSON.stringify(b.splice(0, 1)[0]))
+            const last = JSON.parse(JSON.stringify(b.splice(0, 1)[0]))
             last.eventTime = endTime
             newLog.eventTime = startTime
 

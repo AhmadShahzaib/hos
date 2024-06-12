@@ -11,77 +11,77 @@ import {
 class GeoLocation {
   // @IsNotEmpty({ message: 'longitude should not be empty!!' })
   @IsOptional()
-  longitude: String;
+  longitude: string;
 
   // @IsNotEmpty({ message: 'latitude should not be empty!!' })
   @IsOptional()
-  latitude: String;
+  latitude: string;
 
   // @IsNotEmpty({ message: 'address should not be empty!!' })
   @IsOptional()
-  address: String;
+  address: string;
 }
 class unidentifiedLogObject {
   @IsOptional()
   // @IsNumber()
-  eventSequenceIdNumber: String;
+  eventSequenceIdNumber: string;
 
   @IsNotEmpty({ message: 'eventRecordStatus should not be empty!!' })
-  eventRecordStatus: String;
+  eventRecordStatus: string;
 
   @IsNotEmpty({ message: 'eventRecordOrigin should not be empty!!' })
-  eventRecordOrigin: String;
+  eventRecordOrigin: string;
 
   @IsOptional()
-  eventType: String;
+  eventType: string;
 
   @IsOptional()
-  eventCode: String;
+  eventCode: string;
 
   @IsNotEmpty({ message: 'eventDate should not be empty!!' })
-  eventDate: String;
+  eventDate: string;
 
   @IsNotEmpty({ message: 'eventTime should not be empty!!' })
-  eventTime: String;
+  eventTime: string;
 
   @IsNotEmpty({ message: 'accumulatedVehicleMiles should not be empty!!' })
   // @IsNumber()
-  accumulatedVehicleMiles: String;
+  accumulatedVehicleMiles: string;
 
   @IsNotEmpty({ message: 'accumulatedEngineHours should not be empty!!' })
   // @IsNumber()
-  accumulatedEngineHours: String;
+  accumulatedEngineHours: string;
 
   @IsNotEmpty({ message: 'eventLatitude should not be empty!!' })
-  eventLatitude: String;
+  eventLatitude: string;
 
   @IsNotEmpty({ message: 'eventLongitude should not be empty!!' })
-  eventLongitude: String;
+  eventLongitude: string;
 
   @IsNotEmpty({
     message: 'distanceSinceLastValidCoordinates should not be empty!!',
   })
-  distanceSinceLastValidCoordinates: String;
+  distanceSinceLastValidCoordinates: string;
 
   @IsNotEmpty({ message: 'correspondingCmvOrderNumber should not be empty!!' })
-  correspondingCmvOrderNumber: String;
+  correspondingCmvOrderNumber: string;
 
   @IsNotEmpty({
     message: 'malfunctionIndicatorStatusForEld should not be empty!!',
   })
-  malfunctionIndicatorStatusForEld: String;
+  malfunctionIndicatorStatusForEld: string;
 
   @IsNotEmpty({ message: 'eventDataCheckValue should not be empty!!' })
-  eventDataCheckValue: String;
+  eventDataCheckValue: string;
 
   @IsNotEmpty({ message: 'lineDataCheckValue should not be empty!!' })
-  lineDataCheckValue: String;
+  lineDataCheckValue: string;
 
   @IsNotEmpty({ message: 'cmvVinNo should not be empty!!' })
-  cmvVinNo: String;
+  cmvVinNo: string;
 
   @IsNotEmpty({ message: 'eldNumber should not be empty!!' })
-  eldNumber: String;
+  eldNumber: string;
 
   @IsNotEmpty({ message: 'origin should not be empty!!' })
   @IsObject()
@@ -99,42 +99,42 @@ class unidentifiedLogObject {
   // distance: String;
 
   @IsOptional()
-  distance: String;
+  distance: string;
   @IsNotEmpty({ message: 'duration should not be empty!!' })
-  duration: String;
+  duration: string;
 
   @IsNotEmpty({ message: 'vehicleId should not be empty!!' })
-  vehicleId: String;
+  vehicleId: string;
 
   @IsNotEmpty({ message: 'startEngineHour should not be empty!!' })
   @IsOptional()
-  startEngineHour: String;
+  startEngineHour: string;
 
   @IsNotEmpty({ message: 'endEngineHour should not be empty!!' })
   @IsOptional()
-  endEngineHour: String;
+  endEngineHour: string;
 
   @IsNotEmpty({ message: 'startVehicleMiles should not be empty!!' })
   @IsOptional()
-  startVehicleMiles: String;
+  startVehicleMiles: string;
 
   @IsNotEmpty({ message: 'endVehicleMiles should not be empty!!' })
   @IsOptional()
-  endVehicleMiles: String;
+  endVehicleMiles: string;
 
   @IsNotEmpty({ message: 'startDate should not be empty!!' })
-  startDate: String;
+  startDate: string;
 
   @IsNotEmpty({ message: 'endDate should not be empty!!' })
-  endDate: String;
+  endDate: string;
 
   @IsNotEmpty({ message: 'startTime should not be empty!!' })
-  startTime: String;
+  startTime: string;
 
   @IsNotEmpty({ message: 'endTime should not be empty!!' })
-  endTime: String;
+  endTime: string;
   @IsNotEmpty({ message: 'tenantId should not be empty!!' })
-  tenantId:String;
+  tenantId:string;
 }
 export class CreateUnidentifiedLogsDto {
   @ValidateNested({ each: true })

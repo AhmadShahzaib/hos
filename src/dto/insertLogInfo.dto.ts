@@ -4,18 +4,18 @@ import { InsertInfoLog } from './insertInfoLog.dto';
 
 export class InsertLogInfoBodyDto {
   @IsNotEmpty({ message: 'Driver ID  is a required field!' })
-  driverId: String;
+  driverId: string;
 
   @IsNotEmpty()
-  date: String;
+  date: string;
     @IsOptional()
-  signature: String;
+  signature: string;
     @IsNotEmpty()
-    time: String;
+    time: string;
   @IsNotEmpty()
-    type: String;
+    type: string;
   @IsOptional()
-    sqID:String
+    sqID:string
   @IsOptional()
     statusInfo: InsertInfoLog
   
