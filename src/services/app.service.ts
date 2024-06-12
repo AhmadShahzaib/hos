@@ -474,6 +474,38 @@ export class AppService {
     };
   };
 
+    /**
+   * driver specific day trips stops
+   * Author : No Farzan
+   */
+    getStopsLocation = async (obj) => {
+      const query = {
+        driverId: obj.driverId,
+        date: obj.date, // YYYY-MM-DD
+      };
+  
+      const specificDayTrip = await this.driverStopLocationModel.findOne(query);
+  
+      let decodedHistoryOfLocation;
+      if (specificDayTrip) {
+        // length == 0, indicates the previous day trips that are encrypted.
+        // length != 0, indicates the current day trip. The current day trip is not encrypted.
+        if (specificDayTrip.historyOfLocation.length == 0) {
+         
+        } else {
+          decodedHistoryOfLocation = specificDayTrip.historyOfLocation;
+        }
+      }
+  
+      return {
+        statusCode: 200,
+        message: 'Live location fetched successfully!',
+        data:
+          decodedHistoryOfLocation && decodedHistoryOfLocation.length > 0
+            ? decodedHistoryOfLocation
+            : [],
+      };
+    };
   maintainHistory = async (user, type, csvBeforeUpdate, csvAfterUpdate) => {
     const response = await this.editInsertLogModel.create({
       editedBy: {

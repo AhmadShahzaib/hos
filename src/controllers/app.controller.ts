@@ -1529,6 +1529,8 @@ export class AppController extends BaseController {
       }
 
       const allLocations = JSON.parse(JSON.stringify(response.data));
+      const stops = await this.HOSService.getStopsLocation(queryObj);
+
       //filter all driving events except ON OFF SB
       // let driving = allLocations.filter((element) => {
       //   return (
