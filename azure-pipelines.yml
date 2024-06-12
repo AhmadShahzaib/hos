@@ -5,24 +5,16 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-# steps:
-# - publish: '$(System.DefaultWorkingDirectory)'
-#   artifact: hos
 steps:
 - publish: '$(System.DefaultWorkingDirectory)'
   artifact: hos
-# - task: PublishBuildArtifacts@1
-#   inputs:
-#     PathtoPublish: '$(System.DefaultWorkingDirectory)'
-#     ArtifactName: 'hos'
-#     publishLocation: 'Container'
     
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
-- script: |
-    npm install
-    npm run lint
-    npm run build
-  displayName: Npm commands
+# - task: NodeTool@0
+#   inputs:
+#     versionSpec: '20.x'
+#   displayName: 'Install Node.js'
+# - script: |
+#     npm install
+#     npm run lint
+#     npm run build
+#   displayName: Npm commands
