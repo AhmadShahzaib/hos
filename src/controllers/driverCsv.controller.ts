@@ -375,7 +375,7 @@ export class DriverCsvController extends BaseController {
         end: date,
       };
       const resp = await this.driverCsvService.getLogform(query, user);
-      
+
       return res.status(200).send({
         message: 'Success',
         data: resp,
@@ -1373,14 +1373,19 @@ export class DriverCsvController extends BaseController {
                 startDate: dateQuery,
                 endDate: dateQuery,
               });
-              if (statusInfo.eventCode == '2' || statusInfo.eventCode == '1') {
+              if (statusInfo.eventCode == '1') {
                 logsOfnextDate[0].meta.powerUp = true;
-              } else if (
-                statusInfo.eventCode == '4' ||
-                statusInfo.eventCode == '3'
-              ) {
+              } else if (statusInfo.eventCode == '3') {
                 logsOfnextDate[0].meta.powerUp = false;
               }
+              // if (statusInfo.eventCode == '2' || statusInfo.eventCode == '1') {
+              //   logsOfnextDate[0].meta.powerUp = true;
+              // } else if (
+              //   statusInfo.eventCode == '4' ||
+              //   statusInfo.eventCode == '3'
+              // ) {
+              //   logsOfnextDate[0].meta.powerUp = false;
+              // }
               const result = await this.driverCsvService.addToDB(
                 logsOfnextDate[0],
                 user,
@@ -1463,7 +1468,7 @@ export class DriverCsvController extends BaseController {
                 startDate: dateQuery,
                 endDate: dateQuery,
               });
-              if (statusInfo.eventCode == '2' || statusInfo.eventCode == '1') {
+              if (statusInfo.eventCode == '2') {
                 logsOfnextDate[0].meta.powerUp = true;
               } else if (
                 statusInfo.eventCode == '4' ||
@@ -1471,6 +1476,14 @@ export class DriverCsvController extends BaseController {
               ) {
                 logsOfnextDate[0].meta.powerUp = false;
               }
+              // if (statusInfo.eventCode == '2' || statusInfo.eventCode == '1') {
+              //   logsOfnextDate[0].meta.powerUp = true;
+              // } else if (
+              //   statusInfo.eventCode == '4' ||
+              //   statusInfo.eventCode == '3'
+              // ) {
+              //   logsOfnextDate[0].meta.powerUp = false;
+              // }
               const result = await this.driverCsvService.addToDB(
                 logsOfnextDate[0],
                 user,
