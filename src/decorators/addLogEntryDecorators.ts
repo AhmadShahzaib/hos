@@ -12,7 +12,7 @@ export default function AddLogEntryDecorators() {
  
 
 
-  let responseExample1 = {
+  const responseExample1 = {
     "message": "Log Entry Added Successfully",
     "data": [
       {
@@ -38,7 +38,7 @@ export default function AddLogEntryDecorators() {
     ]
   }
 
-  let responseExample2 = {
+  const responseExample2 = {
     "message": "Log Entry Added Successfully",
     "data": [
       {
@@ -65,7 +65,7 @@ export default function AddLogEntryDecorators() {
     ]
   }
 
-  let responseExample3 = {
+  const responseExample3 = {
     "message": "Log Entry Added Successfully",
     "data": [
       {
@@ -113,7 +113,7 @@ export default function AddLogEntryDecorators() {
     ]
   }
 
-  let responseExample4 = {
+  const responseExample4 = {
     "message": "Log Entry Added Successfully",
     "data": [
       {

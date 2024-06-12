@@ -16,7 +16,7 @@ import {
 import { GraphDataResponseModel } from '../models/graphData.response.model';
 
 export default function GetGraphDataDecorators() {
-  let example1 = {
+  const example1 = {
     request: {},
     response: {
       message: 'Success',
@@ -173,7 +173,7 @@ export default function GetGraphDataDecorators() {
   return CombineDecorators(GetGraphDataDecorators);
 }
 export function GetDriverGraphDataDecorators() {
-  let example2 = {
+  const example2 = {
     request: {},
     response: {
       message: 'Success',

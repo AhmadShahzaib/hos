@@ -67,7 +67,7 @@ export const checkViolations = (
     RECAPE_HOURS,
     violation,
   } = params;
-  let endedAt = {
+  const endedAt = {
     eventDate: '',
     eventTime: '',
   };
@@ -92,12 +92,12 @@ export const checkViolations = (
     if (!BREAK_ENABLE || BREAK_VERIFIED) {
       duration = CONSECUTIVE_DRIVING - 8 * 60 * 60;
       if (currentLogEventDateTime.CURRENT_STATUS_TIME >= duration) {
-        let result = subtractDurationFromDate(nextLogEventDateTime, duration);
+        const result = subtractDurationFromDate(nextLogEventDateTime, duration);
         // if (result.newEventDate != currentLogEventDateTime.eventDate) {
         //   duration = currentLogEventDateTime.CURRENT_STATUS_TIME;
         // }
         // result = subtractDurationFromDate(nextLogEventDateTime, duration);
-        let obj = {
+        const obj = {
           startedAt: {
             eventDate: result.newEventDate,
             eventTime: result.newEventTime,
@@ -109,7 +109,7 @@ export const checkViolations = (
       } else if (currentLogEventDateTime.CURRENT_STATUS_TIME < duration) {
         duration = currentLogEventDateTime.CURRENT_STATUS_TIME;
         const result = subtractDurationFromDate(nextLogEventDateTime, duration);
-        let obj = {
+        const obj = {
           startedAt: {
             eventDate: result.newEventDate,
             eventTime: result.newEventTime,
@@ -132,13 +132,13 @@ export const checkViolations = (
     duration = DRIVING_WITH_OUT_ON_DUTY_ADDED - 11 * 60 * 60;
 
     if (currentLogEventDateTime.CURRENT_STATUS_TIME >= duration) {
-      let result = subtractDurationFromDate(nextLogEventDateTime, duration);
+      const result = subtractDurationFromDate(nextLogEventDateTime, duration);
       // if (result.newEventDate != currentLogEventDateTime.eventDate) {
       //   duration = currentLogEventDateTime.CURRENT_STATUS_TIME;
       // }
       // result = subtractDurationFromDate(nextLogEventDateTime, duration);
 
-      let obj = {
+      const obj = {
         startedAt: {
           eventDate: result.newEventDate,
           eventTime: result.newEventTime,
@@ -150,7 +150,7 @@ export const checkViolations = (
     } else if (currentLogEventDateTime.CURRENT_STATUS_TIME < duration) {
       duration = currentLogEventDateTime.CURRENT_STATUS_TIME;
       const result = subtractDurationFromDate(nextLogEventDateTime, duration);
-      let obj = {
+      const obj = {
         startedAt: {
           eventDate: result.newEventDate,
           eventTime: result.newEventTime,
@@ -173,12 +173,12 @@ export const checkViolations = (
   ) {
     duration = TOTAL_SHIFT_COUNTER - 14 * 60 * 60;
     if (currentLogEventDateTime.CURRENT_STATUS_TIME >= duration) {
-      let result = subtractDurationFromDate(nextLogEventDateTime, duration);
+      const result = subtractDurationFromDate(nextLogEventDateTime, duration);
       // if (result.newEventDate != currentLogEventDateTime.eventDate) {
       //   duration = currentLogEventDateTime.CURRENT_STATUS_TIME;
       // }
       // result = subtractDurationFromDate(nextLogEventDateTime, duration);
-      let obj = {
+      const obj = {
         startedAt: {
           eventDate: result.newEventDate,
           eventTime: result.newEventTime,
@@ -191,7 +191,7 @@ export const checkViolations = (
       duration = currentLogEventDateTime.CURRENT_STATUS_TIME;
       DRIVING_NOT_ALLOWED_IN_ONDUTY_WITH_OUT_SPLIT_VIOLATION = true;
       const result = subtractDurationFromDate(nextLogEventDateTime, duration);
-      let obj = {
+      const obj = {
         startedAt: {
           eventDate: result.newEventDate,
           eventTime: result.newEventTime,
@@ -206,12 +206,12 @@ export const checkViolations = (
   if (CURRENT_STATUS == 3 && ON_DUTY_NOT_DRIVING_CYCLE > 70 * 60 * 60) {
     duration = ON_DUTY_NOT_DRIVING_CYCLE - 70 * 60 * 60;
     if (currentLogEventDateTime.CURRENT_STATUS_TIME >= duration) {
-      let result = subtractDurationFromDate(nextLogEventDateTime, duration);
+      const result = subtractDurationFromDate(nextLogEventDateTime, duration);
       // if (result.newEventDate != currentLogEventDateTime.eventDate) {
       //   duration = currentLogEventDateTime.CURRENT_STATUS_TIME;
       // }
       // result = subtractDurationFromDate(nextLogEventDateTime, duration);
-      let obj = {
+      const obj = {
         startedAt: {
           eventDate: result.newEventDate,
           eventTime: result.newEventTime,
@@ -223,7 +223,7 @@ export const checkViolations = (
     } else if (currentLogEventDateTime.CURRENT_STATUS_TIME < duration) {
       duration = currentLogEventDateTime.CURRENT_STATUS_TIME;
       const result = subtractDurationFromDate(nextLogEventDateTime, duration);
-      let obj = {
+      const obj = {
         startedAt: {
           eventDate: result.newEventDate,
           eventTime: result.newEventTime,

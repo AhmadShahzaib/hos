@@ -1,17 +1,17 @@
 export default interface RecordTable extends Document {
-  driverId: String;
-  date: String;
-  driverName: String;
-  vehicleName: String;
-  shippingId: String;
-  signature: String;
-  hoursWorked: Number;
-  distance: String;
+  driverId: string;
+  date: string;
+  driverName: string;
+  vehicleName: string;
+  shippingId: string;
+  signature: string;
+  hoursWorked: number;
+  distance: string;
   violations: [];
   status: {};
   lastKnownActivity: {};
   clock: {};
   homeTerminalTimeZone: {};
-  tenantId: String;
-  isPti: { type: String; default: '-1' };
+  tenantId: string;
+  isPti: { type: string; default: '-1' };
 }

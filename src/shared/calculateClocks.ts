@@ -161,7 +161,7 @@ export const updateVariables = (
 
   if (CURRENT_STATUS == 4 || CURRENT_STATUS == 3) {
     if (SHIFT_STARTED != true) {
-      let SHIFT_START_DATE_TIME = {
+      const SHIFT_START_DATE_TIME = {
         eventDate: currentLogEventDateTime.eventDate,
         eventTime: currentLogEventDateTime.eventTime,
       };
@@ -376,7 +376,7 @@ export const updateVariables = (
   if (SLEEPER_BERTH_34_HOURS >= 34 * 60 * 60) {
     // Reset CYCLE_START_DATE and DRIVING_CYCLE if the driver has taken a sufficient off-duty or sleeper berth time or the current status is offDuty
     if (NUMBER_SHIFTS > 0) {
-      let duration = SLEEPER_BERTH_34_HOURS - 34 * 60 * 60;
+      const duration = SLEEPER_BERTH_34_HOURS - 34 * 60 * 60;
       const result = subtractDurationFromDate(nextLogEventDateTime, duration);
       CYCLE_START_DATE = {
         eventDate: result.newEventDate,

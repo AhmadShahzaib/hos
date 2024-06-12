@@ -1,49 +1,49 @@
 export default interface EditInsertLogsDocument extends Document {
-  driverId: String;
-  tenantId: String;
-  requestStatus: String;
-  isApproved: { type: String; enum: ['confirm', 'cancel', 'pending'] };
-  dateTime: String;
+  driverId: string;
+  tenantId: string;
+  requestStatus: string;
+  isApproved: { type: string; enum: ['confirm', 'cancel', 'pending'] };
+  dateTime: string;
   editDate: Date;
-  shippingDoc: String;
+  shippingDoc: string;
 lastItem:boolean;
   logs: [
     {
-      eventSequenceIdNumber: String;
-      eventRecordStatus: String;
-      eventRecordOrigin: String;
-      eventType: String;
-      eventCode: String;
-      eventDate: String;
-      eventTime: String;
-      accumulatedVehicleMiles: Number;
-      accumulatedEngineHours: Number;
-      eventLatitude: String;
-      eventLongitude: String;
-      distanceSinceLastValidCoordinates: Number;
-      correspondingCmvOrderNumber: String;
-      userOrderNumberForRecordOriginator: String;
-      malfunctionIndicatorStatusForEld: String;
-      dataDiagnosticEventIndicatorForDriver: String;
-      eventDataCheckValue: String;
-      lineDataCheckValue: String;
+      eventSequenceIdNumber: string;
+      eventRecordStatus: string;
+      eventRecordOrigin: string;
+      eventType: string;
+      eventCode: string;
+      eventDate: string;
+      eventTime: string;
+      accumulatedVehicleMiles: number;
+      accumulatedEngineHours: number;
+      eventLatitude: string;
+      eventLongitude: string;
+      distanceSinceLastValidCoordinates: number;
+      correspondingCmvOrderNumber: string;
+      userOrderNumberForRecordOriginator: string;
+      malfunctionIndicatorStatusForEld: string;
+      dataDiagnosticEventIndicatorForDriver: string;
+      eventDataCheckValue: string;
+      lineDataCheckValue: string;
     },
   ];
-  action: String;
-  status: String;
+  action: string;
+  status: string;
   editedBy: {
-    id: { type: String };
-    name: { type: String };
-    role: { type: String };
+    id: { type: string };
+    name: { type: string };
+    role: { type: string };
   };
   type: {
-    type: String;
+    type: string;
     enum: ['correction', 'transfer'];
   };
   shippingId: {
-    type: String;
+    type: string;
   };
-  trailerNumber: String;
+  trailerNumber: string;
   csvBeforeUpdate: {
     csv: {};
     violations: [];

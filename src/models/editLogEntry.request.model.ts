@@ -6,17 +6,17 @@ import { LogEntryRequestModel } from './logEntry.request.model';
 
 export class ExtendedLogEntryModel extends LogEntryRequestModel {
   @ApiPropertyOptional()
-  id: String;
+  id: string;
   @ApiPropertyOptional()
-  isApproved?: Boolean;
+  isApproved?: boolean;
 }
 
 export class EditLogEntryRequestModel {
   @ApiPropertyOptional()
-  driverId?: String;
+  driverId?: string;
 
   @ApiPropertyOptional()
-  tenantId?: String;
+  tenantId?: string;
 
   @ApiProperty()
   logs: Array<Array<ExtendedLogEntryModel>>;

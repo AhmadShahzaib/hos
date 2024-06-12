@@ -11,7 +11,7 @@ const options = {
 const geocoder = NodeGeocoder(options);
 
 export async function getAddress(data: LogsDocument) {
-    let updateAddressObject = {};
+    const updateAddressObject = {};
     if (isLatitude(data.lastKnownLocation.latitude) && isLongitude(data.lastKnownLocation.longitude)) {
         updateAddressObject['lastKnownLocation.address'] = await getAddressForCoordinates(data.lastKnownLocation.latitude, data.lastKnownLocation.longitude);
     }

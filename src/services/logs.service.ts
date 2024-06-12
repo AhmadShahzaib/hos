@@ -41,13 +41,13 @@ export class LogsService {
    */
 
   getContinuedStatusLogs = (logs) => {
-    let sortedLogs = logs.sort((a, b) => a['actionDate'] - b['actionDate']);
-    let onGoingArray = [];
-    let lastEntryFound = false;
+    const sortedLogs = logs.sort((a, b) => a['actionDate'] - b['actionDate']);
+    const onGoingArray = [];
+    const lastEntryFound = false;
     for (let i = sortedLogs.length - 1; i >= 0 && !lastEntryFound; i--) {
-      let l = sortedLogs[i];
-      let std = l.get('statusesData')['_doc'];
-      let lastEntryFound = Object.keys(std).reduce(
+      const l = sortedLogs[i];
+      const std = l.get('statusesData')['_doc'];
+      const lastEntryFound = Object.keys(std).reduce(
         (res, curr) => res || std[curr].hasOwnProperty('lastStartedAt'),
         false,
       );
@@ -98,7 +98,7 @@ export class LogsService {
    * isEditInsertReqExists - V2
    * Author : Farzan
    */
-  isEditInsertReqExists = async (dateTime: Date, driverId: String) => {
+  isEditInsertReqExists = async (dateTime: Date, driverId: string) => {
     console.group(`date -------- `, {
       driverId: driverId,
       dateTime: dateTime,

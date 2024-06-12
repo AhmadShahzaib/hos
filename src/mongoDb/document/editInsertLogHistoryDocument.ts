@@ -1,13 +1,13 @@
 export default interface editInsertLogHistory extends Document {
-  driverId: String;
+  driverId: string;
   driver: {
-    id: { type: String };
-    name: { type: String };
+    id: { type: string };
+    name: { type: string };
   };
   editedBy: {};
-  dateTime: String;
+  dateTime: string;
   status: {
-    type: String;
+    type: string;
   };
-  isApproved: String;
+  isApproved: string;
 }

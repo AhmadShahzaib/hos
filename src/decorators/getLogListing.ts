@@ -8,12 +8,12 @@ import {
     HOS,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 
-let response1 = {
+const response1 = {
     message: 'No Data Found',
     data: [],
 };
 
-let response2 = {
+const response2 = {
     message: 'Data Found',
     data: {
 

@@ -13,7 +13,7 @@ export default function editLogEntryDecorators() {
  
 
 
-  let responseExample1 = {
+  const responseExample1 = {
     "message": "Log entry updated successfully",
     "data": [
       {

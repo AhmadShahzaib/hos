@@ -114,7 +114,7 @@ export class AppService {
   // crud operations below.
 
   getEldOnDeviceId = async (eldId) => {
-    let messagePatternDevice = await firstValueFrom<MessagePatternResponseType>(
+    const messagePatternDevice = await firstValueFrom<MessagePatternResponseType>(
       this.deviceClient.send({ cmd: 'get_device_by_id' }, eldId),
     );
 
@@ -272,14 +272,14 @@ export class AppService {
   addEditLogRequestHistory = async (data, user, editedDay, requestStatus) => {
     try {
       const { id, tenantId, firstName, lastName, vehicleId } = data.driver;
-      let driverObject = {
+      const driverObject = {
         id: id,
         tenantId: tenantId,
         firstName: firstName,
         lastName: lastName,
         vehicleId: vehicleId,
       };
-      let dataToBeSaved = {
+      const dataToBeSaved = {
         driver: driverObject,
         editedBy: {
           id: user.id || user._id,
@@ -395,7 +395,7 @@ export class AppService {
    * Author : Farzan
    */
   getLiveLocation = async (obj) => {
-    let query = {
+    const query = {
       driverId: obj.driverId,
       date: obj.date, // YYYY-MM-DD
     };
@@ -407,7 +407,7 @@ export class AppService {
       // length == 0, indicates the previous day trips that are encrypted.
       // length != 0, indicates the current day trip. The current day trip is not encrypted.
       if (specificDayTrip.historyOfLocation.length == 0) {
-        let encryptedHistoryOfLocation =
+        const encryptedHistoryOfLocation =
           specificDayTrip.encryptedHistoryOfLocation;
         decodedHistoryOfLocation = await decrypt(encryptedHistoryOfLocation);
       } else {
@@ -490,7 +490,7 @@ export class AppService {
           data: [],
         };
       }
-      let id = queryParams.id;
+      const id = queryParams.id;
       where = {
         ...where,
         dateTime: dateTime,
@@ -498,7 +498,7 @@ export class AppService {
       };
     } else {
       selectableString = 'csvBeforeUpdate csvAfterUpdate';
-      let id = queryParams.id;
+      const id = queryParams.id;
       where = {
         ...where,
         _id: id,
@@ -567,7 +567,7 @@ export class AppService {
         data: [],
       };
     }
-    let id = queryParams.id;
+    const id = queryParams.id;
     where = {
       ...where,
       dateTime: dateTime,
@@ -585,8 +585,8 @@ export class AppService {
       };
     }
 
-    let logs = response.filter((element) => {
-      let dateOfLogs = moment
+    const logs = response.filter((element) => {
+      const dateOfLogs = moment
         .unix(Number(element.dateTime))
         .tz('America/Chicago');
       if (
@@ -646,7 +646,7 @@ export class AppService {
     );
     // dutyStatusList = this.sortingDateTime(dutyStatusList);
     //
-    let inActiveLogs = dutyStatusList.filter(
+    const inActiveLogs = dutyStatusList.filter(
       (item) => item.eventRecordStatus == '2', // In active
     );
 
@@ -762,7 +762,7 @@ export class AppService {
               if (item.eventTime >= payloadLog.startTime) {
                 item.intermediateType = getIntermediateType(payloadLog);
               } else if (item.eventTime < payloadLog.startTime) {
-                let drIn = this.getPrevIndex(
+                const drIn = this.getPrevIndex(
                   index,
                   dutyStatusListLengthBeforeEdit,
                   dutyStatusList,
@@ -780,7 +780,7 @@ export class AppService {
 
         if (endTimeChange) {
           for (let i = index + 1; i < dutyStatusListLengthBeforeEdit; i++) {
-            let item = dutyStatusList[i];
+            const item = dutyStatusList[i];
             if (item.eventType == 2 && !editableLogConditions(item)) {
               let drIn;
               if (item.eventTime > payloadLog.endTime) {
@@ -1074,7 +1074,7 @@ export class AppService {
       isApproved: 'pending',
     });
 
-    let isUpdated = await this.editInsertLogModel.findOne({
+    const isUpdated = await this.editInsertLogModel.findOne({
       driverId: driverId,
       dateTime: dateTime,
       isApproved: 'pending',
@@ -1090,8 +1090,8 @@ export class AppService {
   };
 
   generateCsvImages = async (data) => {
-    let imageStrings = {};
-    let responseArr = [];
+    const imageStrings = {};
+    const responseArr = [];
     let obj;
 
     const isEdit = await this.editInsertLogModel.find({
@@ -1108,8 +1108,8 @@ export class AppService {
 
     /* The above code is a TypeScript loop that iterates over an array called `isEdit`. */
     for (let i = 0; i < isEdit.length; i++) {
-      let unixDateTime = isEdit[i].dateTime;
-      let DateOfEdit = moment
+      const unixDateTime = isEdit[i].dateTime;
+      const DateOfEdit = moment
         .unix(Number(unixDateTime))
         .tz(data.homeTerminalTimeZone.tzCode);
       console.log(
@@ -1130,8 +1130,8 @@ export class AppService {
       /* The above code is declaring two variables, `csvBeforeUpdate` and `csvAfterUpdate`, and
      assigning them values from the `csv` properties of the `csvBeforeUpdate` and `csvAfterUpdate`
      objects within the `isEdit` array at index `i`. */
-      let csvBeforeUpdate = isEdit[i].csvBeforeUpdate.csv;
-      let csvAfterUpdate = isEdit[i].csvAfterUpdate.csv;
+      const csvBeforeUpdate = isEdit[i].csvBeforeUpdate.csv;
+      const csvAfterUpdate = isEdit[i].csvAfterUpdate.csv;
 
       imageStrings['csvBeforeUpdate'] = await this.convertToImage(
         obj,
@@ -1175,7 +1175,7 @@ export class AppService {
         csv: csv,
       };
 
-      let messagePatternReport = await firstValueFrom(
+      const messagePatternReport = await firstValueFrom(
         this.reportClient.send({ cmd: 'edit_Report' }, requestParams),
       );
       if (messagePatternReport.isError) {

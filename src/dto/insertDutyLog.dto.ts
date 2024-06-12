@@ -3,28 +3,28 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 export class InsertDutyStatusDTO {
 
  @IsNotEmpty()
- driverId: String;
+ driverId: string;
   @IsNotEmpty()
-  date: String;
+  date: string;
   @IsNotEmpty()
-  startTime: String;
+  startTime: string;
     @IsNotEmpty()
-    endTime: String;
+    endTime: string;
  
     @IsNotEmpty()
-    eventType: String;
+    eventType: string;
     @IsNotEmpty()
-  eventCode: String;
+  eventCode: string;
     @IsNotEmpty()
-    lat: String;
+    lat: string;
     @IsNotEmpty()
-  long: String;
+  long: string;
     @IsNotEmpty()
-    address: String;
+    address: string;
     @IsNotEmpty()
-  odometer: String;
+  odometer: string;
     @IsOptional()
-    engineHour: String;
+    engineHour: string;
     @IsOptional()
     truck: string
      @IsOptional()
