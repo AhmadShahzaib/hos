@@ -37,6 +37,8 @@ const ObjectId = mongoose.Types.ObjectId;
 import { groupBy, mapValues, update } from 'lodash';
 import { LogsController } from 'controllers/logs.controller';
 import DriverLiveLocationDocument from 'mongoDb/document/driverLiveLocation.document';
+import DriverStopLocationDocument from 'mongoDb/document/driverStopLocation.document';
+
 import HistoryDocument from 'mongoDb/document/history.document';
 import EditInsertLogsDocument from 'mongoDb/document/editInsertLogsDocument';
 import { duplicateAndModifyDutyStatus } from 'utils/duplicateAndModifyDutyStatus';
@@ -59,6 +61,8 @@ export class AppService {
     private editInsertLogModel: Model<EditInsertLogsDocument>,
     @InjectModel('driverLiveLocation')
     private driverLiveLocationModel: Model<DriverLiveLocationDocument>,
+    @InjectModel('driverStopLocation')
+    private driverStopLocationModel: Model<DriverStopLocationDocument>,
     @InjectModel('history')
     private historyModel: Model<HistoryDocument>,
     @Inject('UNITS_SERVICE') private readonly unitsClient: ClientProxy,
@@ -389,6 +393,51 @@ export class AppService {
         : [obj?.historyOfLocation],
     };
   };
+ /**
+   * driver stops - V2
+   * Author : Not Farzan
+   */
+ addStops = async (obj) => {
+  const { driverId, tenantId, date, historyOfLocation } = obj;
+
+  // Collect data for current date
+  const driverStopLocationTrackable =
+    await this.driverStopLocationModel.findOne({
+      driverId: driverId,
+      date: date,
+    });
+
+  // Append latest locations to the previous ones
+  if (driverStopLocationTrackable) {
+    driverStopLocationTrackable.historyOfLocation = [
+      ...driverStopLocationTrackable.historyOfLocation,
+      ...historyOfLocation,
+    ];
+
+    // Update the latest changes
+    await driverStopLocationTrackable.save();
+  } else {
+    // If record not exists, create a new one
+    const isCreated = await this.driverStopLocationModel.create({
+      driverId,
+      tenantId,
+      date,
+      historyOfLocation,
+    
+    });
+
+    
+    
+  }
+
+  return {
+    statusCode: 200,
+    message: 'Live location updated successfully!',
+    data: driverStopLocationTrackable?.historyOfLocation
+      ? driverStopLocationTrackable?.historyOfLocation
+      : [obj?.historyOfLocation],
+  };
+};
 
   /**
    * driver specific day trips

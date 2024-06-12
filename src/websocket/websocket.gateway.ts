@@ -254,6 +254,82 @@ export class WebsocketGateway
       throw error;
     }
   }
+
+  @SubscribeMessage('addStops')
+  async addStops(
+    @MessageBody()
+    data,
+  ) {
+    try {
+      const { queryParams, reqBody } = data;
+
+      let user;
+      let { meta } = reqBody;
+      const { historyOfLocation } = reqBody;
+      const { date, driverId } = queryParams;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+      }
+      const SpecificClient = user.client;
+      const tenantId = user.tenantId;
+
+      // Ascending order sorting wrt to date time
+      const sortedArray = await sortLiveLocations(historyOfLocation);
+
+      //  Get recent location
+      const recentHistory = sortedArray[sortedArray.length - 1];
+
+      // Meta object creation
+      if (meta?.address == '') {
+        delete recentHistory?.address;
+      }
+      if (!meta) {
+        meta = {};
+      }
+      meta['lastActivity'] = {
+        odoMeterMillage: recentHistory?.odometer,
+        engineHours: recentHistory?.engineHours,
+        currentTime: recentHistory?.time,
+        currentDate: recentHistory?.date,
+        latitude: recentHistory?.latitude,
+        longitude: recentHistory?.longitude,
+        address: recentHistory?.address,
+        speed: recentHistory?.speed,
+        currentEventCode: recentHistory?.status || '1',
+        currentEventType: recentHistory?.eventType,
+      };
+      user.id = user.id ? user.id : user._id;
+      // Assign recent location to units by message pattern
+      const messagePatternUnits =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+        );
+      if (messagePatternUnits.isError) {
+        mapMessagePatternResponseToException(messagePatternUnits);
+      }
+
+      // Pass related data to the model
+      const response = await this.HOSService.addStops({
+        driverId: driverId,
+        tenantId,
+        date,
+        historyOfLocation: sortedArray,
+      }); // await removed
+      this.server.to(SpecificClient).emit('locationAdd', {
+        message: 'entry added successfully',
+        data: {  },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
   @SubscribeMessage('addSync')
   async addDataDriver(@MessageBody() queryParams: any): Promise<any> {
     try {
