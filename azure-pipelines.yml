@@ -9,6 +9,8 @@ pool:
 # - publish: '$(System.DefaultWorkingDirectory)'
 #   artifact: hos
 steps:
+- publish: '$(System.DefaultWorkingDirectory)'
+  artifact: hos
 - task: NodeTool@0
   inputs:
     versionSpec: '20.x'
@@ -24,5 +26,3 @@ steps:
 #     publishLocation: 'Container'
 #   condition: succeeded()
 
-- publish: '$(System.DefaultWorkingDirectory)'
-  artifact: hos
