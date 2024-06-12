@@ -9,8 +9,14 @@ pool:
 # - publish: '$(System.DefaultWorkingDirectory)'
 #   artifact: hos
 steps:
-- publish: '$(System.DefaultWorkingDirectory)'
-  artifact: hos
+# - publish: '$(System.DefaultWorkingDirectory)'
+#   artifact: hos
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(System.DefaultWorkingDirectory)'
+    ArtifactName: 'hos'
+    publishLocation: 'Container'
+    
 - task: NodeTool@0
   inputs:
     versionSpec: '20.x'
@@ -20,10 +26,5 @@ steps:
     npm run lint
     npm run build
   displayName: Npm commands
-# - task: PublishBuildArtifacts@1
-#   inputs:
-#     PathtoPublish: '$(System.DefaultWorkingDirectory)'
-#     ArtifactName: 'hos'
-#     publishLocation: 'Container'
-#   condition: succeeded()
+
 
