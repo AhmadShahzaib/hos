@@ -690,6 +690,7 @@ export class DriverCsvService {
               lastCalculations.powerUp = false;
             }
             const response = await this.addToDB(latestCSV, user);
+           
           } else {
             // need to test create missing Csv as i don't have latestCsv now
 
@@ -805,7 +806,7 @@ export class DriverCsvService {
       recordMade.signature = '0';
     }
     recordMade.hoursWorked =
-      latestCSV.meta?.deviceCalculations?.ON_DUTY_NOT_DRIVING_WITH_OUT_SPLIT;
+      latestCSV.meta?.deviceCalculations?.HOURS_WORKED;
     recordMade.distance = latestCSV.meta?.totalVehicleMiles;
     // recordMade.homeTerminalTimeZone = user?.homeTerminalTimeZone;
     // recordMade.tenantId = user?.tenantId;
@@ -3899,13 +3900,19 @@ return {shippingIds,trailerIds}
     }
   };
   addAndUpdateDriverRecord = async (data) => {
-    const record = await this.recordTable.findOneAndUpdate(
-      { driverId: data.driverId, date: data.date },
-      { $set: data },
-      { upsert: true, returnDocument: 'after' },
-    );
-
-    return record;
+    try {
+      const record = await this.recordTable.findOneAndUpdate(
+        { driverId: data.driverId, date: data.date },
+        { $set: data },
+        { upsert: true, returnDocument: 'after' },
+      );
+  
+      return record;
+    } catch (error) {
+      Logger.log(error);
+      throw error
+    }
+    
   };
   findByDriveAndDate = async (ids, queryParams) => {
     let records;
