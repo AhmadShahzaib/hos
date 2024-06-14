@@ -228,6 +228,11 @@ export class WebsocketGateway
         speed: recentHistory?.speed,
         currentEventCode: recentHistory?.status || '1',
         currentEventType: recentHistory?.eventType,
+        fuel: recentHistory?.fuel,
+        coolantLevel: recentHistory?.coolantLevel,
+        coolantTemperature: recentHistory?.coolantTemperature,
+        oilLevel: recentHistory?.oilLevel,
+        oilTemprature: recentHistory?.oilTemprature,
       };
       user.id = user.id ? user.id : user._id;
       // Assign recent location to units by message pattern
@@ -248,14 +253,14 @@ export class WebsocketGateway
       }); // await removed
       this.server.to(SpecificClient).emit('locationAdd', {
         message: 'entry added successfully',
-        data: {  },
+        data: {},
       });
     } catch (error) {
       throw error;
     }
   }
 
-  @SubscribeMessage('addStops')//branch change 
+  @SubscribeMessage('addStops') //branch change
   async addStops(
     @MessageBody()
     data,
@@ -293,7 +298,7 @@ export class WebsocketGateway
       if (!meta) {
         meta = {};
       }
-     
+
       meta['lastActivity'] = {
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
@@ -305,11 +310,11 @@ export class WebsocketGateway
         speed: recentHistory?.speed,
         currentEventCode: recentHistory?.status || '1',
         currentEventType: recentHistory?.eventType,
-        fuel:recentHistory?.fuel,
-        coolantLevel:recentHistory?.coolantLevel,
-        coolantTemperature:recentHistory?.coolantTemperature,
-        oilLevel:recentHistory?.oilLevel,
-        oilTemprature:recentHistory?.oilTemprature
+        fuel: recentHistory?.fuel,
+        coolantLevel: recentHistory?.coolantLevel,
+        coolantTemperature: recentHistory?.coolantTemperature,
+        oilLevel: recentHistory?.oilLevel,
+        oilTemprature: recentHistory?.oilTemprature,
       };
       user.id = user.id ? user.id : user._id;
       // Assign recent location to units by message pattern
@@ -330,7 +335,7 @@ export class WebsocketGateway
       }); // await removed
       this.server.to(SpecificClient).emit('locationAdd', {
         message: 'entry added successfully',
-        data: {  },
+        data: {},
       });
     } catch (error) {
       throw error;
