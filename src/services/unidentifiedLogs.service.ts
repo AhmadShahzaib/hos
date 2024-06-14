@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginationDto } from 'dto/pagination.dto';
 import UnidentifiedLogsDocument from 'mongoDb/document/unidentifiedLog.document';
-import { Model } from 'mongoose';
+import { Model,Types } from 'mongoose';
 import { paginator } from 'utils/pagination';
 
 @Injectable()
@@ -325,7 +325,30 @@ const currentDriver=  unidentifiedLog.driverId;
       data: {},
     };
   };
+  deleteMany = async (ids) => {
+    // const objectIds = ids.map(id => new Types.ObjectId(id));
+    const obj = await this.unidentifiedLogsModel.deleteMany({
+      _id: {
+        $in: ids,
+      },
+    });
+    if (obj.deletedCount > 0) {
+      const response = {
+        statusCode: 200,
+        message: 'Log deleted successfully!',
+        data: {},
+      };
+      return response;
+    }
 
+    const response = {
+      statusCode: 200,
+      message: 'Not Found!',
+      data: {},
+    };
+    return response;
+
+  };
   /**
    * Edit Inset Logs
    * Description:

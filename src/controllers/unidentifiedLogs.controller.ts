@@ -20,14 +20,14 @@ import { PaginationDto } from 'dto/pagination.dto';
 import { UpdateUnidentifiedLogsDto } from 'dto/updateUnidentifiedLogs.dto';
 import { UnidentifiedLogsService } from '../services/unidentifiedLogs.service';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
-import unidentifiedCancel from '../decorators/unidentifiedCancel'
-import  unidentifiedRespond from '../decorators/unidentifiedRespond'
-import  unidentifiedAdd from '../decorators/unidentifiedAdd'
-import  unidentifiedGet from '../decorators/unidentifiedGet'
-import  unidentifiedGetById from '../decorators/unidentifiedGetById'
-import  unidentifiedEdit from '../decorators/unidentifiedEdit'
-
-unidentifiedEdit
+import unidentifiedCancel from '../decorators/unidentifiedCancel';
+import unidentifiedRespond from '../decorators/unidentifiedRespond';
+import unidentifiedAdd from '../decorators/unidentifiedAdd';
+import unidentifiedGet from '../decorators/unidentifiedGet';
+import unidentifiedGetById from '../decorators/unidentifiedGetById';
+import unidentifiedEdit from '../decorators/unidentifiedEdit';
+import unidentifiedDelete from '../decorators/unidentifiedDelete';
+unidentifiedEdit;
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ClientProxy } from '@nestjs/microservices';
 import {
@@ -496,6 +496,7 @@ export class UnidentifiedLogsController {
       });
     }
   }
+
   /**
    * Assing unidentified logs  - V2
    * Description:
@@ -606,7 +607,34 @@ export class UnidentifiedLogsController {
       throw error;
     }
   }
+  /**
+   * Delete unidentified logs  - V2
+   * Description:
+   *            Currently the api is designed to Delete unidentified log
+   * Author :  NOT Farzan
+   */
+  @unidentifiedDelete()
+  async deleteUnidentified(@Body() data, @Res() res, @Req() req) {
+    try {
+      const { unidentifiedLogIds } = data;
+      const response: any = await this.unidetifiedLogsService.deleteMany(
+        unidentifiedLogIds,
+      );
 
+      if (response.statusCode == 200) {
+        return res.status(response.statusCode).send(response);
+      } else {
+        return res.status(403).send({
+          statusCode: 403,
+          message: 'Not permissible to access the route!',
+          data: [],
+        });
+      }
+    } catch (error) {
+      Logger.error({ message: error.message, stack: error.stack });
+      throw error;
+    }
+  }
   /**
    * Accumulated hours - V2
    * Description:
