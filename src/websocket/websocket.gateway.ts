@@ -293,6 +293,7 @@ export class WebsocketGateway
       if (!meta) {
         meta = {};
       }
+     
       meta['lastActivity'] = {
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
@@ -304,6 +305,11 @@ export class WebsocketGateway
         speed: recentHistory?.speed,
         currentEventCode: recentHistory?.status || '1',
         currentEventType: recentHistory?.eventType,
+        fuel:recentHistory?.fuel,
+        coolantLevel:recentHistory?.coolantLevel,
+        coolantTemperature:recentHistory?.coolantTemperature,
+        oilLevel:recentHistory?.oilLevel,
+        oilTemprature:recentHistory?.oilTemprature
       };
       user.id = user.id ? user.id : user._id;
       // Assign recent location to units by message pattern
