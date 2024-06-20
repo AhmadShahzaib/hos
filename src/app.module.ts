@@ -28,6 +28,8 @@ import { UnidentifiedLogsSchema } from 'mongoDb/schema/unidentifiedLogs.schema';
 import { EditInsertLogsSchema } from 'mongoDb/schema/editInsertLogsSchema';
 import { EditInsertLogHistorySchema } from 'mongoDb/schema/editInsertLogHistorySchema';
 import { DriverLiveLocationSchema } from 'mongoDb/schema/driverLiveLocation.schema';
+import { DriverStopLocationSchema } from 'mongoDb/schema/driverStopLocation.schema';
+
 import { HistorySchema } from 'mongoDb/schema/history.schema';
 import { RecordTableSchema } from 'mongoDb/schema/recordTable.schema';
 // import { WebsocketModule } from './websocket/websocket.module';
@@ -63,6 +65,8 @@ const getProxyObject = (
       { name: 'EditInsertLogs', schema: EditInsertLogsSchema },
       { name: 'EditInsertLogHistory', schema: EditInsertLogHistorySchema },
       { name: 'driverLiveLocation', schema: DriverLiveLocationSchema },
+      { name: 'driverStopLocation', schema: DriverStopLocationSchema },
+
       {name:'RecordTable',schema:RecordTableSchema},
       { name: 'history', schema: HistorySchema },
     ]), // { name: 'driverCsvData', schema: DriverCsvSchema } { name: 'unidentifiedlog', schema: unidentifiedLogsSchema }

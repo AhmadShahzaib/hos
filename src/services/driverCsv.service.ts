@@ -53,8 +53,8 @@ import RecordTable from 'mongoDb/document/recordTable.document';
 import { timeDifference } from 'utils/timeDifference';
 import { isArray } from 'lodash';
 
-let Schema = mongoose.Schema;
-let globalIntermediates = {};
+const Schema = mongoose.Schema;
+const globalIntermediates = {};
 global.globalIntermediatesArray = [];
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -77,7 +77,7 @@ export class DriverCsvService {
         DriverCsvSchema,
         collectionName,
       );
-      let existingData = await dynamicModel.find().lean();
+      const existingData = await dynamicModel.find().lean();
     } catch (error) {}
   };
 
@@ -90,7 +90,7 @@ export class DriverCsvService {
 
       let deviceCalculation = lastCalculations; // previous day's valid calculations run till 23:59:59
 
-      let allHosRelatedStatuses = [];
+      const allHosRelatedStatuses = [];
       deviceCalculation.violation = [];
 
       // Filter all valid and active duty statuses
@@ -110,8 +110,8 @@ export class DriverCsvService {
       );
 
       let newcurrentCalculations; //this is the variable to put all device calulations after each log
-      let violationArray = [];
-      let currentDate = allHosRelatedStatuses[0].eventDate;
+      const violationArray = [];
+      const currentDate = allHosRelatedStatuses[0].eventDate;
       deviceCalculation.SHIFT_START_DATE = [];
       deviceCalculation.CYCLE_START_DATE = {
         eventDate: '',
@@ -193,7 +193,7 @@ export class DriverCsvService {
           deviceCalculation.violation.length > 0
         ) {
           //added a loop to remove extra violations
-          let violationsLoop = deviceCalculation.violation.length;
+          const violationsLoop = deviceCalculation.violation.length;
           for (let q = 0; q < violationsLoop; q++) {
             if (
               deviceCalculation.violation[0].startedAt.eventDate != currentDate
@@ -206,7 +206,7 @@ export class DriverCsvService {
             }
           }
         }
-        let currentLogEventDateTime = {
+        const currentLogEventDateTime = {
           eventDate: element.eventDate,
           eventTime: element.eventTime,
           CURRENT_STATUS_TIME: 0,
@@ -263,7 +263,7 @@ export class DriverCsvService {
       newcurrentCalculations.violation.push(...violationArray);
       const currentClocks = calculateClocks(clockCalculationParams);
 
-      let mergedVoilations = this.mergeAndFilterArrays(
+      const mergedVoilations = this.mergeAndFilterArrays(
         newcurrentCalculations.violation,
         newcurrentCalculations.violation,
       );
@@ -404,7 +404,7 @@ export class DriverCsvService {
     }
 
     // Get logs of river between date
-    let logsOfSelectedDate = await this.get_logs_between_range({
+    const logsOfSelectedDate = await this.get_logs_between_range({
       driverId: driverId,
       startDate: date,
       endDate: date,
@@ -462,7 +462,7 @@ export class DriverCsvService {
 
       for (let i = 0; i < Object.keys(object).length; i++) {
         for (let j = 0; j < array.length; j++) {
-          let indexDate = moment(array[j].eventDate, 'MMDDYY').format(
+          const indexDate = moment(array[j].eventDate, 'MMDDYY').format(
             'YYYY-MM-DD',
           );
           console.log(`eventDate in array ----- `, array[j].eventDate);
@@ -475,7 +475,7 @@ export class DriverCsvService {
       }
 
       for (let i = 0; i < Object.keys(object).length; i++) {
-        let logsOfSelectedDate = await this.get_logs_between_range({
+        const logsOfSelectedDate = await this.get_logs_between_range({
           driverId: driverId,
           startDate: Object.keys(object)[i],
           endDate: Object.keys(object)[i],
@@ -515,15 +515,15 @@ export class DriverCsvService {
   /////////////////////////////////
   createMissingCSV = async (latestCSV: any, user: any, date) => {
     try {
-      let companyTimeZone = user.homeTerminalTimeZone.tzCode;
-      let finalCsv = latestCSV.csv;
+      const companyTimeZone = user.homeTerminalTimeZone.tzCode;
+      const finalCsv = latestCSV.csv;
       latestCSV.meta.dateTime = moment.tz(date, companyTimeZone).unix();
       latestCSV.meta.pti = '0';
       latestCSV.date = date;
 
       finalCsv.eventAnnotationsCommentsAndDriverLocation = [];
       finalCsv.eldEventListForDriverCertificationOfOwnRecords = [];
-      let newLog =
+      const newLog =
         finalCsv.eldEventListForDriversRecordOfDutyStatus[
           finalCsv.eldEventListForDriversRecordOfDutyStatus.length - 1
         ];
@@ -539,7 +539,7 @@ export class DriverCsvService {
       newLog.eventTime = '000000';
       newLog.eventDate = moment(date).format('MMDDYY');
       newLog.eventSequenceIdNumber = generateUniqueHexId();
-      let logCheckSum = this.getLogChecksum(newLog);
+      const logCheckSum = this.getLogChecksum(newLog);
       newLog.eventDataCheckValue = logCheckSum['eventDataCheckValue'];
       newLog.lineDataCheckValue = logCheckSum['lineDataCheckValue'];
       finalCsv.eldEventListForDriversRecordOfDutyStatus.push(newLog);
@@ -555,10 +555,10 @@ export class DriverCsvService {
         }
       });
 
-      let result = checkSum(dataStr);
+      const result = checkSum(dataStr);
       finalCsv.timePlaceLine.lineDataCheckValue = result.hexa;
       latestCSV.csv = finalCsv;
-      let originalLogs = {
+      const originalLogs = {
         cmvEnginePowerUpShutDownActivity: [],
         eldEventListForDriverCertificationOfOwnRecords: [],
         eldEventListForDriversRecordOfDutyStatus:
@@ -577,8 +577,8 @@ export class DriverCsvService {
   //update todays csv
   updateCSV = async (latestCSV: any, user: any, date) => {
     try {
-      let companyTimeZone = user.homeTerminalTimeZone.tzCode;
-      let finalCsv = latestCSV.csv;
+      const companyTimeZone = user.homeTerminalTimeZone.tzCode;
+      const finalCsv = latestCSV.csv;
       latestCSV.meta.dateTime = moment.tz(date, companyTimeZone).unix();
 
       finalCsv.timePlaceLine.currentDate = moment(date).format('MMDDYY');
@@ -593,7 +593,7 @@ export class DriverCsvService {
         }
       });
 
-      let result = checkSum(dataStr);
+      const result = checkSum(dataStr);
       finalCsv.timePlaceLine.lineDataCheckValue = result.hexa;
       latestCSV.csv = finalCsv;
       delete latestCSV._id;
@@ -611,10 +611,10 @@ export class DriverCsvService {
         dataStr += newLog[item];
       }
     });
-    let logCheckSum = {};
-    let eventChecksum = eventCheckSum(dataStr);
+    const logCheckSum = {};
+    const eventChecksum = eventCheckSum(dataStr);
     logCheckSum['eventDataCheckValue'] = eventChecksum.hexa;
-    let result = checkSum(dataStr + eventChecksum.hexa);
+    const result = checkSum(dataStr + eventChecksum.hexa);
     logCheckSum['lineDataCheckValue'] = result.hexa;
     return logCheckSum;
   };
@@ -623,7 +623,7 @@ export class DriverCsvService {
     try {
       if (recentCSV && recentCSV[0]?.meta?.deviceCalculations) {
         // check if the most recent csv has proper data
-        let lastSyncTime = moment
+        const lastSyncTime = moment
           .unix(recentCSV[0]?.meta?.deviceCalculations.LAST_SYNC_TIME)
           .tz(user.homeTerminalTimeZone.tzCode);
         let lastCalculations;
@@ -633,8 +633,8 @@ export class DriverCsvService {
         } else {
           let dateOfQuery = moment(recentCSV[0].date);
           dateOfQuery = dateOfQuery.subtract(1, 'days');
-          let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-          let previusQuery = {
+          const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+          const previusQuery = {
             start: dateQuery,
             end: dateQuery,
           };
@@ -642,7 +642,7 @@ export class DriverCsvService {
           lastCalculations =
             lastCalculatedData.graphData[0]?.meta?.deviceCalculations;
         }
-        let currentDateTimeUnix = moment()
+        const currentDateTimeUnix = moment()
           .tz(user.homeTerminalTimeZone.tzCode)
           .unix();
         const datesBetween = getDatesBetweenUnixTimestamps(
@@ -654,10 +654,10 @@ export class DriverCsvService {
           recentCSV[0].meta.dateTime,
           currentDateTimeUnix,
         );
-        let isDataPresent = await this.findByDriverID(user._id, '');
+        const isDataPresent = await this.findByDriverID(user._id, '');
 
         if (isDataPresent.length > 0) {
-          let result = await this.deleteDriverRecord(user._id, '');
+          const result = await this.deleteDriverRecord(user._id, '');
         }
         let latestCSV;
         for (const date of datesBetween) {
@@ -676,7 +676,7 @@ export class DriverCsvService {
                 .eldEventListForDriversRecordOfDutyStatus,
               lastCalculations,
             );
-            let powerUp = latestCSV.csv.cmvEnginePowerUpShutDownActivity;
+            const powerUp = latestCSV.csv.cmvEnginePowerUpShutDownActivity;
             powerUp.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
             if (
               powerUp.length > 0 &&
@@ -689,7 +689,8 @@ export class DriverCsvService {
             ) {
               lastCalculations.powerUp = false;
             }
-            let response = await this.addToDB(latestCSV, user);
+            const response = await this.addToDB(latestCSV, user);
+           
           } else {
             // need to test create missing Csv as i don't have latestCsv now
 
@@ -700,12 +701,12 @@ export class DriverCsvService {
               latestCSV = this.calculateHOS(latestCSV, lastCalculations, user);
               lastCalculations = latestCSV.meta.deviceCalculations;
 
-              let response = await this.addToDB(latestCSV, user);
+              const response = await this.addToDB(latestCSV, user);
               lastCalculations = this.updateLastStatus(
                 latestCSV.csv.eldEventListForDriversRecordOfDutyStatus,
                 lastCalculations,
               );
-              let powerUp = latestCSV.csv.cmvEnginePowerUpShutDownActivity;
+              const powerUp = latestCSV.csv.cmvEnginePowerUpShutDownActivity;
               powerUp.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
               if (
                 powerUp.length > 0 &&
@@ -726,7 +727,7 @@ export class DriverCsvService {
 
               latestCSV = this.calculateHOS(latestCSV, lastCalculations, user);
               lastCalculations = latestCSV.meta.deviceCalculations;
-              let response = await this.addToDB(latestCSV, user);
+              const response = await this.addToDB(latestCSV, user);
               lastCalculations = this.updateLastStatus(
                 latestCSV.csv.eldEventListForDriversRecordOfDutyStatus,
                 lastCalculations,
@@ -760,7 +761,7 @@ export class DriverCsvService {
 
   //**************************************** */
   updateRecordMade = async (user, latestCSV) => {
-    let recordMade = {
+    const recordMade = {
       driverId: '',
       date: '2023-10-25',
       // driverName: 'Sharif',
@@ -805,7 +806,7 @@ export class DriverCsvService {
       recordMade.signature = '0';
     }
     recordMade.hoursWorked =
-      latestCSV.meta?.deviceCalculations?.ON_DUTY_NOT_DRIVING_WITH_OUT_SPLIT;
+      latestCSV.meta?.deviceCalculations?.HOURS_WORKED;
     recordMade.distance = latestCSV.meta?.totalVehicleMiles;
     // recordMade.homeTerminalTimeZone = user?.homeTerminalTimeZone;
     // recordMade.tenantId = user?.tenantId;
@@ -815,14 +816,14 @@ export class DriverCsvService {
     recordMade.isPti = latestCSV?.meta?.pti;
 
     // call function and update or add deatils here.
-    let resRecord = await this.addAndUpdateDriverRecord(recordMade);
+    const resRecord = await this.addAndUpdateDriverRecord(recordMade);
     return resRecord;
   };
   flowOfHOSForPrevious = async (recentCSV, user) => {
     try {
       if (recentCSV && recentCSV[0]?.meta?.deviceCalculations) {
         // check if the most recent csv has proper data
-        let lastSyncTime = moment
+        const lastSyncTime = moment
           .unix(recentCSV[0]?.meta?.deviceCalculations.LAST_SYNC_TIME)
           .tz(user.homeTerminalTimeZone.tzCode);
         let lastCalculations;
@@ -834,8 +835,8 @@ export class DriverCsvService {
           //if not end of day then go back to the previous day data.
           let dateOfQuery = moment(recentCSV[0].date);
           dateOfQuery = dateOfQuery.subtract(1, 'days');
-          let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-          let previusQuery = {
+          const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+          const previusQuery = {
             start: dateQuery,
             end: dateQuery,
           };
@@ -844,7 +845,7 @@ export class DriverCsvService {
             lastCalculatedData.graphData[0].meta.deviceCalculations;
         }
         //get the current time and date accordin to the timzone of driver
-        let currentDateTimeUnix = moment()
+        const currentDateTimeUnix = moment()
           .tz(user.homeTerminalTimeZone.tzCode)
           .unix();
         //get all th dates between the curent date and the time we started calculations from
@@ -861,7 +862,7 @@ export class DriverCsvService {
         datesBetween.shift();
         let index = 0;
         for (const date of datesBetween) {
-          let query = {
+          const query = {
             start: date,
             end: date,
           };
@@ -877,7 +878,7 @@ export class DriverCsvService {
           } else {
             latestCSV = latestCSV[0];
           }
-          let lastData = { lastObject: {}, lastPower: '' };
+          const lastData = { lastObject: {}, lastPower: '' };
           if (index == 0) {
             lastData.lastObject = latestCSV.meta.deviceCalculations.lastLogTime;
             lastData.lastPower = latestCSV.meta.powerUp;
@@ -893,13 +894,13 @@ export class DriverCsvService {
             latestCSV.meta.deviceCalculations.lastLogTime = lastData.lastObject;
             latestCSV.meta.powerUp = lastData.lastPower;
           }
-          let response = await this.addToDB(latestCSV, user);
+          const response = await this.addToDB(latestCSV, user);
           lastCalculations = this.updateLastStatus(
             latestCSV.csv.eldEventListForDriversRecordOfDutyStatus,
             lastCalculations,
           );
 
-          let powerUp = latestCSV.csv.cmvEnginePowerUpShutDownActivity;
+          const powerUp = latestCSV.csv.cmvEnginePowerUpShutDownActivity;
           powerUp.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
           if (
             powerUp.length > 0 &&
@@ -979,7 +980,7 @@ export class DriverCsvService {
     dutyStatuses = dutyStatuses.sort((a, b) =>
       a.eventTime.localeCompare(b.eventTime),
     );
-    let dutyStatusLenght = dutyStatuses.length;
+    const dutyStatusLenght = dutyStatuses.length;
     if (dutyStatuses[dutyStatusLenght - 1].eventTime != '000000') {
       lastCalculations.lastLogTime = {
         eventDate: dutyStatuses[dutyStatusLenght - 1].eventDate,
@@ -1021,8 +1022,8 @@ export class DriverCsvService {
     a.eventTime.localeCompare(b.eventTime),
   );
 
-  let shippingIds = [];
-  let trailerIds =[];
+  const shippingIds = [];
+  const trailerIds =[];
   csvDataOfDutyStatus.forEach(record => {
     if (!shippingIds.includes(record.shippingId)) {
         shippingIds.push(record.shippingId);
@@ -1040,7 +1041,7 @@ return {shippingIds,trailerIds}
     // console.log('this is the date of status==========>', date);
 
     try {
-      var query = {
+      const query = {
         start: date,
         end: moment().tz(user.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD'),
       };
@@ -1107,7 +1108,7 @@ return {shippingIds,trailerIds}
             currentStatus = filteredLogs[filteredLogs.length - 1].eventCode;
 
             filteredLogs = await removeDuplicateConsecutiveLogs(filteredLogs);
-            let filteredLogsNonDuty = getOnDateLogs
+            const filteredLogsNonDuty = getOnDateLogs
               .filter((element) => {
                 return (
                   element.eventType != 1 &&
@@ -1116,15 +1117,15 @@ return {shippingIds,trailerIds}
                 );
               })
               .sort((a, b) => a.eventTime.localeCompare(b.eventTime));
-            let mergeArr = [...filteredLogsNonDuty, ...filteredLogs];
+            const mergeArr = [...filteredLogsNonDuty, ...filteredLogs];
             getOnDateLogs = mergeArr;
-            let currentCsv = resp.graphData.find((item) => item.date == date);
-            let latestCsv = this.structureLogsCsv(currentCsv, getOnDateLogs);
+            const currentCsv = resp.graphData.find((item) => item.date == date);
+            const latestCsv = this.structureLogsCsv(currentCsv, getOnDateLogs);
 
             // let lastCalculations;
             //
 
-            let response = await this.addToDB(latestCsv, user);
+            const response = await this.addToDB(latestCsv, user);
           }
           return 1;
         } else {
@@ -1204,7 +1205,7 @@ return {shippingIds,trailerIds}
   //
   //
   subtractFromLogs = (date, allDutystatuses, sequenceId, duration) => {
-    let index = this.getCurrentIndex(date, allDutystatuses, sequenceId);
+    const index = this.getCurrentIndex(date, allDutystatuses, sequenceId);
 
     for (let i = index + 1; i < allDutystatuses.length; i++) {
       const result = this.subtractDurationFromDate(
@@ -1220,7 +1221,7 @@ return {shippingIds,trailerIds}
   };
   //
   addInLogs = (date, allDutystatuses, sequenceId, duration) => {
-    let index = this.getCurrentIndex(date, allDutystatuses, sequenceId);
+    const index = this.getCurrentIndex(date, allDutystatuses, sequenceId);
 
     for (let i = index + 1; i < allDutystatuses.length; i++) {
       const result = this.addDurationToDate(
@@ -1236,7 +1237,7 @@ return {shippingIds,trailerIds}
   };
   //
   getCurrentIndex = (date, allDutystatuses, sequenceId) => {
-    let transferDate = moment(date).format('MMDDYY');
+    const transferDate = moment(date).format('MMDDYY');
     const index = allDutystatuses.findIndex((item) => {
       if (
         item.eventSequenceIdNumber == sequenceId &&
@@ -1330,7 +1331,7 @@ return {shippingIds,trailerIds}
       //     new: true,
       //   })
       //   .lean();
-      let existingData = await dynamicModel
+      const existingData = await dynamicModel
         .findOne({ month: month, day: day })
         .lean();
       // if (existingData) {
@@ -1402,7 +1403,7 @@ return {shippingIds,trailerIds}
       //     new: true,
       //   })
       //   .lean();
-      let existingData = await dynamicModel
+      const existingData = await dynamicModel
         .findOne({ month: month, day: day })
         .lean();
       // if (existingData) {
@@ -1465,7 +1466,7 @@ return {shippingIds,trailerIds}
         DriverCsvSchema,
         collectionName,
       );
-      let query = {
+      const query = {
         'meta.dateTime': {
           $gte: start,
           $lte: end,
@@ -1490,20 +1491,20 @@ return {shippingIds,trailerIds}
         driverInfo.homeTerminalTimeZone.tzCode,
       );
       let response;
-      let driverID = driverInfo.id || driverInfo._id;
+      const driverID = driverInfo.id || driverInfo._id;
       const collectionName = await getModelName(driverInfo, start);
       const dynamicModel = mongoose.model(
         `${collectionName}`,
         DriverCsvSchema,
         collectionName,
       );
-      let query = {
+      const query = {
         'meta.dateTime': {
           $gte: start,
           $lte: end,
         },
       };
-      let result = await dynamicModel.find(query).lean();
+      const result = await dynamicModel.find(query).lean();
       // result.date
 
       /**
@@ -1588,13 +1589,13 @@ return {shippingIds,trailerIds}
         DriverCsvSchema,
         collectionName,
       );
-      let query = {
+      const query = {
         'meta.dateTime': {
           $gte: start,
           $lte: end,
         },
       };
-      let result = await dynamicModel.deleteOne(query).lean();
+      const result = await dynamicModel.deleteOne(query).lean();
       // result.date
 
       /**
@@ -1609,7 +1610,7 @@ return {shippingIds,trailerIds}
   };
 
   deleteLog = (logsOfSelectedDate, eventSequenceIdNumber) => {
-    let finalCsv = logsOfSelectedDate[0].csv;
+    const finalCsv = logsOfSelectedDate[0].csv;
 
     logsOfSelectedDate.forEach((singleDay, index) => {
       if (index != 0) {
@@ -1640,8 +1641,8 @@ return {shippingIds,trailerIds}
     let decimal = 0;
     let checkValue;
     let isIncludedFlag = false;
-    let deletedObjects = [];
-    let deletableEventTypes = ['2', '4', '6'];
+    const deletedObjects = [];
+    const deletableEventTypes = ['2', '4', '6'];
     Object.keys(finalCsv).map((item) => {
       if (Array.isArray(finalCsv[item])) {
         finalCsv[item].forEach((element, index) => {
@@ -1732,7 +1733,7 @@ return {shippingIds,trailerIds}
         await this.driverClient.close();
       }
 
-      var query = {
+      const query = {
         start: startDate.toString(),
         end: endDate.toString(),
       };
@@ -1776,11 +1777,11 @@ return {shippingIds,trailerIds}
     }
 
     let finalCsv = logsOfSelectedDate[0].csv;
-    let unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
-    let dutyHours = unsortDutyHours.sort((a, b) =>
+    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const dutyHours = unsortDutyHours.sort((a, b) =>
       a.eventTime.localeCompare(b.eventTime),
     );
-    let availableIntermediateLogs = [];
+    const availableIntermediateLogs = [];
     for (let j = 0; j < dutyHours.length; j++) {
       // if any intermediate status found
       if (
@@ -1806,14 +1807,14 @@ return {shippingIds,trailerIds}
         const diff = timeDrivingStatus.diff(timeChangeStatus);
         const diffSeconds = Math.abs(moment.duration(diff).asSeconds());
 
-        let hoursBase = await getHours(
+        const hoursBase = await getHours(
           initialDutyHours.eventTime,
           dutyHours[j].eventTime,
         );
         const hours = Math.floor(hoursBase);
         // If time difference less than hour
         if (86400 - diffSeconds < 3600) {
-          let speedMph = await this.addSpeedInDriving(
+          const speedMph = await this.addSpeedInDriving(
             initialDutyHours,
             dutyHours[j],
             hoursBase,
@@ -1881,8 +1882,8 @@ return {shippingIds,trailerIds}
           let accumulatedEngineHours = initialDutyHours.accumulatedEngineHours;
 
           //eventHandler variable
-          let logEventTime = moment(initialDutyHours.eventTime, 'HHmmss');
-          let statusChangeEventTime = moment(currentDrObj.eventTime, 'HHmmss');
+          const logEventTime = moment(initialDutyHours.eventTime, 'HHmmss');
+          const statusChangeEventTime = moment(currentDrObj.eventTime, 'HHmmss');
           let eventTimeHandler = await getHours(
             initialDutyHours.eventTime,
             currentDrObj.eventTime,
@@ -1892,9 +1893,9 @@ return {shippingIds,trailerIds}
 
           // variables
           let intermediateLogs;
-          let createdIntermediateLogs = [];
-          let spliceFlag = false;
-          let violation = false;
+          const createdIntermediateLogs = [];
+          const spliceFlag = false;
+          const violation = false;
 
           // Final and initial point lat long difference
           const initialLocation = {
@@ -1936,7 +1937,7 @@ return {shippingIds,trailerIds}
             accumulatedEngineHours = JSON.stringify(
               JSON.parse(accumulatedEngineHours) + 1,
             );
-            let latLongInfo =
+            const latLongInfo =
               createdIntermediateLogs.length == 0
                 ? await betweenLatLongInfo(
                     {
@@ -1958,8 +1959,8 @@ return {shippingIds,trailerIds}
                       longitude: intermediatePoints[k].longitude,
                     },
                   );
-            let distaneViaLatLon = latLongInfo.distance;
-            let speedMph = latLongInfo.distance / 1;
+            const distaneViaLatLon = latLongInfo.distance;
+            const speedMph = latLongInfo.distance / 1;
 
             // Log information added
             log.eventSequenceIdNumber = generateUniqueHexId();
@@ -2073,11 +2074,11 @@ return {shippingIds,trailerIds}
             };
           }
 
-          let currentDayCreatedLogs = [];
+          const currentDayCreatedLogs = [];
           intermediateLogs = [...createdIntermediateLogs];
           // Separating current date logs
           for (let i = 0; i < intermediateLogs.length; i++) {
-            let formatedDate = moment(
+            const formatedDate = moment(
               intermediateLogs[i].eventDate,
               'MMDDYY',
             ).format('YYYY-MM-DD');
@@ -2119,7 +2120,7 @@ return {shippingIds,trailerIds}
               longitude: finalLocation.longitude,
             },
           );
-          let speedMph = response.distance / (hoursBase % 1) || 0; // mi/h
+          const speedMph = response.distance / (hoursBase % 1) || 0; // mi/h
           lastIntermediateLog['speed'] = this.customRound(speedMph);
           speedMph > 100
             ? (lastIntermediateLog['speedViolation'] = true)
@@ -2181,12 +2182,12 @@ return {shippingIds,trailerIds}
     user,
     normalizationType,
   ) => {
-    let finalCsv = logsOfSelectedDate[0].csv;
-    let unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
-    let indexes = [];
+    const finalCsv = logsOfSelectedDate[0].csv;
+    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const indexes = [];
     let drAlertFlag = false;
-    let activeLogs = [];
-    let inActiveLogs = [];
+    const activeLogs = [];
+    const inActiveLogs = [];
     let dutyHours = unsortDutyHours.sort((a, b) =>
       a.eventTime.localeCompare(b.eventTime),
     );
@@ -2214,7 +2215,7 @@ return {shippingIds,trailerIds}
     });
 
     for (let i = indexes[0]; i < dutyHours.length; i++) {
-      let availableIntermediateLogs = [];
+      const availableIntermediateLogs = [];
 
       // Get a duty status for DR
       if (
@@ -2241,19 +2242,19 @@ return {shippingIds,trailerIds}
             const diff = timeDrivingStatus.diff(timeChangeStatus);
             const diffSeconds = Math.abs(moment.duration(diff).asSeconds());
 
-            let hoursBase = await getHours(
+            const hoursBase = await getHours(
               dutyHours[i].eventTime,
               dutyHours[j].eventTime,
             );
             const hours = Math.floor(hoursBase);
             // If time difference less than hour
             if (diffSeconds < 3600) {
-              let speedMph = await this.addSpeedInDriving(
+              const speedMph = await this.addSpeedInDriving(
                 dutyHours[i],
                 dutyHours[j],
                 hoursBase,
               );
-              let unsortDutyHours =
+              const unsortDutyHours =
                 finalCsv['eldEventListForDriversRecordOfDutyStatus'];
               finalCsv['eldEventListForDriversRecordOfDutyStatus'] =
                 unsortDutyHours.sort((a, b) =>
@@ -2325,9 +2326,9 @@ return {shippingIds,trailerIds}
 
               // variables
               let intermediateLogs;
-              let createdIntermediateLogs = [];
-              let spliceFlag = false;
-              let violation = false;
+              const createdIntermediateLogs = [];
+              const spliceFlag = false;
+              const violation = false;
 
               // Final and initial point lat long difference
               const initialLocation = {
@@ -2373,7 +2374,7 @@ return {shippingIds,trailerIds}
                   JSON.parse(accumulatedEngineHours) + 1,
                 );
 
-                let latLongInfo =
+                const latLongInfo =
                   createdIntermediateLogs.length == 0
                     ? await betweenLatLongInfo(
                         {
@@ -2398,8 +2399,8 @@ return {shippingIds,trailerIds}
                         },
                       );
 
-                let distaneViaLatLon = latLongInfo.distance;
-                let speedMph = latLongInfo.distance / 1;
+                const distaneViaLatLon = latLongInfo.distance;
+                const speedMph = latLongInfo.distance / 1;
 
                 // Log information added
                 log.eventSequenceIdNumber = await generateUniqueHexId();
@@ -2544,7 +2545,7 @@ return {shippingIds,trailerIds}
                   longitude: finalLocation.longitude,
                 },
               );
-              let speedMph = response.distance / (hoursBase % 1) || 0; // mi/h
+              const speedMph = response.distance / (hoursBase % 1) || 0; // mi/h
               lastIntermediateLog['speed'] = this.customRound(speedMph);
               speedMph > 100
                 ? (lastIntermediateLog['speedViolation'] = true)
@@ -2584,7 +2585,7 @@ return {shippingIds,trailerIds}
                 : 0,
             intermediateLogs: [],
           };
-          let nextDate = moment(date).add(1, 'day');
+          const nextDate = moment(date).add(1, 'day');
           const response = await this.recursiveNormalize(
             // this.get_logs_between_range,
             driverId,
@@ -2609,7 +2610,7 @@ return {shippingIds,trailerIds}
   };
   ////////////
   addSpeedInDriving = async (start, end, time) => {
-    let latLongInfo = await betweenLatLongInfo(
+    const latLongInfo = await betweenLatLongInfo(
       {
         latitude: start.eventLatitude,
         longitude: start.eventLongitude,
@@ -2619,7 +2620,7 @@ return {shippingIds,trailerIds}
         longitude: end.eventLongitude,
       },
     );
-    let speedMph = latLongInfo.distance / time;
+    const speedMph = latLongInfo.distance / time;
 
     return speedMph;
   };
@@ -2652,11 +2653,11 @@ return {shippingIds,trailerIds}
     }
 
     let finalCsv = logsOfSelectedDate[0].csv;
-    let unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
-    let dutyHours = unsortDutyHours.sort((a, b) =>
+    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const dutyHours = unsortDutyHours.sort((a, b) =>
       a.eventTime.localeCompare(b.eventTime),
     );
-    let availableIntermediateLogs = [];
+    const availableIntermediateLogs = [];
     for (let j = 0; j < dutyHours.length; j++) {
       // if any intermediate status found
       if (
@@ -2683,7 +2684,7 @@ return {shippingIds,trailerIds}
         const diffSeconds = Math.abs(moment.duration(diff).asSeconds());
         const nextDutyStatus = dutyHours[j];
 
-        let hoursBase = await getHours(
+        const hoursBase = await getHours(
           initialDutyHours.eventTime,
           dutyHours[j].eventTime,
         );
@@ -2754,8 +2755,8 @@ return {shippingIds,trailerIds}
           let accumulatedEngineHours = initialDutyHours.accumulatedEngineHours;
 
           //eventHandler variable
-          let logEventTime = moment(initialDutyHours.eventTime, 'HHmmss');
-          let statusChangeEventTime = moment(currentDrObj.eventTime, 'HHmmss');
+          const logEventTime = moment(initialDutyHours.eventTime, 'HHmmss');
+          const statusChangeEventTime = moment(currentDrObj.eventTime, 'HHmmss');
           let eventTimeHandler = await getHours(
             initialDutyHours.eventTime,
             currentDrObj.eventTime,
@@ -2763,9 +2764,9 @@ return {shippingIds,trailerIds}
           eventTimeHandler = Math.floor(eventTimeHandler);
           // variables
           let intermediateLogs;
-          let createdIntermediateLogs = [];
-          let spliceFlag = false;
-          let violation = false;
+          const createdIntermediateLogs = [];
+          const spliceFlag = false;
+          const violation = false;
 
           // Final and initial point lat long difference
           const initialLocation = {
@@ -2810,7 +2811,7 @@ return {shippingIds,trailerIds}
             accumulatedEngineHours = JSON.stringify(
               JSON.parse(accumulatedEngineHours) + 1,
             );
-            let latLongInfo =
+            const latLongInfo =
               createdIntermediateLogs.length == 0
                 ? await betweenLatLongInfo(
                     {
@@ -2832,7 +2833,7 @@ return {shippingIds,trailerIds}
                       longitude: intermediatePoints[k].longitude,
                     },
                   );
-            let distaneViaLatLon = latLongInfo.distance;
+            const distaneViaLatLon = latLongInfo.distance;
 
             // Log information added
             log.eventSequenceIdNumber = generateUniqueHexId();
@@ -2895,7 +2896,7 @@ return {shippingIds,trailerIds}
                     createdIntermediateLogs[k - 1].eventTime,
                   );
             timeForSpeed == -23 ? (timeForSpeed = 1) : timeForSpeed;
-            let speedMph =
+            const speedMph =
               createdIntermediateLogs.length == 0
                 ? speed
                 : latLongInfo.distance / timeForSpeed;
@@ -2964,11 +2965,11 @@ return {shippingIds,trailerIds}
             };
           }
 
-          let currentDayCreatedLogs = [];
+          const currentDayCreatedLogs = [];
           intermediateLogs = [...createdIntermediateLogs];
           // Separating current date logs
           for (let i = 0; i < intermediateLogs.length; i++) {
-            let formatedDate = moment(
+            const formatedDate = moment(
               intermediateLogs[i].eventDate,
               'MMDDYY',
             ).format('YYYY-MM-DD');
@@ -3013,7 +3014,7 @@ return {shippingIds,trailerIds}
             nextDutyStatus.eventTime,
             lastIntermediateLog.eventTime,
           );
-          let speedMph = response.distance / timeForSpeed;
+          const speedMph = response.distance / timeForSpeed;
           lastIntermediateLog['speed'] = this.customRound(speedMph);
           speedMph > 100
             ? (lastIntermediateLog['speedViolation'] = true)
@@ -3078,10 +3079,10 @@ return {shippingIds,trailerIds}
     normalizationType,
   ) => {
     let finalCsv = logsOfSelectedDate[0].csv;
-    let logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
-    let indexes = [];
+    const logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const indexes = [];
     let drAlertFlag = false;
-    let inActiveLogs = [];
+    const inActiveLogs = [];
     let dutyHours = this.sortingDateTime(logsData);
     for (let i = 0; i < dutyHours.length; i++) {
       if (eventSequenceIdNumber == dutyHours[i].eventSequenceIdNumber) {
@@ -3107,7 +3108,7 @@ return {shippingIds,trailerIds}
     });
 
     for (let i = indexes[0]; i < dutyHours.length; i++) {
-      let availableIntermediateLogs = [];
+      const availableIntermediateLogs = [];
 
       // Get a duty status for DR
       if (
@@ -3134,7 +3135,7 @@ return {shippingIds,trailerIds}
             const timeDrivingStatus = moment(dutyHours[i].eventTime, 'HHmmss');
             const diff = timeDrivingStatus.diff(timeChangeStatus);
             const diffSeconds = Math.abs(moment.duration(diff).asSeconds());
-            let hoursBase = await getHours(
+            const hoursBase = await getHours(
               dutyHours[i].eventTime,
               dutyHours[j].eventTime,
             );
@@ -3207,9 +3208,9 @@ return {shippingIds,trailerIds}
 
               // variables
               let intermediateLogs;
-              let createdIntermediateLogs = [];
-              let spliceFlag = false;
-              let violation = false;
+              const createdIntermediateLogs = [];
+              const spliceFlag = false;
+              const violation = false;
 
               // Final and initial point lat long difference
               const initialLocation = {
@@ -3256,7 +3257,7 @@ return {shippingIds,trailerIds}
                 accumulatedEngineHours = JSON.stringify(
                   JSON.parse(accumulatedEngineHours) + 1,
                 );
-                let latLongInfo =
+                const latLongInfo =
                   createdIntermediateLogs.length == 0
                     ? await betweenLatLongInfo(
                         {
@@ -3280,7 +3281,7 @@ return {shippingIds,trailerIds}
                           longitude: intermediatePoints[k].longitude,
                         },
                       );
-                let distaneViaLatLon = latLongInfo.distance;
+                const distaneViaLatLon = latLongInfo.distance;
 
                 // Log information added
                 log.eventSequenceIdNumber = generateUniqueHexId();
@@ -3339,7 +3340,7 @@ return {shippingIds,trailerIds}
                         log.eventTime,
                         createdIntermediateLogs[k - 1].eventTime,
                       );
-                let speedMph =
+                const speedMph =
                   createdIntermediateLogs.length == 0
                     ? speed
                     : latLongInfo.distance / timeForSpeed;
@@ -3445,7 +3446,7 @@ return {shippingIds,trailerIds}
                 nextDutyStatus.eventTime,
                 lastIntermediateLog.eventTime,
               );
-              let speedMph = response.distance / timeForSpeed;
+              const speedMph = response.distance / timeForSpeed;
               lastIntermediateLog['speed'] = this.customRound(speedMph);
               speedMph > 100
                 ? (lastIntermediateLog['speedViolation'] = true)
@@ -3485,7 +3486,7 @@ return {shippingIds,trailerIds}
                 : 0,
             intermediateLogs: [],
           };
-          let nextDate = moment(date).add(1, 'day');
+          const nextDate = moment(date).add(1, 'day');
           const response = await this.recursiveNormalizeManual(
             // this.get_logs_between_range,
             driverId,
@@ -3510,8 +3511,8 @@ return {shippingIds,trailerIds}
     };
   };
   customRound = (number) => {
-    var integerPart = Math.floor(number);
-    var decimalPart = number - integerPart;
+    const integerPart = Math.floor(number);
+    const decimalPart = number - integerPart;
 
     if (decimalPart >= 0.5) {
       return Math.ceil(number).toString();
@@ -3524,7 +3525,7 @@ return {shippingIds,trailerIds}
    */
   calculateMissingIntermediates = async (dutyStatuses) => {
     // copying array
-    let dutyStatusArray = JSON.parse(JSON.stringify(dutyStatuses)); // Deep copy
+    const dutyStatusArray = JSON.parse(JSON.stringify(dutyStatuses)); // Deep copy
 
     // separatting variables
     let initialLog;
@@ -3752,10 +3753,10 @@ return {shippingIds,trailerIds}
 
   updateMetaVariables = (latestCSV) => {
     const meta = latestCSV.meta;
-    let csvObject = latestCSV?.csv;
+    const csvObject = latestCSV?.csv;
 
-    let currentDetails = csvObject.timePlaceLine;
-    let address = currentDetails?.address;
+    const currentDetails = csvObject.timePlaceLine;
+    const address = currentDetails?.address;
 
     meta['lastActivity'] = {
       odoMeterMillage: currentDetails.totalVehicleMilesDutyStatus,
@@ -3830,7 +3831,7 @@ return {shippingIds,trailerIds}
       // let addedLogs = JSON.parse(
       //   JSON.stringify(await addFirstandLast(dutyStatusLogs,startTime, endTime)),
       // );
-      let newLog = await createNewLog(
+      const newLog = await createNewLog(
         startTime,
         date,
         endTime,
@@ -3876,7 +3877,7 @@ return {shippingIds,trailerIds}
       let finalLogs = await removeDuplicateConsecutiveLogs(addedLogs);
       finalLogs = [...finalLogs, ...inActiveLogs];
       addedLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
-      let csv = JSON.parse(
+      const csv = JSON.parse(
         JSON.stringify(
           Array.isArray(logsOfSelectedDate)
             ? logsOfSelectedDate[0].csv
@@ -3899,18 +3900,24 @@ return {shippingIds,trailerIds}
     }
   };
   addAndUpdateDriverRecord = async (data) => {
-    let record = await this.recordTable.findOneAndUpdate(
-      { driverId: data.driverId, date: data.date },
-      { $set: data },
-      { upsert: true, returnDocument: 'after' },
-    );
-
-    return record;
+    try {
+      const record = await this.recordTable.findOneAndUpdate(
+        { driverId: data.driverId, date: data.date },
+        { $set: data },
+        { upsert: true, returnDocument: 'after' },
+      );
+  
+      return record;
+    } catch (error) {
+      Logger.log(error);
+      throw error
+    }
+    
   };
   findByDriveAndDate = async (ids, queryParams) => {
     let records;
-    let { date, search } = queryParams;
-    let where = {
+    const { date, search } = queryParams;
+    const where = {
       date: {
         $in: [date, ''],
       },
@@ -3940,7 +3947,7 @@ return {shippingIds,trailerIds}
     return records;
   };
   findByDriverID = async (ids, date) => {
-    let records = [];
+    const records = [];
     const driverQuery = await this.recordTable.find({
       driverId: {
         $in: ids,
@@ -3958,7 +3965,7 @@ return {shippingIds,trailerIds}
   };
   deleteDriverRecord = async (driverId, date) => {
     try {
-      let result = await this.recordTable.deleteOne({ driverId, date });
+      const result = await this.recordTable.deleteOne({ driverId, date });
       return result;
     } catch (error) {
       console.error('Error deleting record:', error);

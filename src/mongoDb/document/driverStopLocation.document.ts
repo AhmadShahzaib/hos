@@ -6,14 +6,15 @@ interface HistoryOfLocation {
   longitude?: string;
   odometer?: string;
   speed?: string;
-  eventType: string,
+  duration?:string;
+  eventType: string;
   status?: string;
   time?: string;
 }
-export default interface DriverLiveLocationDocument extends Document {
+export default interface driverStopLocation extends Document {
   driverId: string;
   tenantId: string;
   date: string; // YYYY-MM-DD
   historyOfLocation: HistoryOfLocation[];
-  encryptedHistoryOfLocation: string;
+  // encryptedHistoryOfLocation: string;
 }

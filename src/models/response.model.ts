@@ -15,17 +15,17 @@ export class ResponseModel {
 
   @ApiProperty()
   driver: {
-    id: String,
+    id: string,
     tenantId: string,
     firstName: string,
     lastName: string,
   }
 
   @ApiProperty()
-  calendarStartDate: Number;
+  calendarStartDate: number;
 
   @ApiProperty()
-  calendarEndDate: Number;
+  calendarEndDate: number;
 
 
   @ApiProperty()

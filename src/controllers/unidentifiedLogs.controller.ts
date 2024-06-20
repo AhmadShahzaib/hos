@@ -20,14 +20,14 @@ import { PaginationDto } from 'dto/pagination.dto';
 import { UpdateUnidentifiedLogsDto } from 'dto/updateUnidentifiedLogs.dto';
 import { UnidentifiedLogsService } from '../services/unidentifiedLogs.service';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
-import unidentifiedCancel from '../decorators/unidentifiedCancel'
-import  unidentifiedRespond from '../decorators/unidentifiedRespond'
-import  unidentifiedAdd from '../decorators/unidentifiedAdd'
-import  unidentifiedGet from '../decorators/unidentifiedGet'
-import  unidentifiedGetById from '../decorators/unidentifiedGetById'
-import  unidentifiedEdit from '../decorators/unidentifiedEdit'
-
-unidentifiedEdit
+import unidentifiedCancel from '../decorators/unidentifiedCancel';
+import unidentifiedRespond from '../decorators/unidentifiedRespond';
+import unidentifiedAdd from '../decorators/unidentifiedAdd';
+import unidentifiedGet from '../decorators/unidentifiedGet';
+import unidentifiedGetById from '../decorators/unidentifiedGetById';
+import unidentifiedEdit from '../decorators/unidentifiedEdit';
+import unidentifiedDelete from '../decorators/unidentifiedDelete';
+unidentifiedEdit;
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ClientProxy } from '@nestjs/microservices';
 import {
@@ -68,8 +68,8 @@ export class UnidentifiedLogsController {
 
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -126,7 +126,7 @@ export class UnidentifiedLogsController {
       let user;
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
+        const token = req.headers.authorization.split(' ')[1];
         user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
@@ -155,7 +155,7 @@ export class UnidentifiedLogsController {
           if (messagePatternDriver?.isError) {
             mapMessagePatternResponseToException(messagePatternDriver);
           }
-          let driver = messagePatternDriver?.data;
+          const driver = messagePatternDriver?.data;
 
           const notificationObj = {
             logs: [response.data],
@@ -165,7 +165,7 @@ export class UnidentifiedLogsController {
             notificationType: 2,
             editStatusFromBO: 'unassign',
           };
-          let SpecificClient = driver?.client;
+          const SpecificClient = driver?.client;
 
           const mesaage = 'Driver assigned!';
 
@@ -311,8 +311,8 @@ export class UnidentifiedLogsController {
 
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -353,9 +353,9 @@ export class UnidentifiedLogsController {
         options = {
           ...options,
           // because tenantId is not available yet
-          // tenantId: {
-          //   $eq: extractedUserFromToken.tenantId,
-          // },
+          tenantId: {
+            $eq: extractedUserFromToken.tenantId,
+          },
         };
         // query.tenantId=extractedUserFromToken.tenantId
         const response = await this.unidetifiedLogsService.findAll(
@@ -424,8 +424,8 @@ export class UnidentifiedLogsController {
 
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -496,6 +496,7 @@ export class UnidentifiedLogsController {
       });
     }
   }
+
   /**
    * Assing unidentified logs  - V2
    * Description:
@@ -532,11 +533,11 @@ export class UnidentifiedLogsController {
       if (messagePatternDriver?.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
-      let user = messagePatternDriver?.data;
+      const user = messagePatternDriver?.data;
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -578,7 +579,7 @@ export class UnidentifiedLogsController {
             notificationType: 2,
             editStatusFromBO: 'assign',
           };
-          let SpecificClient = user?.client;
+          const SpecificClient = user?.client;
 
           const mesaage = 'Driver assigned!';
 
@@ -606,7 +607,34 @@ export class UnidentifiedLogsController {
       throw error;
     }
   }
+  /**
+   * Delete unidentified logs  - V2
+   * Description:
+   *            Currently the api is designed to Delete unidentified log
+   * Author :  NOT Farzan
+   */
+  @unidentifiedDelete()
+  async deleteUnidentified(@Body() data, @Res() res, @Req() req) {
+    try {
+      const { unidentifiedLogIds } = data;
+      const response: any = await this.unidetifiedLogsService.deleteMany(
+        unidentifiedLogIds,
+      );
 
+      if (response.statusCode == 200) {
+        return res.status(response.statusCode).send(response);
+      } else {
+        return res.status(403).send({
+          statusCode: 403,
+          message: 'Not permissible to access the route!',
+          data: [],
+        });
+      }
+    } catch (error) {
+      Logger.error({ message: error.message, stack: error.stack });
+      throw error;
+    }
+  }
   /**
    * Accumulated hours - V2
    * Description:
@@ -618,8 +646,8 @@ export class UnidentifiedLogsController {
     try {
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({
@@ -661,8 +689,8 @@ export class UnidentifiedLogsController {
 
       let extractedUserFromToken;
       if (req.headers.authorization) {
-        let token = req.headers.authorization.split(' ')[1];
-        let user = jwt_decode<JwtPayload>(token);
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt_decode<JwtPayload>(token);
         extractedUserFromToken = JSON.parse(user?.sub);
       } else {
         return res.status(401).send({

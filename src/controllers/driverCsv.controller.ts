@@ -187,7 +187,7 @@ export class DriverCsvController extends BaseController {
         },
         user,
       );
-      let previousBody = JSON.parse(JSON.stringify(body));
+      const previousBody = JSON.parse(JSON.stringify(body));
       let resp;
       let reqBody;
 
@@ -280,7 +280,7 @@ export class DriverCsvController extends BaseController {
           data: [],
         };
       }
-      let driverId = queryParams.id;
+      const driverId = queryParams.id;
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -292,11 +292,11 @@ export class DriverCsvController extends BaseController {
         user = messagePatternDriver.data;
       }
       const inputDate = moment(queryParams.date).format('YYYY-MM-DD');
-      let query = {
+      const query = {
         start: inputDate,
         end: inputDate,
       };
-      let response = await this.driverCsvService.getFromDB(query, user);
+      const response = await this.driverCsvService.getFromDB(query, user);
       if (!response.graphData[0].originalLogs) {
         return res.status(200).send({
           message: 'Please get latest Build ',
@@ -314,7 +314,7 @@ export class DriverCsvController extends BaseController {
         originalLogs.eldEventListForDriverCertificationOfOwnRecords;
       csv.eldLoginLogoutReport = originalLogs.eldLoginLogoutReport;
       const violations = response.graphData[0].meta.voilations;
-      let resp = {
+      const resp = {
         csvBeforeUpdate: { csv: csv, violations: violations },
       };
       return res.status(200).send({
@@ -370,12 +370,12 @@ export class DriverCsvController extends BaseController {
         }
         user = messagePatternDriver.data;
       }
-      let query = {
+      const query = {
         start: date,
         end: date,
       };
       const resp = await this.driverCsvService.getLogform(query, user);
-      
+
       return res.status(200).send({
         message: 'Success',
         data: resp,
@@ -434,7 +434,7 @@ export class DriverCsvController extends BaseController {
         // await this.driverClient.close();
       }
 
-      var query = {
+      const query = {
         start: startDate.toString(),
         end: endDate.toString(),
       };
@@ -535,8 +535,8 @@ export class DriverCsvController extends BaseController {
       );
       let dateOfQuery = moment(date);
       dateOfQuery = dateOfQuery.subtract(1, 'days');
-      let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-      let query = {
+      const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+      const query = {
         start: dateQuery,
         end: dateQuery,
       };
@@ -602,7 +602,7 @@ export class DriverCsvController extends BaseController {
         user = request.user;
       }
 
-      let result = await this.driverCsvService.runCalculationOnRecentHOS(
+      const result = await this.driverCsvService.runCalculationOnRecentHOS(
         query,
         user,
       );
@@ -668,7 +668,7 @@ export class DriverCsvController extends BaseController {
       const { driverId } = params;
       const { eventSequenceIdNumber } = reqBody;
 
-      let logsOfSelectedDate = await this.get_logs_between_range({
+      const logsOfSelectedDate = await this.get_logs_between_range({
         driverId: driverId,
         startDate: date,
         endDate: date,
@@ -682,7 +682,7 @@ export class DriverCsvController extends BaseController {
       /**
        * delete log
        */
-      let deletedLogs = await this.driverCsvService.deleteLog(
+      const deletedLogs = await this.driverCsvService.deleteLog(
         logsOfSelectedDate,
         eventSequenceIdNumber,
       );
@@ -703,35 +703,35 @@ export class DriverCsvController extends BaseController {
       }
       const user = messagePatternDriver.data;
 
-      let filteredLogs = deletedLogs.deletedObjects
+      const filteredLogs = deletedLogs.deletedObjects
         .filter((element) => {
           return element.eventTypeExtra == 6;
         })
         .sort((a, b) => a.eventTime.localeCompare(b.eventTime));
       // get time of last deleted log from this first filter logs which are powerup base then compare time.and rest of function is done
       // code here.
-      let todayDate = moment()
+      const todayDate = moment()
         .tz(user.homeTerminalTimeZone.tzCode)
         .format('YYYY-MM-DD');
 
       // let todayDate = today.toISOString().split('T')[0];
 
       if (todayDate !== date && filteredLogs.length > 0) {
-        let previousLogTime = filteredLogs[filteredLogs.length - 1].eventTime;
+        const previousLogTime = filteredLogs[filteredLogs.length - 1].eventTime;
 
-        let powerUp =
+        const powerUp =
           logsOfSelectedDate[0].csv.cmvEnginePowerUpShutDownActivity?.sort(
             (a, b) => a.eventTime.localeCompare(b.eventTime),
           );
         if (powerUp.length > 0) {
-          let lastLog = powerUp[powerUp.length - 1];
-          let lastLogTime = lastLog.eventTime;
+          const lastLog = powerUp[powerUp.length - 1];
+          const lastLogTime = lastLog.eventTime;
 
           if (lastLogTime < previousLogTime) {
             let dateOfQuery = moment(logsOfSelectedDate[0].date);
             dateOfQuery = dateOfQuery.add(1, 'days'); // Use 'add' instead of 'subtract'
-            let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-            let logsOfnextDate = await this.get_logs_between_range({
+            const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+            const logsOfnextDate = await this.get_logs_between_range({
               driverId: driverId,
               startDate: dateQuery,
               endDate: dateQuery,
@@ -755,8 +755,8 @@ export class DriverCsvController extends BaseController {
         } else {
           let dateOfQuery = moment(logsOfSelectedDate[0].date);
           dateOfQuery = dateOfQuery.add(1, 'days'); // Use 'add' instead of 'subtract'
-          let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-          let logsOfnextDate = await this.get_logs_between_range({
+          const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+          const logsOfnextDate = await this.get_logs_between_range({
             driverId: driverId,
             startDate: dateQuery,
             endDate: dateQuery,
@@ -1138,7 +1138,7 @@ export class DriverCsvController extends BaseController {
       deviceToken: user.deviceToken,
       deviceType: user.deviceType,
     };
-    let logsOfSelectedDate = await this.get_logs_between_range({
+    const logsOfSelectedDate = await this.get_logs_between_range({
       driverId: driverId,
       startDate: date,
       endDate: date,
@@ -1191,7 +1191,7 @@ export class DriverCsvController extends BaseController {
           if (statusInfo.eventType == '2' && statusInfo.eventCode == '1') {
             // log info is of intermedate driving
 
-            let { foundLog, index } = await getLog(dutyStatusLogs, time);
+            const { foundLog, index } = await getLog(dutyStatusLogs, time);
 
             insertIntermediat(
               dutyStatusLogs,
@@ -1235,7 +1235,7 @@ export class DriverCsvController extends BaseController {
           }
           if (statusInfo.eventType == '2' && statusInfo.eventCode == '2') {
             // log info is of intermedate personal
-            let { foundLog, index } = await getLog(dutyStatusLogs, time);
+            const { foundLog, index } = await getLog(dutyStatusLogs, time);
 
             //selected log is other then driving
             insertIntermediat(
@@ -1254,7 +1254,7 @@ export class DriverCsvController extends BaseController {
             );
             if (statusInfo.shippingDocument || statusInfo.tralier) {
               const ship = statusInfo.shippingDocument;
-              let logform = await updateLogform(
+              const logform = await updateLogform(
                 this.reportClient,
                 ship,
                 signature,
@@ -1284,7 +1284,7 @@ export class DriverCsvController extends BaseController {
           ) {
             // log info is of login1 logout2
             const driverName = user.fullName;
-            let loginlogout = JSON.parse(
+            const loginlogout = JSON.parse(
               JSON.stringify(logsOfSelectedDate[0].csv.eldLoginLogoutReport),
             );
             insert_Login_Logout(
@@ -1302,7 +1302,7 @@ export class DriverCsvController extends BaseController {
             );
             if (statusInfo.shippingDocument || statusInfo.tralier) {
               const ship = statusInfo.shippingDocument;
-              let logform = await firstValueFrom(
+              const logform = await firstValueFrom(
                 this.reportClient.send(
                   { cmd: 'update_logform' },
                   {
@@ -1336,17 +1336,17 @@ export class DriverCsvController extends BaseController {
             (statusInfo.eventCode == '1' || statusInfo.eventCode == '3')
           ) {
             // log info is of power up power down driving
-            let poweruppowerdown = JSON.parse(
+            const poweruppowerdown = JSON.parse(
               JSON.stringify(
                 logsOfSelectedDate[0].csv.cmvEnginePowerUpShutDownActivity,
               ),
             );
-            let eventTimePrevious =
+            const eventTimePrevious =
               poweruppowerdown[poweruppowerdown.length - 1]?.eventTime;
-            let cmvPowerUnitNumber =
+            const cmvPowerUnitNumber =
               logsOfSelectedDate[0].csv.cmvList[0].cmvPowerUnitNumber;
-            let cmvVin = logsOfSelectedDate[0].csv.cmvList[0].cmvVin;
-            let { foundLog, index } = await getLog(dutyStatusLogs, time);
+            const cmvVin = logsOfSelectedDate[0].csv.cmvList[0].cmvVin;
+            const { foundLog, index } = await getLog(dutyStatusLogs, time);
 
             insert_powerup_powerdown(
               poweruppowerdown,
@@ -1359,28 +1359,33 @@ export class DriverCsvController extends BaseController {
             );
             logsOfSelectedDate[0].csv.cmvEnginePowerUpShutDownActivity =
               poweruppowerdown;
-            let today = moment.utc().tz(user.homeTerminalTimeZone.tzCode);
-            let todayDate = today.toISOString().split('T')[0];
+            const today = moment.utc().tz(user.homeTerminalTimeZone.tzCode);
+            const todayDate = today.toISOString().split('T')[0];
             if (
               todayDate != date &&
               time > (eventTimePrevious ? eventTimePrevious : 0)
             ) {
               let dateOfQuery = moment(logsOfSelectedDate[0].date);
               dateOfQuery = dateOfQuery.add(1, 'days'); // Use 'add' instead of 'subtract'
-              let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-              let logsOfnextDate = await this.get_logs_between_range({
+              const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+              const logsOfnextDate = await this.get_logs_between_range({
                 driverId: driverId,
                 startDate: dateQuery,
                 endDate: dateQuery,
               });
-              if (statusInfo.eventCode == '2' || statusInfo.eventCode == '1') {
+              if (statusInfo.eventCode == '1') {
                 logsOfnextDate[0].meta.powerUp = true;
-              } else if (
-                statusInfo.eventCode == '4' ||
-                statusInfo.eventCode == '3'
-              ) {
+              } else if (statusInfo.eventCode == '3') {
                 logsOfnextDate[0].meta.powerUp = false;
               }
+              // if (statusInfo.eventCode == '2' || statusInfo.eventCode == '1') {
+              //   logsOfnextDate[0].meta.powerUp = true;
+              // } else if (
+              //   statusInfo.eventCode == '4' ||
+              //   statusInfo.eventCode == '3'
+              // ) {
+              //   logsOfnextDate[0].meta.powerUp = false;
+              // }
               const result = await this.driverCsvService.addToDB(
                 logsOfnextDate[0],
                 user,
@@ -1392,7 +1397,7 @@ export class DriverCsvController extends BaseController {
             );
             if (statusInfo.shippingDocument || statusInfo.tralier) {
               const ship = statusInfo.shippingDocument;
-              let logform = await firstValueFrom(
+              const logform = await firstValueFrom(
                 this.reportClient.send(
                   { cmd: 'update_logform' },
                   {
@@ -1426,19 +1431,19 @@ export class DriverCsvController extends BaseController {
             (statusInfo.eventCode == '2' || statusInfo.eventCode == '4')
           ) {
             // log info is of power up personal
-            let poweruppowerdown = JSON.parse(
+            const poweruppowerdown = JSON.parse(
               JSON.stringify(
                 logsOfSelectedDate[0].csv.cmvEnginePowerUpShutDownActivity,
               ),
             );
-            let eventTimePrevious =
+            const eventTimePrevious =
               poweruppowerdown[poweruppowerdown.length - 1]?.eventTime;
             // let ccc = logsOfSelectedDate[0].csv.cmvList
-            let cmvPowerUnitNumber =
+            const cmvPowerUnitNumber =
               logsOfSelectedDate[0].csv.cmvList[0].cmvPowerUnitNumber;
-            let cmvVin = logsOfSelectedDate[0].csv.cmvList[0].cmvVin;
+            const cmvVin = logsOfSelectedDate[0].csv.cmvList[0].cmvVin;
 
-            let { foundLog, index } = await getLog(dutyStatusLogs, time);
+            const { foundLog, index } = await getLog(dutyStatusLogs, time);
 
             insert_powerup_powerdown(
               poweruppowerdown,
@@ -1449,21 +1454,21 @@ export class DriverCsvController extends BaseController {
               cmvVin,
               companyTimeZone,
             );
-            let today = moment.utc().tz(user.homeTerminalTimeZone.tzCode);
-            let todayDate = today.toISOString().split('T')[0];
+            const today = moment.utc().tz(user.homeTerminalTimeZone.tzCode);
+            const todayDate = today.toISOString().split('T')[0];
             if (
               todayDate != date &&
               time > (eventTimePrevious ? eventTimePrevious : 0)
             ) {
               let dateOfQuery = moment(logsOfSelectedDate[0].date);
               dateOfQuery = dateOfQuery.add(1, 'days'); // Use 'add' instead of 'subtract'
-              let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-              let logsOfnextDate = await this.get_logs_between_range({
+              const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+              const logsOfnextDate = await this.get_logs_between_range({
                 driverId: driverId,
                 startDate: dateQuery,
                 endDate: dateQuery,
               });
-              if (statusInfo.eventCode == '2' || statusInfo.eventCode == '1') {
+              if (statusInfo.eventCode == '2') {
                 logsOfnextDate[0].meta.powerUp = true;
               } else if (
                 statusInfo.eventCode == '4' ||
@@ -1471,6 +1476,14 @@ export class DriverCsvController extends BaseController {
               ) {
                 logsOfnextDate[0].meta.powerUp = false;
               }
+              // if (statusInfo.eventCode == '2' || statusInfo.eventCode == '1') {
+              //   logsOfnextDate[0].meta.powerUp = true;
+              // } else if (
+              //   statusInfo.eventCode == '4' ||
+              //   statusInfo.eventCode == '3'
+              // ) {
+              //   logsOfnextDate[0].meta.powerUp = false;
+              // }
               const result = await this.driverCsvService.addToDB(
                 logsOfnextDate[0],
                 user,
@@ -1484,7 +1497,7 @@ export class DriverCsvController extends BaseController {
             );
             if (statusInfo.shippingDocument || statusInfo.tralier) {
               const ship = statusInfo.shippingDocument;
-              let logform = await firstValueFrom(
+              const logform = await firstValueFrom(
                 this.reportClient.send(
                   { cmd: 'update_logform' },
                   {
@@ -1534,14 +1547,14 @@ export class DriverCsvController extends BaseController {
           });
           if (statusInfo.eventType == '4' && statusInfo.eventCode == '1') {
             // log info is of certify
-            let certificationRecods = JSON.parse(
+            const certificationRecods = JSON.parse(
               JSON.stringify(
                 logsOfSelectedDate[0].csv
                   .eldEventListForDriverCertificationOfOwnRecords,
               ),
             );
 
-            let result = await removeObjectByEventSequenceId(
+            const result = await removeObjectByEventSequenceId(
               certificationRecods,
               sqID,
             );
@@ -1579,9 +1592,9 @@ export class DriverCsvController extends BaseController {
           if (statusInfo.eventType == '2' && statusInfo.eventCode == '1') {
             // log info is of intermedate driving
 
-            let { foundLog, index } = await getLog(dutyStatusLogs, time);
+            const { foundLog, index } = await getLog(dutyStatusLogs, time);
 
-            let result = await removeObjectByEventSequenceId(
+            const result = await removeObjectByEventSequenceId(
               dutyStatusLogs,
               sqID,
             );
@@ -1641,9 +1654,9 @@ export class DriverCsvController extends BaseController {
           }
           if (statusInfo.eventType == '2' && statusInfo.eventCode == '2') {
             // log info is of intermedate personal
-            let { foundLog, index } = await getLog(dutyStatusLogs, time);
+            const { foundLog, index } = await getLog(dutyStatusLogs, time);
 
-            let result = await removeObjectByEventSequenceId(
+            const result = await removeObjectByEventSequenceId(
               dutyStatusLogs,
               sqID,
             );
@@ -1710,7 +1723,7 @@ export class DriverCsvController extends BaseController {
             let loginlogout = JSON.parse(
               JSON.stringify(logsOfSelectedDate[0].csv.eldLoginLogoutReport),
             );
-            let result = await removeObjectByEventSequenceId(loginlogout, sqID);
+            const result = await removeObjectByEventSequenceId(loginlogout, sqID);
             result.eventTime = time;
             result.address = statusInfo.address;
             result.loginLatitude = statusInfo.lat;
@@ -1777,11 +1790,11 @@ export class DriverCsvController extends BaseController {
                 logsOfSelectedDate[0].csv.cmvEnginePowerUpShutDownActivity,
               ),
             );
-            let { cmvPowerUnitNumber, cmvVin } =
+            const { cmvPowerUnitNumber, cmvVin } =
               logsOfSelectedDate[0].csv.cmvList;
-            let { foundLog, index } = await getLog(dutyStatusLogs, time);
+            const { foundLog, index } = await getLog(dutyStatusLogs, time);
 
-            let result = await removeObjectByEventSequenceId(
+            const result = await removeObjectByEventSequenceId(
               poweruppowerdown,
               sqID,
             );
@@ -1818,7 +1831,7 @@ export class DriverCsvController extends BaseController {
             );
             if (statusInfo.shippingDocument || statusInfo.tralier) {
               const ship = statusInfo.shippingDocument;
-              let logform = await firstValueFrom(
+              const logform = await firstValueFrom(
                 this.reportClient.send(
                   { cmd: 'update_logform' },
                   {
@@ -1856,11 +1869,11 @@ export class DriverCsvController extends BaseController {
                 logsOfSelectedDate[0].csv.cmvEnginePowerUpShutDownActivity,
               ),
             );
-            let { cmvPowerUnitNumber, cmvVin } =
+            const { cmvPowerUnitNumber, cmvVin } =
               logsOfSelectedDate[0].csv.cmvList;
-            let { foundLog, index } = await getLog(dutyStatusLogs, time);
+            const { foundLog, index } = await getLog(dutyStatusLogs, time);
 
-            let result = await removeObjectByEventSequenceId(
+            const result = await removeObjectByEventSequenceId(
               poweruppowerdown,
               sqID,
             );
@@ -1897,7 +1910,7 @@ export class DriverCsvController extends BaseController {
             );
             if (statusInfo.shippingDocument || statusInfo.tralier) {
               const ship = statusInfo.shippingDocument;
-              let logform = await firstValueFrom(
+              const logform = await firstValueFrom(
                 this.reportClient.send(
                   { cmd: 'update_logform' },
                   {
@@ -1986,7 +1999,7 @@ export class DriverCsvController extends BaseController {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
       const user = messagePatternDriver.data;
-      let logsOfSelectedDate = await this.get_logs_between_range({
+      const logsOfSelectedDate = await this.get_logs_between_range({
         driverId: driverId,
         startDate: date,
         endDate: date,
@@ -2004,7 +2017,7 @@ export class DriverCsvController extends BaseController {
         dutyStatusLogs = dutyStatusLogs.filter((element) => {
           return element.eventRecordStatus != '2';
         });
-        let { filterd, arr } = await getInBetweenLogs(
+        const { filterd, arr } = await getInBetweenLogs(
           dutyStatusLogs,
           startTime,
           endTime,
@@ -2014,7 +2027,7 @@ export class DriverCsvController extends BaseController {
             await addFirstandLast(arr, filterd, startTime, endTime),
           ),
         );
-        let newLog = await createNewLog(
+        const newLog = await createNewLog(
           startTime,
           date,
           endTime,
@@ -2055,7 +2068,7 @@ export class DriverCsvController extends BaseController {
         let finalLogs = await removeDuplicateConsecutiveLogs(addedLogs);
         finalLogs = [...finalLogs, ...inActiveLogs];
         addedLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
-        let csv = JSON.parse(JSON.stringify(logsOfSelectedDate[0].csv));
+        const csv = JSON.parse(JSON.stringify(logsOfSelectedDate[0].csv));
         csv.eldEventListForDriversRecordOfDutyStatus = finalLogs;
         // if (shippingDocument || tralier) {
         //   const ship = shippingDocument;
@@ -2100,9 +2113,9 @@ export class DriverCsvController extends BaseController {
   ) {
     const address = await this.driverCsvService.getAddress(lat, long);
     if (address.length > 0) {
-      let splitAd = address.split(',');
+      const splitAd = address.split(',');
       let adState = splitAd[splitAd.length - 1].trim();
-      let states = {
+      const states = {
         Alabama: 'AL',
         Alaska: 'AK',
         Arizona: 'AZ',
@@ -2181,7 +2194,7 @@ export class DriverCsvController extends BaseController {
       if (adState.length <= 3) {
         adState = isValueInObject(states, adState);
       }
-      let resp = { address: address, state: adState };
+      const resp = { address: address, state: adState };
       return response.status(200).send({
         statusCode: 200,
         message: 'address ',
@@ -2235,9 +2248,9 @@ export class DriverCsvController extends BaseController {
     @Req() request: Request,
   ) {
     try {
-      let { date } = queryParams;
+      const { date } = queryParams;
 
-      let resp = await this.driverCsvService.findByDriveAndDate(
+      const resp = await this.driverCsvService.findByDriveAndDate(
         [],
         queryParams,
       ); //get records

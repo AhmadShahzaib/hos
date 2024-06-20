@@ -8,7 +8,7 @@ export const duplicateAndModifyDutyStatus = (
   payloadLog, // edited payload from client side
   boolean, // To toggle values
 ) => {
-  let dutyStatusObject = {
+  const dutyStatusObject = {
     ...editedIndex,
   };
 

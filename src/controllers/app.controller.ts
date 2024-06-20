@@ -153,7 +153,7 @@ export class AppController extends BaseController {
       // }
       // add google api here and calculate address of otherThenDriving statuses
 
-      let address = await this.driverCsvService.getAddress(
+      const address = await this.driverCsvService.getAddress(
         responseData?.lastKnownLocation?.latitude,
         responseData?.lastKnownLocation?.longitude,
       );
@@ -256,7 +256,7 @@ export class AppController extends BaseController {
 
       // Get Original Csv
       const date = data?.logs?.date;
-      var query = {
+      const query = {
         start: date,
         end: date,
       };
@@ -318,7 +318,7 @@ export class AppController extends BaseController {
           csv: driverCsvAfter[0].csv,
           voilations: driverCsvAfter[0].meta?.voilations,
         };
-        let index = dutyStatusList.findIndex(
+        const index = dutyStatusList.findIndex(
           (item) => item.eventSequenceIdNumber === logs.eventSequenceIdNumber,
         );
         data.lastItem = false;
@@ -439,7 +439,7 @@ export class AppController extends BaseController {
       /**
        * Create edit log document along with notificationStatus
        */
-      let afterAccumulated = await calculateAccumulatedMiles(data);
+      const afterAccumulated = await calculateAccumulatedMiles(data);
       const res = await this.logService.editInsertLogs(
         isEdit,
         afterAccumulated,
@@ -487,7 +487,7 @@ export class AppController extends BaseController {
 
       // Get Original Csv
       const date = data?.logs?.date;
-      var query = {
+      const query = {
         start: date,
         end: date,
       };
@@ -501,7 +501,7 @@ export class AppController extends BaseController {
         });
       }
 
-      let dutyStatusList = JSON.parse(
+      const dutyStatusList = JSON.parse(
         JSON.stringify(
           driverCsv[0].csv['eldEventListForDriversRecordOfDutyStatus'],
         ),
@@ -520,7 +520,7 @@ export class AppController extends BaseController {
         // Placing updated logs in csv header
         driverCsv[0].csv['eldEventListForDriversRecordOfDutyStatus'] =
           updatedLogs;
-        let index = dutyStatusList.findIndex(
+        const index = dutyStatusList.findIndex(
           (item) => item.eventSequenceIdNumber === logs.eventSequenceIdNumber,
         );
         data.lastItem = false;
@@ -601,8 +601,8 @@ export class AppController extends BaseController {
       const res = await this.driverCsvService.addToDB(driverCsv[0], user);
       let dateOfQuery = moment(date);
       dateOfQuery = dateOfQuery.subtract(1, 'days');
-      let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-      let queryy = {
+      const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+      const queryy = {
         start: dateQuery,
         end: dateQuery,
       };
@@ -626,7 +626,7 @@ export class AppController extends BaseController {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
       user = messagePatternDriver?.data;
-      let SpecificClient = user?.client; //client
+      const SpecificClient = user?.client; //client
       const notificationObj = {
         logs: [],
         dateTime: dateTime,
@@ -707,7 +707,7 @@ export class AppController extends BaseController {
 
         // Get Original Csv
         const date = data?.logs?.date;
-        var query = {
+        const query = {
           start: date,
           end: date,
         };
@@ -725,7 +725,7 @@ export class AppController extends BaseController {
           });
         }
 
-        let dutyStatusList = JSON.parse(
+        const dutyStatusList = JSON.parse(
           JSON.stringify(
             driverCsv[0].csv['eldEventListForDriversRecordOfDutyStatus'],
           ),
@@ -765,13 +765,13 @@ export class AppController extends BaseController {
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
         );
-        let foundValue = csv.eldEventListForDriversRecordOfDutyStatus.find(
+        const foundValue = csv.eldEventListForDriversRecordOfDutyStatus.find(
           (element) => {
             return element.eventTime == logs.startTime;
           },
         );
         if (foundValue) {
-          let indexOfFoundvalue =
+          const indexOfFoundvalue =
             csv?.eldEventListForDriversRecordOfDutyStatus.indexOf(foundValue);
           if (indexOfFoundvalue > 0) {
             Logger.log('found index is ' + indexOfFoundvalue);
@@ -813,8 +813,8 @@ export class AppController extends BaseController {
         const res = await this.driverCsvService.addToDB(driverCsv[0], user);
         let dateOfQuery = moment(date);
         dateOfQuery = dateOfQuery.subtract(1, 'days');
-        let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-        let queryy = {
+        const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+        const queryy = {
           start: dateQuery,
           end: dateQuery,
         };
@@ -882,7 +882,7 @@ export class AppController extends BaseController {
   ) {
     try {
       const driverId = data.driverId;
-      let date = data.date;
+      const date = data.date;
       let user;
 
       // Parsing token for timezone
@@ -898,9 +898,9 @@ export class AppController extends BaseController {
       user = messagePatternDriver?.data;
       // user.companyTimeZone = user.companyTimeZone;
 
-      let SpecificClient = user?.client;
+      const SpecificClient = user?.client;
       // Creating dateTime for driver notification
-      let dateTime = moment.tz(date, user?.homeTerminalTimeZone?.tzCode).unix();
+      const dateTime = moment.tz(date, user?.homeTerminalTimeZone?.tzCode).unix();
 
       // Create csv pdf for before and after
       // const isConverted = await this.HOSService.generateCsvImages(
@@ -987,7 +987,7 @@ export class AppController extends BaseController {
   async approveOrReject(
     @Body() reqBody,
     @Param() params,
-    @Query('driverId') driverId: String,
+    @Query('driverId') driverId: string,
     @Res() res,
     @Req() request: Request,
   ) {
@@ -1078,7 +1078,7 @@ export class AppController extends BaseController {
         let dateQuery = dateOfQuery.format('YYYY-MM-DD');
         console.log(`In ACCEPT/REJECT | checking dateQuery date ${dateQuery}`);
         const date = dateOfQuery;
-        let query = {
+        const query = {
           start: date.format('YYYY-MM-DD'),
           end: date.format('YYYY-MM-DD'),
         };
@@ -1136,11 +1136,11 @@ export class AppController extends BaseController {
 
           editDate = editDate.toISOString().split('T')[0];
           console.log(editDate + '=-----------');
-          let timePlaceLine = JSON.parse(
+          const timePlaceLine = JSON.parse(
             JSON.stringify(driverCsv[0].csv['timePlaceLine']),
           );
-          let logs = (isEdit as any).logs[0];
-          let lastElement = (isEdit as any).lastItem;
+          const logs = (isEdit as any).logs[0];
+          const lastElement = (isEdit as any).lastItem;
           if (currentDate == editDate) {
             if (lastElement) {
               timePlaceLine.currentEventCode = logs?.eventCode;
@@ -1169,7 +1169,7 @@ export class AppController extends BaseController {
 
         dateOfQuery = dateOfQuery.subtract(1, 'days');
         dateQuery = dateOfQuery.format('YYYY-MM-DD');
-        let queryy = {
+        const queryy = {
           start: dateQuery,
           end: dateQuery,
         };
@@ -1274,7 +1274,7 @@ export class AppController extends BaseController {
       await this.logService.maintainHistory(historyObj);
       if (isApproved !== 'confirm') {
         // user.id = user._id;// this id is updated
-        let driverData = messagePatternDriver.data;
+        const driverData = messagePatternDriver.data;
         driverData.id = driverData._id;
         let images;
         const isEdit = await this.logService.getPendingRequests(driverData);
@@ -1345,7 +1345,7 @@ export class AppController extends BaseController {
   @pendingEditRequestDecorator()
   async pendingEditRequest(
     @Param() params,
-    @Query('dateTime') dateTime: String,
+    @Query('dateTime') dateTime: string,
     @Res() res,
     @Req() request,
   ) {
@@ -1395,7 +1395,7 @@ export class AppController extends BaseController {
     @Req() req,
   ) {
     try {
-      let timezone = queryParams.timezone;
+      const timezone = queryParams.timezone;
 
       // this section is for getting driver data if the request is from admin.
       let user;
@@ -1450,12 +1450,12 @@ export class AppController extends BaseController {
       const { date } = queryParams;
 
       // Ascending order sorting wrt to date time
-      let sortedArray = await sortLiveLocations(historyOfLocation);
+      const sortedArray = await sortLiveLocations(historyOfLocation);
 
       //  Get recent location
       const recentHistory = sortedArray[sortedArray.length - 1];
 
-      let meta = {};
+      const meta = {};
       meta['lastActivity'] = {
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
@@ -1496,7 +1496,7 @@ export class AppController extends BaseController {
    */
   @specificDaytripDecorators()
   async specificDay(
-    @Query('driverId') driverId: String,
+    @Query('driverId') driverId: string,
     @Query('date') date: string = moment().format('YYYY-MM-DD'),
 
     @Res() res,
@@ -1519,7 +1519,7 @@ export class AppController extends BaseController {
       const response = await this.HOSService.getLiveLocation(queryObj);
 
       // -----------------------------------------------------------------
-      let locations = [];
+      const locations = [];
       function convertToSeconds(time) {
         const hours = parseInt(time.slice(0, 2));
         const minutes = parseInt(time.slice(2, 4));
@@ -1528,7 +1528,9 @@ export class AppController extends BaseController {
         return hours * 3600 + minutes * 60 + seconds;
       }
 
-      let allLocations = JSON.parse(JSON.stringify(response.data));
+      const allLocations = JSON.parse(JSON.stringify(response.data));
+      const stops = await this.HOSService.getStopsLocation(queryObj);
+
       //filter all driving events except ON OFF SB
       // let driving = allLocations.filter((element) => {
       //   return (
@@ -1579,7 +1581,7 @@ export class AppController extends BaseController {
       //   otherThenDriving[i].address = address;
       // }
       // let responseArray = [...otherThenDriving, ...driving];
-      let responseArray = allLocations;
+      const responseArray = allLocations;
 
       // responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
@@ -1622,9 +1624,9 @@ export class AppController extends BaseController {
 
       const response = await this.HOSService.getLiveLocation(queryObj);
       // add google api here and calculate address of otherThenDriving statuses
-      let arrayPresent = response.data;
+      const arrayPresent = response.data;
       for (let i = 0; i < arrayPresent.length; i++) {
-        let address = await this.driverCsvService.getAddress(
+        const address = await this.driverCsvService.getAddress(
           arrayPresent[i].latitude,
           arrayPresent[i].longitude,
         );

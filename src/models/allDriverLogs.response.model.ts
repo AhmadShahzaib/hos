@@ -3,13 +3,13 @@ import { ApiProperty } from '@nestjs/swagger';
 export class AllDriverLogResponseModel {
   @ApiProperty()
   id: {
-    driverId: String;
-    calendarDate: Number;
+    driverId: string;
+    calendarDate: number;
   };
   @ApiProperty()
   lastName: string;
   @ApiProperty()
-  calendarStartDate?: Number;
+  calendarStartDate?: number;
   @ApiProperty()
   logDocumentId: string;
   @ApiProperty()

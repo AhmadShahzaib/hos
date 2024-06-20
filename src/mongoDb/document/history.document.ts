@@ -1,10 +1,10 @@
 export default interface HistoryDocument extends Document {
   driver: {
-    id: { type: String };
-    name: { type: String };
+    id: { type: string };
+    name: { type: string };
   };
   type: {
-    type: String;
+    type: string;
     enum: ['correction', 'transfer'];
   };
   csvBeforeUpdate: {};

@@ -2,19 +2,19 @@ import { IsNotEmpty, IsOptional, Length } from 'class-validator';
 
 export class PaginationDto {
   @IsOptional({ message: 'PageNo is a required field!' })
-  pageNo: String;
+  pageNo: string;
 
   @IsOptional({ message: 'Limit is a required field!' })
-  limit: String;
+  limit: string;
 
   @IsOptional()
-  startDate: String;
+  startDate: string;
   @IsOptional()
-  endDate: String;
+  endDate: string;
   @IsOptional()
-  vinNo: String;
+  vinNo: string;
   @IsOptional()
-  type: String;
+  type: string;
   @IsOptional()
-  tenantId:String;
+  tenantId:string;
 }

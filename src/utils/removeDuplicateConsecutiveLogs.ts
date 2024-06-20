@@ -2,12 +2,12 @@
  * Function author - Ahmad Shahzaib
  */
 export async function removeDuplicateConsecutiveLogss(logs) {
-  let activeLogs = [];
-  let filteredLogs = []; // Create a new array for filtered logs
+  const activeLogs = [];
+  const filteredLogs = []; // Create a new array for filtered logs
   let previousLog = null; // Track the previous log
-  let inActiveLogs = [];
-  let intermediateLogs = [];
-  let statusLogs = [];
+  const inActiveLogs = [];
+  const intermediateLogs = [];
+  const statusLogs = [];
   let finalLogs;
 
   // Separating inActive logs

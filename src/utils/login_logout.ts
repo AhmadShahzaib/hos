@@ -3,7 +3,7 @@ import { generateUniqueHexId } from "./generateEventSeqId";
 import moment from "moment";
 
 export function insert_Login_Logout(loginlogout, statusInfo, date, time,name,timezone) {
-    let sqID = generateUniqueHexId()
+    const sqID = generateUniqueHexId()
         let odometer
     let Ehours
     if (statusInfo.odometer > Number('9999999')) {

@@ -65,7 +65,7 @@ async function bootstrap() {
 
   // Convert all JSON object keys to snake_case
   // app.useGlobalInterceptors(new SnakeCaseInterceptor());
-  let env = {
+  const env = {
     server: process.env.SERVICE_BASE_URL,
     baseURL: process.env.SERVICE_REQ_RES,
     port: process.env.SERVICE_REQ_RES_PORT,

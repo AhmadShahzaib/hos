@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginationDto } from 'dto/pagination.dto';
 import UnidentifiedLogsDocument from 'mongoDb/document/unidentifiedLog.document';
-import { Model } from 'mongoose';
+import { Model,Types } from 'mongoose';
 import { paginator } from 'utils/pagination';
 
 @Injectable()
@@ -146,7 +146,7 @@ const currentDriver=  unidentifiedLog.driverId;
       },
     ]);
 
-    let results = obj;
+    const results = obj;
     // let total;
     // if (obj.length > 0) {
     //   results = obj[0]?.paginatedResults;
@@ -171,7 +171,7 @@ const currentDriver=  unidentifiedLog.driverId;
     return response;
   };
   create = async (logs) => {
-    let obj = [];
+    const obj = [];
     for (let i = 0; i < logs.length; i++) {
       const doc = await this.unidentifiedLogsModel.create(logs[i]);
       obj.push(doc);
@@ -231,7 +231,7 @@ const currentDriver=  unidentifiedLog.driverId;
         (result[i].totalTime - Math.floor(result[i].totalTime)) *
         60
       ).toFixed();
-      let value = `${hours}h ${minutes}m`;
+      const value = `${hours}h ${minutes}m`;
       // let value =
       //   hours && Number(minutes) > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
       response = {
@@ -325,13 +325,36 @@ const currentDriver=  unidentifiedLog.driverId;
       data: {},
     };
   };
+  deleteMany = async (ids) => {
+    // const objectIds = ids.map(id => new Types.ObjectId(id));
+    const obj = await this.unidentifiedLogsModel.deleteMany({
+      _id: {
+        $in: ids,
+      },
+    });
+    if (obj.deletedCount > 0) {
+      const response = {
+        statusCode: 200,
+        message: 'Log deleted successfully!',
+        data: {},
+      };
+      return response;
+    }
 
+    const response = {
+      statusCode: 200,
+      message: 'Not Found!',
+      data: {},
+    };
+    return response;
+
+  };
   /**
    * Edit Inset Logs
    * Description:
    *            Fetch all edit logs against a vehicleVim
    */
-  fetchLogsAgainstVim = async (vinNo: String, query: PaginationDto) => {
+  fetchLogsAgainstVim = async (vinNo: string, query: PaginationDto) => {
     const { skip, limit } = paginator(query);
 
     const unidentifiedAgainstVim = await this.unidentifiedLogsModel

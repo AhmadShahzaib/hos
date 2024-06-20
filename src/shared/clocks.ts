@@ -22,7 +22,7 @@ interface ClockParams {
 }
 
 export const calculateClocks = (params: ClockParams): Clocks => {
-  let {
+  const {
     CONSECUTIVE_DRIVING,
     DRIVING_WITH_OUT_SPLIT,
     ON_DUTY_NOT_DRIVING_CYCLE,
@@ -33,7 +33,7 @@ export const calculateClocks = (params: ClockParams): Clocks => {
     RECAPE_STATUS,
   } = params;
 
-  let clocks: Clocks = {
+  const clocks: Clocks = {
     breakSeconds: 0,
     cycleSeconds: 0,
     driveSeconds: 0,
@@ -43,17 +43,17 @@ export const calculateClocks = (params: ClockParams): Clocks => {
     recapeClock: 0,
   };
   let DRIVING_WITH_OUT_split;
-  let remainingDriving = 11 * 60 * 60 - DRIVING_WITH_OUT_SPLIT;
-  let remainingCycle = 70 * 60 * 60 - ON_DUTY_NOT_DRIVING_CYCLE;
+  const remainingDriving = 11 * 60 * 60 - DRIVING_WITH_OUT_SPLIT;
+  const remainingCycle = 70 * 60 * 60 - ON_DUTY_NOT_DRIVING_CYCLE;
 
   DRIVING_WITH_OUT_split = DRIVING_WITH_OUT_SPLIT;
   if (remainingDriving >= remainingCycle) {
     DRIVING_WITH_OUT_split = ON_DUTY_NOT_DRIVING_CYCLE - 59 * 60 * 60;
   }
-  let remainingShift = 14 * 60 * 60 - TOTAL_SHIFT_COUNTER;
+  const remainingShift = 14 * 60 * 60 - TOTAL_SHIFT_COUNTER;
   if (SHIFT_STARTED == true) {
     if (remainingDriving >= remainingShift) {
-      let drive = TOTAL_SHIFT_COUNTER - 3 * 60 * 60;
+      const drive = TOTAL_SHIFT_COUNTER - 3 * 60 * 60;
 
       DRIVING_WITH_OUT_split = drive;
     }
@@ -62,7 +62,7 @@ export const calculateClocks = (params: ClockParams): Clocks => {
   if (remainingDriving >= remainingCycle && remainingShift >= remainingCycle) {
     DRIVING_WITH_OUT_split = ON_DUTY_NOT_DRIVING_CYCLE - 59 * 60 * 60;
   }
-let cycleTime= 252000;
+const cycleTime= 252000;
   clocks.breakSeconds = CONSECUTIVE_DRIVING;
   clocks.cycleSeconds = ON_DUTY_NOT_DRIVING_CYCLE;
   clocks.driveSeconds = DRIVING_WITH_OUT_split;

@@ -12,11 +12,11 @@ export interface CommonLogEntryKeysDocument extends Document {
   id?: string;
   driverId: string;
   tenantId: string;
-  serverDate: Number;
+  serverDate: number;
   actionType: any;
   isViolation: boolean;
   violations?: Array<ViolationTypeArrDocument>;
-  actionDate: Number;
+  actionDate: number;
   notes?: string;
   geoLocation?: {
     longitude: number;
@@ -29,20 +29,20 @@ export interface CommonLogEntryKeysDocument extends Document {
   engineHours?: number;
   engineRPMs?: number;
   statusesData?: any; //TODO: Umer: <= this needs to be renamed to statusData as the property is pointing to one status at a time.
-  violationType?: String;
-  vehicleManualId: String;
-  appVersion?: String;
-  deviceVersion?: String;
-  OSversion?: String;
+  violationType?: string;
+  vehicleManualId: string;
+  appVersion?: string;
+  deviceVersion?: string;
+  OSversion?: string;
   deviceType?: any;
   annotation?: number;
-  isApproved?: Boolean;
-  isManual?: Boolean;
+  isApproved?: boolean;
+  isManual?: boolean;
   eventType?: any;
   sequenceNumber?: number;
-  deviceModel?: String;
-  eldType?: String;
-  malfunction?: String;
+  deviceModel?: string;
+  eldType?: string;
+  malfunction?: string;
 }
 
 export interface ExtendedWithEditRequestLogsEntryDocument
@@ -328,31 +328,31 @@ export interface LogEditRequestHistoryDocument extends Document {
   editedBy: {
     id: string;
     name: string;
-    editedDay: Number;
+    editedDay: number;
   };
-  date: Number;
+  date: number;
   parentLogDocumentId: string;
-  isApproved?: Boolean;
+  isApproved?: boolean;
   notes?: string;
 }
 
 export default interface unidentifiedLogsDocument extends Document {
-  eventSequenceIdNumber: Number,
-  eventRecordStatus: String,
-  eventRecordOrigin: String,
-  eventType: String,
-  eventCode: String,
-  eventDate: String,
-  eventTime: String,
-  accumulatedVehicleMiles: Number,
-  accumulatedEngineHours: Number,
-  eventLatitude: String,
-  eventLongitude: String,
-  distanceSinceLastValidCoordinates: String,
-  correspondingCmvOrderNumber: String,
-  malfunctionIndicatorStatusForEld: String,
-  eventDataCheckValue: String,
-  lineDataCheckValue: String,
-  cmvVin: String,
-  eldnumber: String
+  eventSequenceIdNumber: number,
+  eventRecordStatus: string,
+  eventRecordOrigin: string,
+  eventType: string,
+  eventCode: string,
+  eventDate: string,
+  eventTime: string,
+  accumulatedVehicleMiles: number,
+  accumulatedEngineHours: number,
+  eventLatitude: string,
+  eventLongitude: string,
+  distanceSinceLastValidCoordinates: string,
+  correspondingCmvOrderNumber: string,
+  malfunctionIndicatorStatusForEld: string,
+  eventDataCheckValue: string,
+  lineDataCheckValue: string,
+  cmvVin: string,
+  eldnumber: string
 }

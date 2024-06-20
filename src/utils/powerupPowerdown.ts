@@ -16,7 +16,7 @@ export function insert_powerup_powerdown(poweruppowerdown, statusInfo, date, tim
               } else {
                   Ehours = statusInfo.engineHour
             }
-    let sqID = generateUniqueHexId()
+    const sqID = generateUniqueHexId()
 const powerup_powerdown ={
                     "address": statusInfo.address,
                     "cmvPowerUnitNumber": cmvPowerUnitNumber,

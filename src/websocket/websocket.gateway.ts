@@ -62,7 +62,7 @@ export class WebsocketGateway
     );
     const user = JSON.parse(tokenPayload.sub);
 
-    let objectClient: any = { id: user.id, client: client.id };
+    const objectClient: any = { id: user.id, client: client.id };
     // objectClient = JSON.stringify(objectClient);
     try {
       await firstValueFrom<MessagePatternResponseType>(
@@ -108,7 +108,7 @@ export class WebsocketGateway
         });
       }
       const SpecificClient = user.client;
-      let result = await this.driverCsvService.runCalculationOnRecentHOS(
+      const result = await this.driverCsvService.runCalculationOnRecentHOS(
         query,
         user,
       );
@@ -153,8 +153,8 @@ export class WebsocketGateway
   }
 
   async syncDriver(SpecificClient, user, date, responseData): Promise<any> {
-    let end = moment().tz(user.homeTerminalTimeZone.tzCode);
-    let query = { start: date, end: end.format('YYYY-MM-DD') };
+    const end = moment().tz(user.homeTerminalTimeZone.tzCode);
+    const query = { start: date, end: end.format('YYYY-MM-DD') };
 
     const resp: any = await this.driverCsvService.getFromDB(query, user);
 
@@ -205,7 +205,7 @@ export class WebsocketGateway
       const tenantId = user.tenantId;
 
       // Ascending order sorting wrt to date time
-      let sortedArray = await sortLiveLocations(historyOfLocation);
+      const sortedArray = await sortLiveLocations(historyOfLocation);
 
       //  Get recent location
       const recentHistory = sortedArray[sortedArray.length - 1];
@@ -228,6 +228,11 @@ export class WebsocketGateway
         speed: recentHistory?.speed,
         currentEventCode: recentHistory?.status || '1',
         currentEventType: recentHistory?.eventType,
+        fuel: recentHistory?.fuel,
+        coolantLevel: recentHistory?.coolantLevel,
+        coolantTemperature: recentHistory?.coolantTemperature,
+        oilLevel: recentHistory?.oilLevel,
+        oilTemprature: recentHistory?.oilTemprature,
       };
       user.id = user.id ? user.id : user._id;
       // Assign recent location to units by message pattern
@@ -248,7 +253,108 @@ export class WebsocketGateway
       }); // await removed
       this.server.to(SpecificClient).emit('locationAdd', {
         message: 'entry added successfully',
-        data: {  },
+        data: {},
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+// only message for BO to keep track of change in status
+// not complete blocker od client id
+@SubscribeMessage('allcurrentStatuses')
+async getAllCurrentStatuses(
+  @MessageBody()
+  tenantId,
+) {
+  try {
+    const messagePatternUnits =
+    await firstValueFrom<MessagePatternResponseType>(
+      this.unitClient.send({ cmd: 'get_all_current_statuses' }, tenantId),
+    );
+  if (messagePatternUnits.isError) {
+    mapMessagePatternResponseToException(messagePatternUnits);
+  }
+
+  } catch (error) {
+    throw error;
+  }
+}
+  @SubscribeMessage('addStops') //branch change
+  async addStops(
+    @MessageBody()
+    data,
+  ) {
+    try {
+      const { queryParams, reqBody } = data;
+
+      let user;
+      let { meta } = reqBody;
+      const { historyOfLocation } = reqBody;
+      const { date, driverId } = queryParams;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+      }
+      const SpecificClient = user.client;
+      const tenantId = user.tenantId;
+
+      // Ascending order sorting wrt to date time
+      const sortedArray = await sortLiveLocations(historyOfLocation);
+
+      //  Get recent location
+      const recentHistory = sortedArray[sortedArray.length - 1];
+
+      // Meta object creation
+      if (meta?.address == '') {
+        delete recentHistory?.address;
+      }
+      if (!meta) {
+        meta = {};
+      }
+
+      meta['lastActivity'] = {
+        odoMeterMillage: recentHistory?.odometer,
+        engineHours: recentHistory?.engineHours,
+        currentTime: recentHistory?.time,
+        currentDate: recentHistory?.date,
+        latitude: recentHistory?.latitude,
+        longitude: recentHistory?.longitude,
+        address: recentHistory?.address,
+        speed: recentHistory?.speed,
+        currentEventCode: recentHistory?.status || '1',
+        currentEventType: recentHistory?.eventType,
+        fuel: recentHistory?.fuel,
+        coolantLevel: recentHistory?.coolantLevel,
+        coolantTemperature: recentHistory?.coolantTemperature,
+        oilLevel: recentHistory?.oilLevel,
+        oilTemprature: recentHistory?.oilTemprature,
+      };
+      user.id = user.id ? user.id : user._id;
+      // Assign recent location to units by message pattern
+      const messagePatternUnits =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+        );
+      if (messagePatternUnits.isError) {
+        mapMessagePatternResponseToException(messagePatternUnits);
+      }
+
+      // Pass related data to the model
+      const response = await this.HOSService.addStops({
+        driverId: driverId,
+        tenantId,
+        date,
+        historyOfLocation: sortedArray,
+      }); // await removed
+      this.server.to(SpecificClient).emit('locationAdd', {
+        message: 'entry added successfully',
+        data: {},
       });
     } catch (error) {
       throw error;
@@ -328,7 +434,7 @@ export class WebsocketGateway
         },
         user,
       );
-      let previousBody = JSON.parse(JSON.stringify(body));
+      const previousBody = JSON.parse(JSON.stringify(body));
       let resp;
       let reqBody;
       // 2. if true
@@ -344,7 +450,7 @@ export class WebsocketGateway
             moment().subtract(1, 'day').unix(),
             user.homeTerminalTimeZone.tzCode,
           );
-          let messagePatternUnit =
+          const messagePatternUnit =
             await firstValueFrom<MessagePatternResponseType>(
               this.unitClient.send({ cmd: 'get_unit_by_driverId' }, user.id),
             );
@@ -387,11 +493,11 @@ export class WebsocketGateway
       // let dateOfQuery = moment(body.date);
       // dateOfQuery = dateOfQuery.subtract(1, 'days');
       // let dateQuery = dateOfQuery.format('YYYY-MM-DD');
-      var query = {
+      let query = {
         start: body.date,
         end: moment().tz(user.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD'),
       };
-      let result = await this.driverCsvService.runCalculationOnDateHOS(
+      const result = await this.driverCsvService.runCalculationOnDateHOS(
         query,
         user,
       );
@@ -430,7 +536,7 @@ export class WebsocketGateway
           data: [],
         };
       }
-      let driverId = queryParams.id;
+      const driverId = queryParams.id;
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -441,13 +547,13 @@ export class WebsocketGateway
         }
         user = messagePatternDriver.data;
       }
-      let SpecificClient = user.client;
+      const SpecificClient = user.client;
       const inputDate = moment(queryParams.date).format('YYYY-MM-DD');
-      let query = {
+      const query = {
         start: inputDate,
         end: inputDate,
       };
-      let response = await this.driverCsvService.getFromDB(query, user);
+      const response = await this.driverCsvService.getFromDB(query, user);
       if (!response.graphData[0].originalLogs) {
         this.server.to(SpecificClient).emit('message', {
           message: 'Please get latest Build ',
@@ -465,7 +571,7 @@ export class WebsocketGateway
         originalLogs.eldEventListForDriverCertificationOfOwnRecords;
       csv.eldLoginLogoutReport = originalLogs.eldLoginLogoutReport;
       const violations = response.graphData[0].meta.voilations;
-      let resp = {
+      const resp = {
         csvBeforeUpdate: { csv: csv, violations: violations },
       };
       this.server.to(SpecificClient).emit('sendOrignal', {
