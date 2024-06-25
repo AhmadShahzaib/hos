@@ -775,6 +775,7 @@ export class DriverCsvService {
       clock: {},
       // homeTerminalTimeZone: {},
       // tenantId: '',
+      lastKnownActivity:{},
       isPti: '',
     };
 
@@ -788,7 +789,8 @@ export class DriverCsvService {
 
       currentEventCode: latestCSV.csv.timePlaceLine.currentEventCode,
     };
-    // recordMade.lastKnownActivity = user?.meta?.lastActivity;
+    let statuses = latestCSV.csv.eldEventListForDriversRecordOfDutyStatus;
+    recordMade.lastKnownActivity['location'] = statuses[statuses.length-1].address;
 
     if (
       latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords.length > 0
