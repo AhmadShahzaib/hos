@@ -1589,7 +1589,7 @@ export class AppController extends BaseController {
       return res.status(response.statusCode).send({
         statusCode: response.statusCode,
         message: response.message,
-        data: responseArray,
+        data: {responseArray,stops},
       });
     } catch (error) {
       throw error;
