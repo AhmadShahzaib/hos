@@ -281,6 +281,9 @@ const currentDriver=  unidentifiedLog.driverId;
         obj.type = 'unidentified-assigned';
         obj.origin.address = object.originAddress;
         obj.destination.address = object.destinationAddress;
+        obj.eventCode= object.eventCode;
+        obj.eventType= object.eventType;
+
         await obj.save();
 
         const response = {
