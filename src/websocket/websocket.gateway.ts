@@ -259,26 +259,25 @@ export class WebsocketGateway
       throw error;
     }
   }
-// only message for BO to keep track of change in status
-// not complete blocker od client id
-@SubscribeMessage('allcurrentStatuses')
-async getAllCurrentStatuses(
-  @MessageBody()
-  tenantId,
-) {
-  try {
-    const messagePatternUnits =
-    await firstValueFrom<MessagePatternResponseType>(
-      this.unitClient.send({ cmd: 'get_all_current_statuses' }, tenantId),
-    );
-  if (messagePatternUnits.isError) {
-    mapMessagePatternResponseToException(messagePatternUnits);
+  // only message for BO to keep track of change in status
+  // not complete blocker od client id
+  @SubscribeMessage('allcurrentStatuses')
+  async getAllCurrentStatuses(
+    @MessageBody()
+    tenantId,
+  ) {
+    try {
+      const messagePatternUnits =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.unitClient.send({ cmd: 'get_all_current_statuses' }, tenantId),
+        );
+      if (messagePatternUnits.isError) {
+        mapMessagePatternResponseToException(messagePatternUnits);
+      }
+    } catch (error) {
+      throw error;
+    }
   }
-
-  } catch (error) {
-    throw error;
-  }
-}
   @SubscribeMessage('addStops') //branch change
   async addStops(
     @MessageBody()
@@ -319,6 +318,7 @@ async getAllCurrentStatuses(
       }
 
       meta['lastActivity'] = {
+        vehicleId : user.currentVehicle,
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
         currentTime: recentHistory?.time,

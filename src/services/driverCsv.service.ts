@@ -3963,6 +3963,24 @@ return {shippingIds,trailerIds}
     }
     return records;
   };
+  findByDriverIDWithDate = async (ids, startDate,endDate) => {
+    const records = [];
+    const driverQuery = await this.recordTable.find({
+      driverId: {
+        $in: ids,
+      },
+      date: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    });
+    if (driverQuery.length > 0) {
+      for (let i = 0; i < driverQuery.length; i++) {
+        records.push(driverQuery[i]['_doc']);
+      }
+    }
+    return records;
+  };
   deleteDriverRecord = async (driverId, date) => {
     try {
       const result = await this.recordTable.deleteOne({ driverId, date });
