@@ -518,6 +518,7 @@ export class UnidentifiedLogsController {
       const {
         unidentifiedLogId,
         statusCode,
+        eventCode,eventType,
         reason,
         originAddress,
         destinationAddress,
@@ -555,6 +556,7 @@ export class UnidentifiedLogsController {
         const object = {
           driverId,
           statusCode,
+          eventCode,eventType,
           reason,
           originAddress,
           destinationAddress,

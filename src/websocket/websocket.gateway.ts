@@ -318,7 +318,8 @@ export class WebsocketGateway
       }
 
       meta['lastActivity'] = {
-        vehicleId : user.currentVehicle,
+        vinNo: recentHistory.vinNo,
+        vehicleNo: recentHistory.vehicleNo,
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
         currentTime: recentHistory?.time,

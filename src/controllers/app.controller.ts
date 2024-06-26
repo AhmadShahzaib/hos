@@ -1580,8 +1580,8 @@ export class AppController extends BaseController {
       //   );
       //   otherThenDriving[i].address = address;
       // }
-      // let responseArray = [...otherThenDriving, ...driving];
-      const responseArray = allLocations;
+      let responseArray = [...allLocations, ...stops.data];
+      //  responseArray = ;
 
       // responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
