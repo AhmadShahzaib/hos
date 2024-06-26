@@ -356,6 +356,7 @@ export class UnidentifiedLogsController {
           tenantId: {
             $eq: extractedUserFromToken.tenantId,
           },
+          isDeleted: false,
         };
         // query.tenantId=extractedUserFromToken.tenantId
         const response = await this.unidetifiedLogsService.findAll(
@@ -620,7 +621,47 @@ export class UnidentifiedLogsController {
       const response: any = await this.unidetifiedLogsService.deleteMany(
         unidentifiedLogIds,
       );
+      const documents = await this.unidetifiedLogsService.findAllUnidentified({
+        _id: {
+          $in: unidentifiedLogIds,
+        },
+      });
+      if (documents?.length > 0) {
+      }
+      if (response?.currentDriver) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send(
+              { cmd: 'get_driver_by_id' },
+              response?.currentDriver,
+            ),
+          );
+        if (messagePatternDriver?.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        const driver = messagePatternDriver?.data;
 
+        const notificationObj = {
+          logs: [response.data],
+          editRequest: [],
+          dateTime: '',
+          driverId: driver?._id,
+          notificationType: 2,
+          editStatusFromBO: 'unassign',
+        };
+        const SpecificClient = driver?.client;
+
+        const mesaage = 'Driver assigned!';
+
+        // let WebsocketGateway: WebsocketGateway;
+
+        this.gateway.notifyDriver(
+          SpecificClient,
+          'notifyDriver',
+          mesaage,
+          notificationObj,
+        );
+      }
       if (response.statusCode == 200) {
         return res.status(response.statusCode).send(response);
       } else {
