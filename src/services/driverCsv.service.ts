@@ -775,6 +775,7 @@ export class DriverCsvService {
       clock: {},
       // homeTerminalTimeZone: {},
       // tenantId: '',
+      lastKnownActivity:{},
       isPti: '',
     };
 
@@ -788,7 +789,8 @@ export class DriverCsvService {
 
       currentEventCode: latestCSV.csv.timePlaceLine.currentEventCode,
     };
-    // recordMade.lastKnownActivity = user?.meta?.lastActivity;
+    let statuses = latestCSV.csv.eldEventListForDriversRecordOfDutyStatus;
+    recordMade.lastKnownActivity['location'] = statuses[statuses.length-1].address;
 
     if (
       latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords.length > 0
@@ -3954,6 +3956,24 @@ return {shippingIds,trailerIds}
       },
       date: {
         $in: date,
+      },
+    });
+    if (driverQuery.length > 0) {
+      for (let i = 0; i < driverQuery.length; i++) {
+        records.push(driverQuery[i]['_doc']);
+      }
+    }
+    return records;
+  };
+  findByDriverIDWithDate = async (ids, startDate,endDate) => {
+    const records = [];
+    const driverQuery = await this.recordTable.find({
+      driverId: {
+        $in: ids,
+      },
+      date: {
+        $gte: startDate,
+        $lte: endDate,
       },
     });
     if (driverQuery.length > 0) {

@@ -474,6 +474,23 @@ export class DriverCsvController extends BaseController {
       return err;
     }
   }
+
+  @UseInterceptors(new MessagePatternResponseInterceptor())
+  @MessagePattern({ cmd: 'get_recordTable_7Days' })
+  async get_record_7Days(requestParam: any): Promise<any> {
+    try {
+      const { driverID, startDate, endDate } = requestParam;
+      const resp: any = await this.driverCsvService.findByDriverIDWithDate(
+        driverID,
+        startDate,
+        endDate,
+      );
+      return resp;
+    } catch (err) {
+      Logger.error({ message: err.message, stack: err.stack });
+      return err;
+    }
+  }
   // @UseInterceptors(new MessagePatternResponseInterceptor())
   @MessagePattern({ cmd: 'update_certification' })
   async update_certification(requestParam: any): Promise<any> {
@@ -1723,7 +1740,10 @@ export class DriverCsvController extends BaseController {
             let loginlogout = JSON.parse(
               JSON.stringify(logsOfSelectedDate[0].csv.eldLoginLogoutReport),
             );
-            const result = await removeObjectByEventSequenceId(loginlogout, sqID);
+            const result = await removeObjectByEventSequenceId(
+              loginlogout,
+              sqID,
+            );
             result.eventTime = time;
             result.address = statusInfo.address;
             result.loginLatitude = statusInfo.lat;
