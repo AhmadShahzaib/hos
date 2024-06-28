@@ -411,6 +411,7 @@ export class UnidentifiedLogsController {
       });
     }
   }
+
   @Get('/vin')
   async findAllVin(
     @Query()
@@ -446,6 +447,7 @@ export class UnidentifiedLogsController {
             cmvVinNo: {
               $eq: vinNo,
             },
+            isDeleted: false,
           };
         }
 
@@ -518,7 +520,8 @@ export class UnidentifiedLogsController {
       const {
         unidentifiedLogId,
         statusCode,
-        eventCode,eventType,
+        eventCode,
+        eventType,
         reason,
         originAddress,
         destinationAddress,
@@ -556,7 +559,8 @@ export class UnidentifiedLogsController {
         const object = {
           driverId,
           statusCode,
-          eventCode,eventType,
+          eventCode,
+          eventType,
           reason,
           originAddress,
           destinationAddress,
