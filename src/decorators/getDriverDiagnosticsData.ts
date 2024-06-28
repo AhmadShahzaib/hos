@@ -13,7 +13,7 @@ import {
   HOS,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 
-export default function GetDriverLiveDataDecorators() {
+export default function GetDriverDiagnosticsDataDecorators() {
   const response1 = {
     statusCode: 404,
     message: 'No Data found for this driver',
@@ -178,9 +178,9 @@ export default function GetDriverLiveDataDecorators() {
     },
   };
 
-  const getDriverLiveDataDecorators: Array<CombineDecoratorType> = [
-    Get('live/:id'),
-    SetMetadata('permissions', ['90nfnafe']),
+  const getDriverDiagnosticsDataDecorators: Array<CombineDecoratorType> = [
+    Get('diagnostic/:id'),
+    SetMetadata('permissions', ['91b5bafes']),
     ApiParam({
       name: 'id',
       description: 'Driver id (system generated id) is required.',
@@ -201,5 +201,5 @@ export default function GetDriverLiveDataDecorators() {
       },
     }),
   ];
-  return CombineDecorators(getDriverLiveDataDecorators);
+  return CombineDecorators(getDriverDiagnosticsDataDecorators);
 }
