@@ -900,7 +900,9 @@ export class AppController extends BaseController {
 
       const SpecificClient = user?.client;
       // Creating dateTime for driver notification
-      const dateTime = moment.tz(date, user?.homeTerminalTimeZone?.tzCode).unix();
+      const dateTime = moment
+        .tz(date, user?.homeTerminalTimeZone?.tzCode)
+        .unix();
 
       // Create csv pdf for before and after
       // const isConverted = await this.HOSService.generateCsvImages(
@@ -1571,7 +1573,7 @@ export class AppController extends BaseController {
       //     (element.status == '4' && element.eventType == '1')
       //   );
       // });
-// mayble will later on it
+      // mayble will later on it
       // add google api here and calculate address of otherThenDriving statuses
       // for (let i = 0; i < otherThenDriving.length; i++) {
       //   let address = await this.driverCsvService.getAddress(
@@ -1583,7 +1585,7 @@ export class AppController extends BaseController {
       let responseArray = [...allLocations, ...stops.data];
       //  responseArray = ;
 
-      // responseArray = responseArray.sort((a, b) => a.time - b.time);
+      responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
 
       return res.status(response.statusCode).send({
