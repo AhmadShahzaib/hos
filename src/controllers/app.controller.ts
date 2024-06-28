@@ -98,6 +98,7 @@ import { updateLogform } from 'utils/updateLogform';
 import mobileCorrectionDecoratorsUnidenfied from 'decorators/mobileCorrectionDecoratorsUnidenfied';
 import { calculateAccumulatedMiles } from 'utils/accumolatedMiles';
 import { sortLiveLocations } from 'utils/sortLiveLocations';
+import GetDriverDiagnosticsDataDecorators from 'decorators/getDriverDiagnosticsData';
 
 @Controller('HOS')
 @ApiTags('HOS')
@@ -129,6 +130,51 @@ export class AppController extends BaseController {
   @UseInterceptors(new MessagePatternResponseInterceptor())
   @GetDriverLiveDataDecorators()
   async GetDriverLiveData(
+    @Param('id') driverId: string,
+    @Headers('Authorization') authToken: string,
+    @Res() response: Response,
+    @Req() request: Request,
+  ) {
+    try {
+      const driver = (request.user as any) ?? { tenantId: undefined };
+      // const liveDriverData = await getLiveDriverData(
+      //   driverId,
+      //   this.HOSService,
+      //   driver.companyTimeZone,
+      // );
+      // let responseData;
+      // if (liveDriverData.length > 0) {
+      //   responseData = new DriverLiveData(liveDriverData[0], liveDriverData[1]);
+      // }
+      // const [liveDriverData] = await Promise.all(promises);
+      let responseData;
+      // if (liveDriverData.length > 0) {
+      //   responseData = new DriverLiveData(liveDriverData[0], liveDriverData[1]);
+      responseData = await this.HOSService.getUnitData(driverId);
+      // }
+      // add google api here and calculate address of otherThenDriving statuses
+
+      const address = await this.driverCsvService.getAddress(
+        responseData?.lastKnownLocation?.latitude,
+        responseData?.lastKnownLocation?.longitude,
+      );
+      if (address != '') {
+        responseData.lastKnownLocation.address = address;
+      }
+      return response.status(200).send({
+        message: 'Success',
+        data: responseData?.meta || {},
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Diagnostic Endpoint
+
+  @UseInterceptors(new MessagePatternResponseInterceptor())
+  @GetDriverDiagnosticsDataDecorators()
+  async GetDriverDiagnosticsData(
     @Param('id') driverId: string,
     @Headers('Authorization') authToken: string,
     @Res() response: Response,
