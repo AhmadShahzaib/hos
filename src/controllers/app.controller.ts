@@ -1583,7 +1583,7 @@ export class AppController extends BaseController {
       let responseArray = [...allLocations, ...stops.data];
       //  responseArray = ;
 
-      // responseArray = responseArray.sort((a, b) => a.time - b.time);
+      responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
 
       return res.status(response.statusCode).send({
