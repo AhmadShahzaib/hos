@@ -1679,18 +1679,21 @@ export class AppController extends BaseController {
 
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
-
+Logger.log("added locations here")
       let address = await this.driverCsvService.getAddress(
         allLocations[0].latitude,
         allLocations[0].longitude,
       );
       allLocations[0].address = address;
+Logger.log("address done ---- > ",address)
+
       let last = allLocations.length-1
       address = await this.driverCsvService.getAddress(
         allLocations[last].latitude,
         allLocations[last].longitude,
       );
       allLocations[last].address = address;
+      Logger.log("address done again ---- > ",address)
 
       // for (let i = 0; i < allLocations.length; i++) {
       //   let address
