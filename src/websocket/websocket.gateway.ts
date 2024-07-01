@@ -123,6 +123,10 @@ export class WebsocketGateway
 
       if (resp) {
         // this.server.to(socketId)
+        Logger.log("sync sent to --->",SpecificClient)
+        Logger.log("sync sent to driverId --->",driverId)
+
+        
         this.server.to(SpecificClient).emit('syncResponse', {
           message: 'Success',
           data: resp,
