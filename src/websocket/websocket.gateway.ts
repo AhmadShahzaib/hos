@@ -218,6 +218,8 @@ export class WebsocketGateway
         meta = {};
       }
       meta['lastActivity'] = {
+        vinNo: recentHistory.vinNo,
+        vehicleNo: recentHistory.vehicleNo,
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
         currentTime: recentHistory?.time,
