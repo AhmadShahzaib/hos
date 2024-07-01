@@ -46,7 +46,7 @@ import { mapKeys, camelCase } from 'lodash';
 import LogsDocument from 'mongoDb/document/document';
 import { LogsService } from 'services/logs.service';
 import { DriverCsvService } from 'services/driverCsv.service';
-import tripHistory from '../decorators/tripHistory'
+import tripHistory from '../decorators/tripHistory';
 import { AppService } from '../services/app.service';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
 import { LastKnownLocationRequest } from 'models/lastKnownLocation';
@@ -1680,70 +1680,40 @@ export class AppController extends BaseController {
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
 
-      //filter all driving events except ON OFF SB
-      // let driving = allLocations.filter((element) => {
-      //   return (
-      //     (element.status == '3' && element.eventType == '1') ||
-      //     (element.status == '1' && element.eventType == '3') ||
-      //     (element.status == '2' && element.eventType == '3')
-      //   );
-      // });
-      // let prevLog = allLocations[0];
-      // let newArray = [];
-      // let totalTime = 0;
-      // for (let i = 1; i < allLocations.length; i++) {
-      //   // if previous status and current status are not same same.
-      //   if (allLocations[i].status != prevLog.status) {
-      //     const prevTime = convertToSeconds(prevLog.time);
-      //     const currentTime = convertToSeconds(allLocations[i].time);
-      //     totalTime = currentTime - prevTime;
-      //     let newLog = JSON.parse(JSON.stringify(prevLog));
-      //     newLog.duration = totalTime;
-      //     newArray.push(newLog);
-      //     prevLog = allLocations[i];
-      //     totalTime = 0;
+      let address = await this.driverCsvService.getAddress(
+        allLocations[0].latitude,
+        allLocations[0].longitude,
+      );
+      allLocations[0].address = address;
+      let last = allLocations.length-1
+      address = await this.driverCsvService.getAddress(
+        allLocations[last].latitude,
+        allLocations[last].longitude,
+      );
+      allLocations[last].address = address;
+
+      // for (let i = 0; i < allLocations.length; i++) {
+      //   let address
+      //   if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
+      //      address = await this.driverCsvService.getAddress(
+      //       allLocations[i].latitude,
+      //       allLocations[i].longitude,
+      //     );
+      //     i = allLocations.length;
       //   }
-      //   // if the location object is last object
-      //   if (i == allLocations.length - 1) {
-      //     const prevTime = convertToSeconds(prevLog.time);
-      //     const currentTime = convertToSeconds(allLocations[i].time);
-      //     totalTime = currentTime - prevTime;
-      //     let newLog = JSON.parse(JSON.stringify(prevLog));
-      //     newLog.duration = totalTime;
-      //     newArray.push(newLog);
-      //   }
+      //   allLocations[i].address = address;
       // }
-      // let otherThenDriving = newArray.filter((element) => {
-      //   return (
-      //     (element.status == '2' && element.eventType == '1') ||
-      //     (element.status == '1' && element.eventType == '1') ||
-      //     (element.status == '4' && element.eventType == '1')
-      //   );
-      // });
-      // mayble will later on it
-      // add google api here and calculate address of otherThenDriving statuses
-      for (let i = 0; i < allLocations.length; i++) {
-        let address
-        if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
-           address = await this.driverCsvService.getAddress(
-            allLocations[i].latitude,
-            allLocations[i].longitude,
-          );
-          i = allLocations.length;
-        }
-        allLocations[i].address = address;
-      }
-      for (let i = allLocations.length-1; i > 0; i--) {
-        let address
-        if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
-           address = await this.driverCsvService.getAddress(
-            allLocations[i].latitude,
-            allLocations[i].longitude,
-          );
-          i = 0;
-        }
-        allLocations[i].address = address;
-      }
+      // for (let i = allLocations.length-1; i > 0; i--) {
+      //   let address
+      //   if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
+      //      address = await this.driverCsvService.getAddress(
+      //       allLocations[i].latitude,
+      //       allLocations[i].longitude,
+      //     );
+      //     i = 0;
+      //   }
+      //   allLocations[i].address = address;
+      // }
       let responseArray = [...allLocations, ...stops.data];
       //  responseArray = ;
 
