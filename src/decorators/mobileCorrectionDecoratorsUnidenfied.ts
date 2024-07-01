@@ -16,7 +16,7 @@ import { EditLogEntryRequestModel } from 'models/editLogEntry.request.model';
 
 export default function mobileCorrectionDecoratorsUnidenfied() {
   const mobileCorrectionDecoratorsUnidenfied: Array<CombineDecoratorType> = [
-    Put('unidentifiedLogs'),
+    Put('acceptUnidentifiedLogs'),
     SetMetadata('permissions', [HOS.EDIT_LOG]),
     ApiExtraModels(EditLogEntryRequestModel, Array<EditLogEntryRequestModel>),
     ApiBody({
