@@ -1688,7 +1688,7 @@ export class AppController extends BaseController {
         allLocations[0].latitude,
         allLocations[0].longitude,
       );
-      allLocations[0].address = address;
+      allLocations[0]['address'] = address;
       Logger.log('address done ---- > ', address);
 
       let last = allLocations.length - 1;
@@ -1696,7 +1696,7 @@ export class AppController extends BaseController {
         allLocations[last].latitude,
         allLocations[last].longitude,
       );
-      allLocations[last].address = address;
+      allLocations[last]["address"] = address;
       Logger.log('address done again ---- > ', address);
 
       // for (let i = 0; i < allLocations.length; i++) {
