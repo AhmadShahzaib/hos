@@ -1,3 +1,4 @@
+import { Length } from './../../../assets/src/models/length.model';
 import {
   Body,
   Controller,
@@ -38,6 +39,7 @@ import { firstValueFrom } from 'rxjs';
 import moment from 'moment';
 import jwt_decode from 'jwt-decode';
 import UnidentifiedLogsDocument from 'mongoDb/document/unidentifiedLog.document';
+import mongoose from 'mongoose';
 
 @Controller('HOS/unidentifiedLogs')
 export class UnidentifiedLogsController {
@@ -356,6 +358,7 @@ export class UnidentifiedLogsController {
           tenantId: {
             $eq: extractedUserFromToken.tenantId,
           },
+          isDeleted: false,
         };
         // query.tenantId=extractedUserFromToken.tenantId
         const response = await this.unidetifiedLogsService.findAll(
@@ -408,6 +411,7 @@ export class UnidentifiedLogsController {
       });
     }
   }
+
   @Get('/vin')
   async findAllVin(
     @Query()
@@ -443,6 +447,7 @@ export class UnidentifiedLogsController {
             cmvVinNo: {
               $eq: vinNo,
             },
+            isDeleted: false,
           };
         }
 
@@ -515,7 +520,8 @@ export class UnidentifiedLogsController {
       const {
         unidentifiedLogId,
         statusCode,
-        eventCode,eventType,
+        eventCode,
+        eventType,
         reason,
         originAddress,
         destinationAddress,
@@ -553,7 +559,8 @@ export class UnidentifiedLogsController {
         const object = {
           driverId,
           statusCode,
-          eventCode,eventType,
+          eventCode,
+          eventType,
           reason,
           originAddress,
           destinationAddress,
@@ -622,8 +629,52 @@ export class UnidentifiedLogsController {
       const response: any = await this.unidetifiedLogsService.deleteMany(
         unidentifiedLogIds,
       );
-
       if (response.statusCode == 200) {
+        let vehiclesIds = [];
+        const documents = await this.unidetifiedLogsService.findAllUnidentified(
+          unidentifiedLogIds,
+        );
+        if (documents?.length > 0) {
+          for (let i = 0; i < documents.length; i++) {
+            vehiclesIds.push(documents[i]?.vehicleId);
+          }
+        }
+        if (vehiclesIds.length > 0) {
+          const messagePatternDrivers =
+            await firstValueFrom<MessagePatternResponseType>(
+              this.driverClient.send(
+                { cmd: 'get_drivers_by_vehicleIds' },
+                vehiclesIds,
+              ),
+            );
+          if (messagePatternDrivers?.isError) {
+            mapMessagePatternResponseToException(messagePatternDrivers);
+          }
+          const driversList = messagePatternDrivers?.data;
+          if (driversList?.Length > 0) {
+            for (let j = 0; j < driversList.length; j++) {
+              const driver = driversList[j];
+              const notificationObj = {
+                logs: [response.data],
+                editRequest: [],
+                dateTime: '',
+                driverId: driver?._id,
+                notificationType: 2,
+                editStatusFromBO: 'unassign',
+              };
+              const SpecificClient = driver?.client;
+              const mesaage = 'Unidentified Deleted!';
+              // let WebsocketGateway: WebsocketGateway;
+
+              this.gateway.notifyDriver(
+                SpecificClient,
+                'notifyDriver',
+                mesaage,
+                notificationObj,
+              );
+            }
+          }
+        }
         return res.status(response.statusCode).send(response);
       } else {
         return res.status(403).send({

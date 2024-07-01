@@ -50,5 +50,6 @@ export default interface UnidentifiedLogsDocument extends Document {
   startTime: string;
   endTime: string;
   rejected: [string];
-  tenantId:string;
+  tenantId: string;
+  isDeleted: boolean;
 }
