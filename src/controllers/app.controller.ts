@@ -1679,6 +1679,9 @@ export class AppController extends BaseController {
 
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
+      if( allLocations[0]){
+
+      
       Logger.log(
         'added locations here',
         allLocations[0].latitude,
@@ -1698,7 +1701,7 @@ export class AppController extends BaseController {
       );
       allLocations[last]["address"] = address;
       Logger.log('address done again ---- > ', address);
-
+    }
       // for (let i = 0; i < allLocations.length; i++) {
       //   let address
       //   if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
