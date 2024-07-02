@@ -50,6 +50,7 @@ export class WebsocketGateway
     @Inject('DRIVER_SERVICE') private readonly driverClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
     @Inject('AppService') private readonly HOSService: AppService,
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientProxy,
   ) {}
 
   @WebSocketServer() server: Server;
@@ -61,15 +62,27 @@ export class WebsocketGateway
       client.handshake.headers.authorization,
     );
     const user = JSON.parse(tokenPayload.sub);
+    if(user.isDriver){
 
-    const objectClient: any = { id: user.id, client: client.id };
-    // objectClient = JSON.stringify(objectClient);
-    try {
-      await firstValueFrom<MessagePatternResponseType>(
-        this.driverClient.send({ cmd: 'update_driver_client' }, objectClient),
-      );
-    } catch (error) {
-      console.error('Error handling connection:', error);
+      const objectClient: any = { id: user.id, client: client.id };
+      // objectClient = JSON.stringify(objectClient);
+      try {
+        await firstValueFrom<MessagePatternResponseType>(
+          this.driverClient.send({ cmd: 'update_driver_client' }, objectClient),
+        );
+      } catch (error) {
+        console.error('Error handling connection:', error);
+      }
+    }else {
+      const objectClient: any = { id: user.id, client: client.id };
+      // objectClient = JSON.stringify(objectClient);
+      try {
+        await firstValueFrom<MessagePatternResponseType>(
+          this.usersClient.send({ cmd: 'update_user_client' }, objectClient),
+        );
+      } catch (error) {
+        console.error('Error handling connection:', error);
+      }
     }
     console.log('New client connected with token:');
   }
