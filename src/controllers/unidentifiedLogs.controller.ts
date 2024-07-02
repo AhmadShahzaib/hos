@@ -663,6 +663,7 @@ export class UnidentifiedLogsController {
                 editStatusFromBO: 'unassign',
               };
               const SpecificClient = driver?.client;
+              Logger.log(SpecificClient);
               const mesaage = 'Unidentified Deleted!';
               // let WebsocketGateway: WebsocketGateway;
 
