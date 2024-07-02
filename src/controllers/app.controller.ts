@@ -46,7 +46,7 @@ import { mapKeys, camelCase } from 'lodash';
 import LogsDocument from 'mongoDb/document/document';
 import { LogsService } from 'services/logs.service';
 import { DriverCsvService } from 'services/driverCsv.service';
-
+import tripHistory from '../decorators/tripHistory';
 import { AppService } from '../services/app.service';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
 import { LastKnownLocationRequest } from 'models/lastKnownLocation';
@@ -1643,7 +1643,102 @@ export class AppController extends BaseController {
       throw error;
     }
   }
+  @tripHistory()
+  async tripHistory(
+    @Query('driverId') driverId: string,
+    @Query('date') date: string = moment().format('YYYY-MM-DD'),
 
+    @Res() res,
+    @Req() request: Request,
+  ) {
+    try {
+      const queryObj = {
+        driverId: driverId,
+        date: date,
+      };
+
+      const messagePatternDriver =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+        );
+      if (messagePatternDriver.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      // query to get all tracking records of that day.
+      const response = await this.HOSService.getLiveLocation(queryObj);
+
+      // -----------------------------------------------------------------
+      const locations = [];
+      function convertToSeconds(time) {
+        const hours = parseInt(time.slice(0, 2));
+        const minutes = parseInt(time.slice(2, 4));
+        const seconds = parseInt(time.slice(4, 6));
+
+        return hours * 3600 + minutes * 60 + seconds;
+      }
+
+      const allLocations = JSON.parse(JSON.stringify(response.data));
+      const stops = await this.HOSService.getStopsLocation(queryObj);
+      if( allLocations[0]){
+
+      
+      Logger.log(
+        'added locations here',
+        allLocations[0].latitude,
+        allLocations[0].longitude,
+      );
+      let address = await this.driverCsvService.getAddress(
+        allLocations[0].latitude,
+        allLocations[0].longitude,
+      );
+      allLocations[0]['address'] = address;
+      Logger.log('address done ---- > ', address);
+
+      let last = allLocations.length - 1;
+      address = await this.driverCsvService.getAddress(
+        allLocations[last].latitude,
+        allLocations[last].longitude,
+      );
+      allLocations[last]["address"] = address;
+      Logger.log('address done again ---- > ', address);
+    }
+      // for (let i = 0; i < allLocations.length; i++) {
+      //   let address
+      //   if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
+      //      address = await this.driverCsvService.getAddress(
+      //       allLocations[i].latitude,
+      //       allLocations[i].longitude,
+      //     );
+      //     i = allLocations.length;
+      //   }
+      //   allLocations[i].address = address;
+      // }
+      // for (let i = allLocations.length-1; i > 0; i--) {
+      //   let address
+      //   if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
+      //      address = await this.driverCsvService.getAddress(
+      //       allLocations[i].latitude,
+      //       allLocations[i].longitude,
+      //     );
+      //     i = 0;
+      //   }
+      //   allLocations[i].address = address;
+      // }
+      let responseArray = [...allLocations, ...stops.data];
+      //  responseArray = ;
+
+      responseArray = responseArray.sort((a, b) => a.time - b.time);
+      // ------------------------------------------------------------------------
+
+      return res.status(response.statusCode).send({
+        statusCode: response.statusCode,
+        message: response.message,
+        data: responseArray,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
   /**
    * driver live location : GET - V2
    * Author : Farzan
