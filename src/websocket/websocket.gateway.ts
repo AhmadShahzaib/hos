@@ -62,31 +62,27 @@ export class WebsocketGateway
         client.handshake.headers.authorization,
       );
       const user = JSON.parse(tokenPayload.sub);
-      if (user.isDriver) {
-        const objectClient: any = { id: user.id, client: client.id };
-        // objectClient = JSON.stringify(objectClient);
-        try {
+      const objectClient: any = { id: user.id, client: client.id };
+      // objectClient = JSON.stringify(objectClient);
+
+      try {
+        if (user.isDriver) {
           await firstValueFrom<MessagePatternResponseType>(
             this.driverClient.send(
               { cmd: 'update_driver_client' },
               objectClient,
             ),
           );
-        } catch (error) {
-          console.error('Error handling connection:', error);
-        }
-      } else {
-        const objectClient: any = { id: user.id, client: client.id };
-        // objectClient = JSON.stringify(objectClient);
-        try {
+        } else {
           await firstValueFrom<MessagePatternResponseType>(
             this.usersClient.send({ cmd: 'update_user_client' }, objectClient),
           );
-        } catch (error) {
-          console.error('Error handling connection:', error);
         }
+      } catch (error) {
+        console.error('Error updating client information:', error);
       }
-      console.log('New client connected with token:');
+
+      console.log('New client ', user?.firstName, ' connected with token:');
     } catch (error) {
       Logger.error('Error handling connection:', error);
     }
