@@ -1,15 +1,30 @@
-import { ForbiddenException, Get, HttpStatus, Post, SetMetadata } from '@nestjs/common';
-import { ApiQuery, ApiOkResponse, getSchemaPath, refs, ApiExtraModels, ApiBody, ApiParam } from '@nestjs/swagger';
-import { CombineDecorators, CombineDecoratorType, HOS } from '@shafiqrathore/logeld-tenantbackend-common-future';
+import {
+  ForbiddenException,
+  Get,
+  HttpStatus,
+  Post,
+  SetMetadata,
+} from '@nestjs/common';
+import {
+  ApiQuery,
+  ApiOkResponse,
+  getSchemaPath,
+  refs,
+  ApiExtraModels,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
+import {
+  CombineDecorators,
+  CombineDecoratorType,
+  HOS,
+} from '@shafiqrathore/logeld-tenantbackend-common-future';
 import moment from 'moment';
 
-
-
 export default function GetDriverCsvForAdminDecorators() {
-
   const GetDriverCsvDecorators: Array<CombineDecoratorType> = [
     Get('csv/log/'),
-    SetMetadata('permissions', [HOS.HISTORY]),
+    SetMetadata('permissions', ['e6v5e3nt0']),
     ApiQuery({
       description: 'The driverId only for backoffice',
       name: 'driverId',
@@ -37,9 +52,7 @@ export default function GetDriverCsvForAdminDecorators() {
           },
         },
       },
-
-    })
-
+    }),
   ];
   return CombineDecorators(GetDriverCsvDecorators);
 }
