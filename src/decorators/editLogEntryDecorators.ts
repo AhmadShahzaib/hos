@@ -128,7 +128,7 @@ export default function editLogEntryDecorators() {
 
   const editLogEntryDecorators: Array<CombineDecoratorType> = [
     Put('log'),
-    SetMetadata('permissions', [HOS.LIVE]),
+    SetMetadata('permissions', ["e6v5e4st0"]),
     ApiExtraModels(EditLogEntryRequestModel, Array<EditLogEntryRequestModel>),
     ApiBody({
       examples: {

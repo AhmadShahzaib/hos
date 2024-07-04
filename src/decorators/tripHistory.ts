@@ -15,7 +15,7 @@ import {
 export default function tripHistory() {
   const tripHistory: Array<CombineDecoratorType> = [
     Get('/tripHistory'),
-    SetMetadata('permissions', ['90nfnafe']),
+    SetMetadata('permissions', ['t1r2i3ph']),
     ApiResponse({ status: HttpStatus.OK }),
     ApiParam({
       name: 'driverId',

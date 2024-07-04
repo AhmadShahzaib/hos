@@ -15,7 +15,7 @@ import {
 export default function specificDaytripDecorators() {
   const specificDaytripDecorators: Array<CombineDecoratorType> = [
     Get('/specificDateTrip'),
-    SetMetadata('permissions', ['90nfnafe']),
+    SetMetadata('permissions', ['tralts2t6a']),
     ApiResponse({ status: HttpStatus.OK }),
     ApiParam({
       name: 'driverId',
