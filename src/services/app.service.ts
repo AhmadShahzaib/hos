@@ -330,7 +330,19 @@ export class AppService {
 
   //   return coordinates;
   // };
-
+  checkIfDocumentExists = async (driverId, date) => {
+    try {
+      const exists = await this.driverLiveLocationModel.exists({
+        driverId: driverId,
+        date: date,
+      });
+  
+      return !!exists;
+    } catch (error) {
+      console.error('Error checking document existence:', error);
+      throw error;
+    }
+  };
   /**
    * driver live location - V2
    * Author : Farzan
@@ -340,20 +352,29 @@ export class AppService {
 
     // Collect data for current date
     const driverLiveLocationTrackable =
-      await this.driverLiveLocationModel.findOne({
-        driverId: driverId,
-        date: date,
-      });
+      await this.checkIfDocumentExists(
+        driverId,
+         date,
+      );
 
     // Append latest locations to the previous ones
     if (driverLiveLocationTrackable) {
-      driverLiveLocationTrackable.historyOfLocation = [
-        ...driverLiveLocationTrackable.historyOfLocation,
-        ...historyOfLocation,
-      ];
+      // driverLiveLocationTrackable.historyOfLocation = [
+      //   ...driverLiveLocationTrackable.historyOfLocation,
+      //   ...historyOfLocation,
+      // ];
 
-      // Update the latest changes
-      await driverLiveLocationTrackable.save();
+      // // Update the latest changes
+      // await driverLiveLocationTrackable.save();
+      const result = await this.driverLiveLocationModel.updateOne(
+        { driverId: driverId, date: date },
+        {
+          $push: {
+            historyOfLocation: { $each: historyOfLocation },
+          },
+        },
+        { upsert: true } // This option creates the document if it doesn't exist
+      );
     } else {
       // If record not exists, create a new one
       const isCreated = await this.driverLiveLocationModel.create({
@@ -388,9 +409,10 @@ export class AppService {
     return {
       statusCode: 200,
       message: 'Live location updated successfully!',
-      data: driverLiveLocationTrackable?.historyOfLocation
-        ? driverLiveLocationTrackable?.historyOfLocation
-        : [obj?.historyOfLocation],
+      data: {}
+      // driverLiveLocationTrackable?.historyOfLocation
+      //   ? driverLiveLocationTrackable?.historyOfLocation
+      //   : [obj?.historyOfLocation],
     };
   };
  /**
