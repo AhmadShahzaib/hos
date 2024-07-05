@@ -415,7 +415,7 @@ export class DriverCsvController extends BaseController {
       return error;
     }
   }
-  @UseInterceptors(new MessagePatternResponseInterceptor())
+
   @MessagePattern({ cmd: 'get_logs_of_specific_date_range' })
   async get_logs_between_range(requestParam: any): Promise<any> {
     try {
