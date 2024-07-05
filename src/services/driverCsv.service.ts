@@ -740,21 +740,22 @@ export class DriverCsvService {
           }
           await this.updateRecordMade(user, latestCSV);
         }
-        const meta = await this.updateMetaVariables(latestCSV);
+        // this potion is commented because there is no need to update hos only from here. 
+        // const meta = await this.updateMetaVariables(latestCSV);
 
-        if (user?._id) {
-          user.id = user?._id?.toString(); // for making unit get by grivierid
-        }
-        const messagePatternUnits =
-          await firstValueFrom<MessagePatternResponseType>(
-            this.unitClient.send(
-              { cmd: 'assign_meta_to_units' },
-              { meta, user },
-            ),
-          );
-        if (messagePatternUnits.isError) {
-          mapMessagePatternResponseToException(messagePatternUnits);
-        }
+        // if (user?._id) {
+        //   user.id = user?._id?.toString(); // for making unit get by grivierid
+        // }
+        // const messagePatternUnits =
+        //   await firstValueFrom<MessagePatternResponseType>(
+        //     this.unitClient.send(
+        //       { cmd: 'assign_meta_to_units' },
+        //       { meta, user },
+        //     ),
+        //   );
+        // if (messagePatternUnits.isError) {
+        //   mapMessagePatternResponseToException(messagePatternUnits);
+        // }
       }
     } catch (error) {}
   };
