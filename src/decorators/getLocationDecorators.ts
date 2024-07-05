@@ -9,7 +9,7 @@ import {
 export default function getLocationDecorators() {
   const getLocationDecorators: Array<CombineDecoratorType> = [
     Post('csv/getLocation'),
-    SetMetadata('permissions', [HOS.LIVE]),
+    SetMetadata('permissions', ["dfc1b20f"]),
     ApiParam({
         name: 'lat',
         description: "driverId is required",
