@@ -766,7 +766,7 @@ export class DriverCsvService {
       driverId: '',
       date: '2023-10-25',
       // driverName: 'Sharif',
-      // vehicleName: '1998',
+      vehicleName: '1998',
       shippingId: 'erfdf',
       signature: '',
       hoursWorked: 19220020,
@@ -783,7 +783,7 @@ export class DriverCsvService {
     recordMade.driverId = user?._id;
     recordMade.date = latestCSV?.date;
     // recordMade.driverName = user?.driverFullName;
-    // recordMade.vehicleName = user?.trailerNumber;
+    recordMade.vehicleName =  latestCSV.csv.cmvList[latestCSV.csv.cmvList.length-1].cmvPowerUnitNumber;
     recordMade.violations = latestCSV?.meta?.voilations;
     recordMade.status = {
       currentEventType: latestCSV.csv.timePlaceLine.currentEventType,
