@@ -387,7 +387,7 @@ export class WebsocketGateway
 
       let user;
       let { meta } = reqBody;
-      const { historyOfLocation } = reqBody;
+      let { historyOfLocation } = reqBody;
       const { date, driverId } = queryParams;
       if (driverId) {
         const messagePatternDriver =
@@ -409,8 +409,17 @@ export class WebsocketGateway
       const recentHistory = sortedArray[sortedArray.length - 1];
 
       // Meta object creation
-      if (meta?.address == '') {
-        delete recentHistory?.address;
+      // if (meta?.address == '') {
+      //   delete recentHistory?.address;
+      // }
+      let address;
+       if (recentHistory?.address == '') {
+        address = await this.driverCsvService.getAddress(
+          recentHistory.latitude,
+          recentHistory.longitude,
+        );
+        sortedArray[sortedArray.length - 1].address = address;
+        historyOfLocation = sortedArray
       }
       if (!meta) {
         meta = {};
@@ -444,7 +453,7 @@ export class WebsocketGateway
       if (messagePatternUnits.isError) {
         mapMessagePatternResponseToException(messagePatternUnits);
       }
-
+      historyOfLocation
       // Pass related data to the model
       const response = await this.HOSService.addStops({
         driverId: driverId,
