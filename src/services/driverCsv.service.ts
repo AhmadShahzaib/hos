@@ -810,14 +810,16 @@ export class DriverCsvService {
     };
     let statuses = latestCSV.csv.eldEventListForDriversRecordOfDutyStatus;
     recordMade.lastKnownActivity['location'] = statuses[statuses.length-1].address;
-
+let signature;
     if (
       latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords.length > 0
     ) {
       recordMade.shippingId =
         latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords[0].shippingDocumentNumber;
+        signature  = true;
     } else {
       recordMade.shippingId = '';
+      signature  = false;
     }
     if (
       latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords.length > 0
@@ -834,7 +836,15 @@ export class DriverCsvService {
     //Add violations here
     recordMade.clock = latestCSV.meta.clockData;
     recordMade.violations = latestCSV.meta.voilations;
+    if(!signature){
+      recordMade.violations.push({type:"SIGNATURE_MISSING"});
+    }
     recordMade.isPti = latestCSV?.meta?.pti;
+    if(recordMade.isPti == "1"){
+      recordMade.violations.push({type:"PTI_MISSING"});
+    }else if (recordMade.isPti == "3"){
+      recordMade.violations.push({type:"PTI_TIME_INSUFFICIENT"});
+    }
 
     // call function and update or add deatils here.
     const resRecord = await this.addAndUpdateDriverRecord(recordMade);
