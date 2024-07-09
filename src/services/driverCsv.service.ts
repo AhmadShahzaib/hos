@@ -690,7 +690,6 @@ export class DriverCsvService {
               lastCalculations.powerUp = false;
             }
             const response = await this.addToDB(latestCSV, user);
-           
           } else {
             // need to test create missing Csv as i don't have latestCsv now
 
@@ -740,7 +739,7 @@ export class DriverCsvService {
           }
           await this.updateRecordMade(user, latestCSV);
         }
-        // this potion is commented because there is no need to update hos only from here. 
+        // this potion is commented because there is no need to update hos only from here.
         // const meta = await this.updateMetaVariables(latestCSV);
 
         // if (user?._id) {
@@ -776,7 +775,7 @@ export class DriverCsvService {
       clock: {},
       // homeTerminalTimeZone: {},
       // tenantId: '',
-      lastKnownActivity:{},
+      lastKnownActivity: {},
       isPti: '',
     };
 
@@ -784,23 +783,20 @@ export class DriverCsvService {
     recordMade.date = latestCSV?.date;
     // recordMade.driverName = user?.driverFullName;
     const csvDataOfDutyStatus =
-    latestCSV.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
-  csvDataOfDutyStatus.sort((a, b) =>
-    a.eventTime.localeCompare(b.eventTime),
-  );
+      latestCSV.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
+    csvDataOfDutyStatus.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
 
-  const shippingIds = [];
-  const trailerIds = [];
-  const vehicleIds = [];
-  csvDataOfDutyStatus.forEach((record) => {
-   
-    if (!vehicleIds.includes(record.vehicleId)) {
-      vehicleIds.push(record.vehicleId);
-    }
-  });
- 
+    const shippingIds = [];
+    const trailerIds = [];
+    const vehicleIds = [];
+    csvDataOfDutyStatus.forEach((record) => {
+      if (!vehicleIds.includes(record.vehicleId)) {
+        if (record.vehicleId !== '') {
+          vehicleIds.push(record.vehicleId);
+        }
+      }
+    });
 
- 
     recordMade.vehicleName = vehicleIds.toString() ?? null;
     recordMade.violations = latestCSV?.meta?.voilations;
     recordMade.status = {
@@ -809,17 +805,18 @@ export class DriverCsvService {
       currentEventCode: latestCSV.csv.timePlaceLine.currentEventCode,
     };
     let statuses = latestCSV.csv.eldEventListForDriversRecordOfDutyStatus;
-    recordMade.lastKnownActivity['location'] = statuses[statuses.length-1].address;
-let signature;
+    recordMade.lastKnownActivity['location'] =
+      statuses[statuses.length - 1].address;
+    let signature;
     if (
       latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords.length > 0
     ) {
       recordMade.shippingId =
         latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords[0].shippingDocumentNumber;
-        signature  = true;
+      signature = true;
     } else {
       recordMade.shippingId = '';
-      signature  = false;
+      signature = false;
     }
     if (
       latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords.length > 0
@@ -828,22 +825,21 @@ let signature;
     } else {
       recordMade.signature = '0';
     }
-    recordMade.hoursWorked =
-      latestCSV.meta?.deviceCalculations?.HOURS_WORKED;
+    recordMade.hoursWorked = latestCSV.meta?.deviceCalculations?.HOURS_WORKED;
     recordMade.distance = latestCSV.meta?.totalVehicleMiles;
     // recordMade.homeTerminalTimeZone = user?.homeTerminalTimeZone;
     // recordMade.tenantId = user?.tenantId;
     //Add violations here
     recordMade.clock = latestCSV.meta.clockData;
     recordMade.violations = latestCSV.meta.voilations;
-    if(!signature){
-      recordMade.violations.push({type:"SIGNATURE_MISSING"});
+    if (!signature) {
+      recordMade.violations.push({ type: 'SIGNATURE_MISSING' });
     }
     recordMade.isPti = latestCSV?.meta?.pti;
-    if(recordMade.isPti == "1"){
-      recordMade.violations.push({type:"PTI_MISSING"});
-    }else if (recordMade.isPti == "3"){
-      recordMade.violations.push({type:"PTI_TIME_INSUFFICIENT"});
+    if (recordMade.isPti == '1') {
+      recordMade.violations.push({ type: 'PTI_MISSING' });
+    } else if (recordMade.isPti == '3') {
+      recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
     }
 
     // call function and update or add deatils here.
@@ -1042,32 +1038,28 @@ let signature;
     await this.flowOfHOSForPrevious(recentCSV.graphData, user);
   };
 
-//**************************************** */
+  //**************************************** */
   // this is the main function for getting Logform
   getLogform = async (query, user) => {
     const recentCSV = await this.getFromDB(query, user); // this line is for getting the previous csv available for the given driver
-    const csvOfDate= recentCSV.graphData[0];
+    const csvOfDate = recentCSV.graphData[0];
     const csvDataOfDutyStatus =
-    csvOfDate.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
-    csvDataOfDutyStatus.sort((a, b) =>
-    a.eventTime.localeCompare(b.eventTime),
-  );
+      csvOfDate.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
+    csvDataOfDutyStatus.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
 
-  const shippingIds = [];
-  const trailerIds =[];
-  csvDataOfDutyStatus.forEach(record => {
-    if (!shippingIds.includes(record.shippingId)) {
+    const shippingIds = [];
+    const trailerIds = [];
+    csvDataOfDutyStatus.forEach((record) => {
+      if (!shippingIds.includes(record.shippingId)) {
         shippingIds.push(record.shippingId);
-    }
-    if (!trailerIds.includes(record.trailerId)) {
+      }
+      if (!trailerIds.includes(record.trailerId)) {
         trailerIds.push(record.trailerId);
-    }
-});
-return {shippingIds,trailerIds}
-
+      }
+    });
+    return { shippingIds, trailerIds };
   };
 
-  
   transferLog = async (sequenceId, date, duration, user, type) => {
     // console.log('this is the date of status==========>', date);
 
@@ -1397,7 +1389,8 @@ return {shippingIds,trailerIds}
         .findOneAndUpdate({ month: month, day: day }, data, {
           upsert: true,
           new: true,
-        }).sort({ date: 1 })
+        })
+        .sort({ date: 1 })
         .lean();
       // }
       response = result;
@@ -1808,7 +1801,8 @@ return {shippingIds,trailerIds}
     }
 
     let finalCsv = logsOfSelectedDate[0].csv;
-    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const unsortDutyHours =
+      finalCsv['eldEventListForDriversRecordOfDutyStatus'];
     const dutyHours = unsortDutyHours.sort((a, b) =>
       a.eventTime.localeCompare(b.eventTime),
     );
@@ -1914,7 +1908,10 @@ return {shippingIds,trailerIds}
 
           //eventHandler variable
           const logEventTime = moment(initialDutyHours.eventTime, 'HHmmss');
-          const statusChangeEventTime = moment(currentDrObj.eventTime, 'HHmmss');
+          const statusChangeEventTime = moment(
+            currentDrObj.eventTime,
+            'HHmmss',
+          );
           let eventTimeHandler = await getHours(
             initialDutyHours.eventTime,
             currentDrObj.eventTime,
@@ -2214,7 +2211,8 @@ return {shippingIds,trailerIds}
     normalizationType,
   ) => {
     const finalCsv = logsOfSelectedDate[0].csv;
-    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const unsortDutyHours =
+      finalCsv['eldEventListForDriversRecordOfDutyStatus'];
     const indexes = [];
     let drAlertFlag = false;
     const activeLogs = [];
@@ -2684,7 +2682,8 @@ return {shippingIds,trailerIds}
     }
 
     let finalCsv = logsOfSelectedDate[0].csv;
-    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const unsortDutyHours =
+      finalCsv['eldEventListForDriversRecordOfDutyStatus'];
     const dutyHours = unsortDutyHours.sort((a, b) =>
       a.eventTime.localeCompare(b.eventTime),
     );
@@ -2787,7 +2786,10 @@ return {shippingIds,trailerIds}
 
           //eventHandler variable
           const logEventTime = moment(initialDutyHours.eventTime, 'HHmmss');
-          const statusChangeEventTime = moment(currentDrObj.eventTime, 'HHmmss');
+          const statusChangeEventTime = moment(
+            currentDrObj.eventTime,
+            'HHmmss',
+          );
           let eventTimeHandler = await getHours(
             initialDutyHours.eventTime,
             currentDrObj.eventTime,
@@ -3937,13 +3939,12 @@ return {shippingIds,trailerIds}
         { $set: data },
         { upsert: true, returnDocument: 'after' },
       );
-  
+
       return record;
     } catch (error) {
       Logger.log(error);
-      throw error
+      throw error;
     }
-    
   };
   findByDriveAndDate = async (ids, queryParams) => {
     let records;
@@ -3994,7 +3995,7 @@ return {shippingIds,trailerIds}
     }
     return records;
   };
-  findByDriverIDWithDate = async (ids, startDate,endDate) => {
+  findByDriverIDWithDate = async (ids, startDate, endDate) => {
     const records = [];
     const driverQuery = await this.recordTable.find({
       driverId: {
