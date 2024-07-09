@@ -783,7 +783,30 @@ export class DriverCsvService {
     recordMade.driverId = user?._id;
     recordMade.date = latestCSV?.date;
     // recordMade.driverName = user?.driverFullName;
-    recordMade.vehicleName =  latestCSV.csv.cmvList[latestCSV.csv.cmvList.length-1].cmvPowerUnitNumber;
+    const csvDataOfDutyStatus =
+    latestCSV.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
+  csvDataOfDutyStatus.sort((a, b) =>
+    a.eventTime.localeCompare(b.eventTime),
+  );
+
+  const shippingIds = [];
+  const trailerIds = [];
+  const vehicleIds = [];
+  csvDataOfDutyStatus.forEach((record) => {
+    if (!shippingIds.includes(record.shippingId)) {
+      shippingIds.push(record.shippingId);
+    }
+    if (!trailerIds.includes(record.trailerId)) {
+      trailerIds.push(record.trailerId);
+    }
+    if (!vehicleIds.includes(record.vehicleId)) {
+      vehicleIds.push(record.vehicleId);
+    }
+  });
+ 
+
+ 
+    recordMade.vehicleName = vehicleIds.toString() ?? null;
     recordMade.violations = latestCSV?.meta?.voilations;
     recordMade.status = {
       currentEventType: latestCSV.csv.timePlaceLine.currentEventType,
