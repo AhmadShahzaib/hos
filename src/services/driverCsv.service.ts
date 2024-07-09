@@ -793,12 +793,7 @@ export class DriverCsvService {
   const trailerIds = [];
   const vehicleIds = [];
   csvDataOfDutyStatus.forEach((record) => {
-    if (!shippingIds.includes(record.shippingId)) {
-      shippingIds.push(record.shippingId);
-    }
-    if (!trailerIds.includes(record.trailerId)) {
-      trailerIds.push(record.trailerId);
-    }
+   
     if (!vehicleIds.includes(record.vehicleId)) {
       vehicleIds.push(record.vehicleId);
     }
