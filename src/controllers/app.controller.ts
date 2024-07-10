@@ -970,8 +970,8 @@ export class AppController extends BaseController {
 
         return response.status(200).send({
           statusCode: 400,
-
-          data: { error },
+message:"error while creating image",
+          data: error,
         });
       }
       const mesaage = 'Edit Inset log!';
