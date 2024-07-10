@@ -1291,20 +1291,20 @@ export class AppController extends BaseController {
         const driverData = messagePatternDriver.data;
         driverData.id = driverData._id;
         let images;
-        const isEdit = await this.logService.getPendingRequests(driverData);
-        // Logger.log(isEdit);
-        if (isEdit.length > 0) {
-          // Logger.log("Create csv pdf");
+        // const isEdit = await this.logService.getPendingRequests(driverData);
+        // // Logger.log(isEdit);
+        // if (isEdit.length > 0) {
+        //   // Logger.log("Create csv pdf");
 
-          // Create csv pdf for before and after
-          //taking too much time.
-          const isConverted = await this.HOSService.generateCsvImages(
-            driverData,
-          );
-          // Logger.log("after");
+        //   // Create csv pdf for before and after
+        //   //taking too much time.
+        //   const isConverted = await this.HOSService.generateCsvImages(
+        //     driverData,
+        //   );
+        //   // Logger.log("after");
 
-          images = isConverted.data;
-        }
+        //   images = isConverted.data;
+        // }
         const title = `Edit request ${
           isApproved == 'confirm' ? 'confirmed' : 'cancelled'
         }!`;
