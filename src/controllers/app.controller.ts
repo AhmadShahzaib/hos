@@ -932,8 +932,7 @@ export class AppController extends BaseController {
       let user;
       // Parsing token for timezone
       let messagePatternDriver;
-      Logger.log("point 1")
-      
+      Logger.log('point 1');
 
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
         this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
@@ -941,7 +940,7 @@ export class AppController extends BaseController {
       if (messagePatternDriver?.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
-      Logger.log("point 2")
+      Logger.log('point 2');
       user = messagePatternDriver?.data;
       // user.companyTimeZone = user.companyTimeZone;
       const SpecificClient = user?.client;
@@ -952,27 +951,32 @@ export class AppController extends BaseController {
       let images;
       user.id = user._id;
       // Get edited
-      Logger.log("point 3");
-      Logger.log(user)
+      Logger.log('point 3');
+      Logger.log(user);
       const isEdit = await this.logService.getPendingRequests(user);
       try {
-        Logger.log("point 4")
+        Logger.log('point 4');
         if (isEdit.length > 0) {
-          Logger.log("point 5")
+          Logger.log('point 5');
           // Create csv pdf for before and after
           const isConverted = await this.HOSService.generateCsvImages(user);
           images = isConverted.data;
-          Logger.log("point after image")
-          Logger.log(images)
+          Logger.log('point after image');
+          Logger.log(images);
         }
       } catch (error) {
+        Logger.log('error here');
+        Logger.log(error);
+
         return response.status(200).send({
           statusCode: 400,
-  
-          data: {error},
+
+          data: { error },
         });
       }
       const mesaage = 'Edit Inset log!';
+      Logger.log('point creeate notification');
+
       const notificationObj = {
         logs: [],
         editRequest: images != undefined ? [...images] : [],
@@ -981,6 +985,9 @@ export class AppController extends BaseController {
         driverId: driverId,
         editStatusFromBO: 'save',
       };
+      Logger.log('object created');
+      Logger.log(SpecificClient);
+
       this.gateway.notifyDriver(
         SpecificClient,
         'notifyDriver',
@@ -997,7 +1004,7 @@ export class AppController extends BaseController {
       return response.status(200).send({
         statusCode: 400,
 
-        data: {error},
+        data: { error },
       });
     }
   }
