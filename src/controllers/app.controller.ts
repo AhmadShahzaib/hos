@@ -950,6 +950,7 @@ export class AppController extends BaseController {
         .tz(date, user?.homeTerminalTimeZone?.tzCode)
         .unix();
       let images;
+      let mesaage;
       user.id = user._id;
       try{
       // Get edited
@@ -967,7 +968,7 @@ export class AppController extends BaseController {
           Logger.log(images);
         }
     
-      const mesaage = 'Edit Inset log!';
+       mesaage = 'Edit Inset log!';
       Logger.log('point creeate notification');
     } catch (error) {
       Logger.log('error here');
