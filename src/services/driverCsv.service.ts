@@ -1418,7 +1418,7 @@ export class DriverCsvService {
         collectionName,
       );
       let response;
-      data.date = moment.unix(date).format('YYYY-MM-DD');
+      data.date = moment.unix(date).tz( driverInfo.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD');
       data = { ...data, month: month, day: day };
       let result;
       // const result = await dynamicModel

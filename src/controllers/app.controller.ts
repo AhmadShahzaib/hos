@@ -931,6 +931,7 @@ export class AppController extends BaseController {
       const driverId = data.driverId;
       const date = data.date;
       let user;
+      let editRequest;
       // Parsing token for timezone
       let messagePatternDriver;
     
@@ -968,10 +969,9 @@ export class AppController extends BaseController {
         }
     
        mesaage = 'Edit Inset log!';
-    
+       editRequest = images != undefined ? [...images] : [];
     } catch (error) {
-      Logger.log('error here');
-      Logger.log(error);
+     
 
       return response.status(200).send({
         statusCode: 400,
@@ -979,6 +979,7 @@ export class AppController extends BaseController {
         data: error,
       });
     }
+   
       const notificationObj = {
         logs: [],
         editRequest:  [],
