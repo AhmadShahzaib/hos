@@ -949,10 +949,19 @@ export class AppController extends BaseController {
       user.id = user._id;
       // Get edited
       const isEdit = await this.logService.getPendingRequests(user);
-      if (isEdit.length > 0) {
-        // Create csv pdf for before and after
-        const isConverted = await this.HOSService.generateCsvImages(user);
-        images = isConverted.data;
+      try {
+        
+        if (isEdit.length > 0) {
+          // Create csv pdf for before and after
+          const isConverted = await this.HOSService.generateCsvImages(user);
+          images = isConverted.data;
+        }
+      } catch (error) {
+        return response.status(200).send({
+          statusCode: 400,
+  
+          data: {error},
+        });
       }
       const mesaage = 'Edit Inset log!';
       const notificationObj = {
