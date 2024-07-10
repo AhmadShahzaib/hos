@@ -1000,7 +1000,7 @@ export class AppController extends BaseController {
 
       return response.status(200).send({
         statusCode: 200,
-
+        message: 'Sync Sent ',
         data: {},
       });
     } catch (error) {
