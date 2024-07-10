@@ -930,11 +930,8 @@ export class AppController extends BaseController {
       const driverId = data.driverId;
       const date = data.date;
       let user;
-
       // Parsing token for timezone
-
       let messagePatternDriver;
-
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
         this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
       );
@@ -943,25 +940,12 @@ export class AppController extends BaseController {
       }
       user = messagePatternDriver?.data;
       // user.companyTimeZone = user.companyTimeZone;
-
       const SpecificClient = user?.client;
       // Creating dateTime for driver notification
       const dateTime = moment
         .tz(date, user?.homeTerminalTimeZone?.tzCode)
         .unix();
-
-      // Create csv pdf for before and after
-      // const isConverted = await this.HOSService.generateCsvImages(
-      //   dateTime,
-      //   data,
-      // );
-      // const images = isConverted.data;
-
-      /**
-       * Push Notification - START
-       */
       let images;
-
       user.id = user._id;
       // Get edited
       const isEdit = await this.logService.getPendingRequests(user);
@@ -970,7 +954,6 @@ export class AppController extends BaseController {
         const isConverted = await this.HOSService.generateCsvImages(user);
         images = isConverted.data;
       }
-
       const mesaage = 'Edit Inset log!';
       const notificationObj = {
         logs: [],
@@ -980,50 +963,24 @@ export class AppController extends BaseController {
         driverId: driverId,
         editStatusFromBO: 'save',
       };
-
-      const isSilent = false;
-      // let WebsocketGateway: WebsocketGateway;
-
       this.gateway.notifyDriver(
         SpecificClient,
         'notifyDriver',
         mesaage,
         notificationObj,
       );
-      // let notificationStatus = await dispatchNotification(
-      //   title,
-      //   notificationObj,
-      //   deviceInfo,
-      //   this.pushNotificationClient,
-      //   isSilent,
-      // );
-      /**
-       * Push Notification - END
-       */
 
-      // const isNotified = await this.HOSService.updateNotificationStatus(
-      //   driverId,
-      //   notificationStatus,
-      //   dateTime,
-      // );
-      // if (!isNotified) {
-      //   return response.status(200).send({
-      //     statusCode: 200,
-      //     message: 'Something went wrong while dispatching notification!',
-      //     data: {},
-      //   });
-      // }
       return response.status(200).send({
         statusCode: 200,
-        // message:
-        //   notificationStatus == 'Sent'
-        //     ? 'Notification dispatched!'
-        //     : 'Something went wrong while dispatching notification',
-        // notificationStatus,
+
         data: {},
       });
     } catch (error) {
-      throw error;
+      return response.status(200).send({
+        statusCode: 400,
+
+        data: {error},
+      });
     }
   }
 
@@ -1331,6 +1288,7 @@ export class AppController extends BaseController {
           // Logger.log("Create csv pdf");
 
           // Create csv pdf for before and after
+          //taking too much time.
           const isConverted = await this.HOSService.generateCsvImages(
             driverData,
           );
@@ -1679,29 +1637,27 @@ export class AppController extends BaseController {
 
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
-      if( allLocations[0]){
+      if (allLocations[0]) {
+        Logger.log(
+          'added locations here',
+          allLocations[0].latitude,
+          allLocations[0].longitude,
+        );
+        let address = await this.driverCsvService.getAddress(
+          allLocations[0].latitude,
+          allLocations[0].longitude,
+        );
+        allLocations[0]['address'] = address;
+        Logger.log('address done ---- > ', address);
 
-      
-      Logger.log(
-        'added locations here',
-        allLocations[0].latitude,
-        allLocations[0].longitude,
-      );
-      let address = await this.driverCsvService.getAddress(
-        allLocations[0].latitude,
-        allLocations[0].longitude,
-      );
-      allLocations[0]['address'] = address;
-      Logger.log('address done ---- > ', address);
-
-      let last = allLocations.length - 1;
-      address = await this.driverCsvService.getAddress(
-        allLocations[last].latitude,
-        allLocations[last].longitude,
-      );
-      allLocations[last]["address"] = address;
-      Logger.log('address done again ---- > ', address);
-    }
+        let last = allLocations.length - 1;
+        address = await this.driverCsvService.getAddress(
+          allLocations[last].latitude,
+          allLocations[last].longitude,
+        );
+        allLocations[last]['address'] = address;
+        Logger.log('address done again ---- > ', address);
+      }
       // for (let i = 0; i < allLocations.length; i++) {
       //   let address
       //   if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
