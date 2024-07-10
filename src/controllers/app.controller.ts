@@ -927,6 +927,7 @@ export class AppController extends BaseController {
     @Res() response,
   ) {
     try {
+     
       const driverId = data.driverId;
       const date = data.date;
       let user;
@@ -950,11 +951,12 @@ export class AppController extends BaseController {
         .unix();
       let images;
       user.id = user._id;
+      try{
       // Get edited
       Logger.log('point 3');
       Logger.log(user);
       const isEdit = await this.logService.getPendingRequests(user);
-      try {
+     
         Logger.log('point 4');
         if (isEdit.length > 0) {
           Logger.log('point 5');
@@ -964,19 +966,19 @@ export class AppController extends BaseController {
           Logger.log('point after image');
           Logger.log(images);
         }
-      } catch (error) {
-        Logger.log('error here');
-        Logger.log(error);
-
-        return response.status(200).send({
-          statusCode: 400,
-          message: 'error while creating image',
-          data: error,
-        });
-      }
+    
       const mesaage = 'Edit Inset log!';
       Logger.log('point creeate notification');
+    } catch (error) {
+      Logger.log('error here');
+      Logger.log(error);
 
+      return response.status(200).send({
+        statusCode: 400,
+        message: 'error while creating image',
+        data: error,
+      });
+    }
       const notificationObj = {
         logs: [],
         editRequest: images != undefined ? [...images] : [],
