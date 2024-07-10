@@ -970,7 +970,7 @@ export class AppController extends BaseController {
 
         return response.status(200).send({
           statusCode: 400,
-message:"error while creating image",
+          message: 'error while creating image',
           data: error,
         });
       }
@@ -1003,8 +1003,9 @@ message:"error while creating image",
     } catch (error) {
       return response.status(200).send({
         statusCode: 400,
+        message: 'error while sending sync',
 
-        data: { error },
+        data: error,
       });
     }
   }
