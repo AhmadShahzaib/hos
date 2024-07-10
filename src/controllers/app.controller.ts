@@ -988,7 +988,7 @@ export class AppController extends BaseController {
       Logger.log('object created');
       Logger.log(SpecificClient);
 
-      this.gateway.notifyDriver(
+      await this.gateway.notifyDriver(
         SpecificClient,
         'notifyDriver',
         mesaage,
