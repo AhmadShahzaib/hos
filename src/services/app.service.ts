@@ -1192,12 +1192,12 @@ export class AppService {
       const imageStrings = {};
       const responseArr = [];
       let obj;
-      Logger.log("point 6")
+    
       const isEdit = await this.editInsertLogModel.find({
         driverId: data.id,
         isApproved: 'pending',
       });
-      Logger.log("point 7")
+     
       if (!isEdit) {
         return {
           statusCode: 200,
@@ -1232,7 +1232,7 @@ export class AppService {
      objects within the `isEdit` array at index `i`. */
         const csvBeforeUpdate = isEdit[i].csvBeforeUpdate.csv;
         const csvAfterUpdate = isEdit[i].csvAfterUpdate.csv;
-        Logger.log("---9")
+      
         imageStrings['csvBeforeUpdate'] = await this.convertToImage(
           obj,
           csvBeforeUpdate,
