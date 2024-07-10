@@ -1192,11 +1192,12 @@ export class AppService {
       const imageStrings = {};
       const responseArr = [];
       let obj;
-
+      Logger.log("point 6")
       const isEdit = await this.editInsertLogModel.find({
         driverId: data.id,
         isApproved: 'pending',
       });
+      Logger.log("point 7")
       if (!isEdit) {
         return {
           statusCode: 200,
@@ -1204,9 +1205,9 @@ export class AppService {
           data: {},
         };
       }
-
       /* The above code is a TypeScript loop that iterates over an array called `isEdit`. */
       for (let i = 0; i < isEdit.length; i++) {
+        Logger.log("--8")
         const unixDateTime = isEdit[i].dateTime;
         const DateOfEdit = moment
           .unix(Number(unixDateTime))
@@ -1231,7 +1232,7 @@ export class AppService {
      objects within the `isEdit` array at index `i`. */
         const csvBeforeUpdate = isEdit[i].csvBeforeUpdate.csv;
         const csvAfterUpdate = isEdit[i].csvAfterUpdate.csv;
-
+        Logger.log("---9")
         imageStrings['csvBeforeUpdate'] = await this.convertToImage(
           obj,
           csvBeforeUpdate,
@@ -1240,7 +1241,7 @@ export class AppService {
           obj,
           csvAfterUpdate,
         );
-
+        Logger.log("--10")
         responseArr.push({
           dateTime: isEdit[i].dateTime,
           date: isEdit[i].editDate,
