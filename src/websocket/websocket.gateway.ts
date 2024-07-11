@@ -13,7 +13,7 @@ import {
   Body,
   Res,
   Headers,
-  Logger,
+  Logger,Injectable,Scope,
   Req,
   UseInterceptors,
   Delete,
@@ -39,6 +39,7 @@ import { ClientProxy, MessagePattern } from '@nestjs/microservices';
 import { firstValueFrom, filter } from 'rxjs';
 
 @WebSocketGateway({ cors: true })
+@Injectable()
 export class WebsocketGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {

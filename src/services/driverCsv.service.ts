@@ -538,6 +538,7 @@ export class DriverCsvService {
         : '1';
       newLog.eventTime = '000000';
       newLog.eventDate = moment(date).format('MMDDYY');
+      newLog.eventRecordStatus = "1"
       newLog.eventSequenceIdNumber = generateUniqueHexId();
       const logCheckSum = this.getLogChecksum(newLog);
       newLog.eventDataCheckValue = logCheckSum['eventDataCheckValue'];
