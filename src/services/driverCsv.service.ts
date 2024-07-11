@@ -838,7 +838,8 @@ export class DriverCsvService {
     // recordMade.tenantId = user?.tenantId;
     //Add violations here
     recordMade.clock = latestCSV.meta.clockData;
-    recordMade.violations = latestCSV.meta.voilations;
+    let voilationtemp = JSON.stringify(latestCSV.meta.voilations)
+    recordMade.violations = JSON.parse(voilationtemp);
     if (!signature) {
       recordMade.violations.push({ type: 'SIGNATURE_MISSING' });
     }
