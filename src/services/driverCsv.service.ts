@@ -538,7 +538,7 @@ export class DriverCsvService {
         : '1';
       newLog.eventTime = '000000';
       newLog.eventDate = moment(date).format('MMDDYY');
-      newLog.eventRecordStatus = "1"
+      newLog.eventRecordStatus = '1';
       newLog.eventSequenceIdNumber = generateUniqueHexId();
       const logCheckSum = this.getLogChecksum(newLog);
       newLog.eventDataCheckValue = logCheckSum['eventDataCheckValue'];
@@ -1419,7 +1419,14 @@ export class DriverCsvService {
         collectionName,
       );
       let response;
-      data.date = moment.unix(date).tz( driverInfo.homeTerminalTimeZone.tzCode).format('YYYY-MM-DD');
+      Logger.log('ppoint where we check date');
+      Logger.log(date);
+      Logger.log(driverInfo.homeTerminalTimeZone.tzCode);
+
+      data.date = moment
+        .unix(date)
+        .tz(driverInfo.homeTerminalTimeZone.tzCode)
+        .format('YYYY-MM-DD');
       data = { ...data, month: month, day: day };
       let result;
       // const result = await dynamicModel
@@ -3988,7 +3995,7 @@ export class DriverCsvService {
       date: {
         $in: date,
       },
-    });//driver
+    }); //driver
     if (driverQuery.length > 0) {
       for (let i = 0; i < driverQuery.length; i++) {
         records.push(driverQuery[i]['_doc']);
