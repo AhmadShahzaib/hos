@@ -766,8 +766,8 @@ export class DriverCsvService {
       driverId: '',
       date: '2023-10-25',
       // driverName: 'Sharif',
-      vehicleName: '1998',
-      shippingId: 'erfdf',
+      vehicleName: '',
+      shippingId: '',
       signature: '',
       hoursWorked: 19220020,
       distance: '0',
@@ -791,6 +791,12 @@ export class DriverCsvService {
     const trailerIds = [];
     const vehicleIds = [];
     csvDataOfDutyStatus.forEach((record) => {
+      if (!shippingIds.includes(record.shippingId)) {
+        shippingIds.push(record.shippingId);
+      }
+      if (!trailerIds.includes(record.trailerId)) {
+        trailerIds.push(record.trailerId);
+      }
       if (!vehicleIds.includes(record.vehicleId)) {
         if (record.vehicleId !== '') {
           vehicleIds.push(record.vehicleId);
@@ -843,6 +849,16 @@ export class DriverCsvService {
       recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
     }
 
+    // add vehicle and trailer and shipping violations
+    if (recordMade.vehicleName === '') {
+      recordMade.violations.push({ type: 'NO_VEHICLE' });
+    }
+    if (shippingIds.toString() === '') {
+      recordMade.violations.push({ type: 'NO_SHIPPING_ID' });
+    }
+    if (trailerIds.toString() === '') {
+      recordMade.violations.push({ type: 'NO_TRAILER_ID' });
+    }
     // call function and update or add deatils here.
     const resRecord = await this.addAndUpdateDriverRecord(recordMade);
     return resRecord;
