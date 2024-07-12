@@ -508,7 +508,7 @@ export class DriverCsvController extends BaseController {
         user = messagePatternDriver.data;
       }
       const completeObj = csv.data[0];
-      const resp: any = await this.driverCsvService.updateToDB(
+      const resp: any = await this.driverCsvService.addToDB(
         completeObj,
         user,
       );

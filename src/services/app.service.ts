@@ -1207,7 +1207,7 @@ export class AppService {
       }
       /* The above code is a TypeScript loop that iterates over an array called `isEdit`. */
       for (let i = 0; i < isEdit.length; i++) {
-        Logger.log("--8")
+        
         const unixDateTime = isEdit[i].dateTime;
         const DateOfEdit = moment
           .unix(Number(unixDateTime))
