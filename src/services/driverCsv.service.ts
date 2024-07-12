@@ -805,7 +805,7 @@ export class DriverCsvService {
     });
 
     recordMade.vehicleName = vehicleIds.toString() ?? null;
-    recordMade.violations = latestCSV?.meta?.voilations;
+    // recordMade.violations = latestCSV?.meta?.voilations;
     recordMade.status = {
       currentEventType: latestCSV.csv.timePlaceLine.currentEventType,
 
