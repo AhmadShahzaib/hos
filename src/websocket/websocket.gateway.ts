@@ -470,6 +470,43 @@ export class WebsocketGateway
       throw error;
     }
   }
+  @SubscribeMessage('runHOS')
+  async runHOS(
+    @MessageBody() queryParams:any,
+  
+   
+  ) {
+    try {
+      const { date, driverId } = queryParams;
+      let user;
+      let SpecificClient;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+        SpecificClient = user?.client;
+      }
+      
+      let dateOfQuery = moment(date);
+      dateOfQuery = dateOfQuery.subtract(1, 'days');
+      const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+      const query = {
+        start: dateQuery,
+        end: dateQuery,
+      };
+      await this.driverCsvService.runCalculationOnDateHOS(query, user);
+     
+    
+     
+    } catch (error) {
+      throw error;
+    }
+  }
   @SubscribeMessage('addSync')
   async addDataDriver(@MessageBody() queryParams: any): Promise<any> {
     try {
