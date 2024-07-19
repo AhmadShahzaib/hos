@@ -117,9 +117,9 @@ export class DriverCsvService {
         eventDate: '',
         eventTime: '',
       };
-      if (deviceCalculation.SHIFT_STARTED == true) {
-        latestCSV.meta.pti = deviceCalculation.pti;
-      }
+      // if (deviceCalculation.SHIFT_STARTED == true) {
+      //   latestCSV.meta.pti = deviceCalculation.pti;
+      // }
       latestCSV.meta.pti = '2';
 
       if (
