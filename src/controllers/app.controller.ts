@@ -1667,49 +1667,20 @@ export class AppController extends BaseController {
 
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
-      if (allLocations[0]) {
-        Logger.log(
-          'added locations here',
-          allLocations[0].latitude,
-          allLocations[0].longitude,
-        );
-        let address = await this.driverCsvService.getAddress(
-          allLocations[0].latitude,
-          allLocations[0].longitude,
-        );
-        allLocations[0]['address'] = address;
-        Logger.log('address done ---- > ', address);
-
-        let last = allLocations.length - 1;
-        address = await this.driverCsvService.getAddress(
-          allLocations[last].latitude,
-          allLocations[last].longitude,
-        );
-        allLocations[last]['address'] = address;
-        Logger.log('address done again ---- > ', address);
+      if (stops.data[0]) {
+        for (let i = 0; i < stops.data.length; i++) {
+          let address
+          if(stops.data[i].address == '' ){
+             address = await this.driverCsvService.getAddress(
+              stops.data[i].latitude,
+              stops.data[i].longitude,
+            );
+           
+            stops.data[i].address = address;
+          }
+        }
       }
-      // for (let i = 0; i < allLocations.length; i++) {
-      //   let address
-      //   if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
-      //      address = await this.driverCsvService.getAddress(
-      //       allLocations[i].latitude,
-      //       allLocations[i].longitude,
-      //     );
-      //     i = allLocations.length;
-      //   }
-      //   allLocations[i].address = address;
-      // }
-      // for (let i = allLocations.length-1; i > 0; i--) {
-      //   let address
-      //   if(allLocations[i].status == '3' && allLocations[i].eventType == '1'){
-      //      address = await this.driverCsvService.getAddress(
-      //       allLocations[i].latitude,
-      //       allLocations[i].longitude,
-      //     );
-      //     i = 0;
-      //   }
-      //   allLocations[i].address = address;
-      // }
+     
       let responseArray = [...allLocations, ...stops.data];
       //  responseArray = ;
 
