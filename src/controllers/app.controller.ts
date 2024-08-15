@@ -1563,7 +1563,7 @@ export class AppController extends BaseController {
 
         return hours * 3600 + minutes * 60 + seconds;
       }
-
+//dev update
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
 

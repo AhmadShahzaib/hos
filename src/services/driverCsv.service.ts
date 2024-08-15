@@ -83,6 +83,201 @@ export class DriverCsvService {
 
   //this function will get the csv object of one day calculate hos on the basis of it and return the hos calculated till end of the day or current DateTime according to
   // the driver timezone
+  // calculateHOS = (latestCSV: any, lastCalculations, user: any) => {
+  //   try {
+  //     const csvDataOfDutyStatus =
+  //       latestCSV.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
+
+  //     let deviceCalculation = lastCalculations; // previous day's valid calculations run till 23:59:59
+
+  //     const allHosRelatedStatuses = [];
+  //     deviceCalculation.violation = [];
+
+  //     // Filter all valid and active duty statuses
+  //     csvDataOfDutyStatus.forEach((element, index) => {
+  //       if (
+  //         (element.eventType == 1 || element.eventType == 3) &&
+  //         element.eventRecordStatus == 1 // represents active
+  //       ) {
+  //         // get all the statuses of event type 1 and event type 3
+  //         allHosRelatedStatuses.push(element);
+  //       }
+  //     });
+
+  //     // Sort the statuses
+  //     allHosRelatedStatuses.sort((a, b) =>
+  //       a.eventTime.localeCompare(b.eventTime),
+  //     );
+
+  //     let newcurrentCalculations; //this is the variable to put all device calulations after each log
+  //     const violationArray = [];
+  //     const currentDate = allHosRelatedStatuses[0].eventDate;
+  //     deviceCalculation.SHIFT_START_DATE = [];
+  //     deviceCalculation.CYCLE_START_DATE = {
+  //       eventDate: '',
+  //       eventTime: '',
+  //     };
+  //     // if (deviceCalculation.SHIFT_STARTED == true) {
+  //     //   latestCSV.meta.pti = deviceCalculation.pti;
+  //     // }
+  //     latestCSV.meta.pti = '2';
+
+  //     if (
+  //       deviceCalculation.CURRENT_STATUS != allHosRelatedStatuses[0].eventCode
+  //     ) {
+  //       deviceCalculation.ON_DUTY_CURRENT_TIME = 0;
+  //     }
+  //     if (deviceCalculation.CYCLE_DAY > 0) {
+  //       deviceCalculation.CYCLE_DAY += 1;
+  //     }
+  //     deviceCalculation.HOURS_WORKED = 0; // for cycle worked hours
+  //     deviceCalculation.powerUp = latestCSV.meta.powerUp;
+  //     deviceCalculation = this.calculateRecape(deviceCalculation);
+
+  //     //
+  //     // Looping all duty statuses
+  //     allHosRelatedStatuses.forEach((element, index) => {
+  //       let nextLogEventDateTime;
+  //       if (element.eventType == 1) {
+  //         deviceCalculation.CURRENT_STATUS = element.eventCode; // Getting eventCode
+  //       } else if (element.eventType == 3) {
+  //         deviceCalculation.CURRENT_STATUS = element.eventCode == 2 ? 4 : 1; // as PC/YM represents OFF/ON Duty, From PC/YM assigning as ON Duty == 4 and OFF DUTY == 1
+  //       }
+  //       if (index > 0) {
+  //         deviceCalculation.ON_DUTY_CURRENT_TIME = 0;
+  //       }
+  //       if (index + 1 < allHosRelatedStatuses.length) {
+  //         deviceCalculation.timeDifferenceInSeconds = calculateTimeDifference(
+  //           element.eventTime,
+  //           allHosRelatedStatuses[index + 1].eventTime,
+  //         ); // Get time difference in seconds between two logs.
+  //         deviceCalculation.currentDateTime =
+  //           element.eventDate + allHosRelatedStatuses[index + 1].eventTime;
+  //         nextLogEventDateTime = {
+  //           eventDate: allHosRelatedStatuses[index + 1].eventDate,
+  //           eventTime: allHosRelatedStatuses[index + 1].eventTime,
+  //         };
+  //       } else if (index + 1 == allHosRelatedStatuses.length) {
+  //         let endTime;
+  //         if (
+  //           element.eventDate ==
+  //           moment().tz(user.homeTerminalTimeZone.tzCode).format('MMDDYY')
+  //         ) {
+  //           endTime = moment()
+  //             .tz(user.homeTerminalTimeZone.tzCode)
+  //             .format('HHmmss');
+  //         } else {
+  //           endTime = '235959';
+  //         }
+  //         nextLogEventDateTime = {
+  //           eventDate: element.eventDate,
+  //           eventTime: endTime,
+  //         };
+
+  //         // Check wether the day is current day or previous
+  //         //if
+  //         //current day get time according to timezone
+  //         //else
+  //         //add end day time if not current day.
+  //         deviceCalculation.currentDateTime = element.eventDate + endTime;
+  //         deviceCalculation.timeDifferenceInSeconds = calculateTimeDifference(
+  //           element.eventTime,
+  //           endTime,
+  //         ); // Get time difference in seconds between last log and end day
+  //       }
+  //       if (!deviceCalculation.violation) {
+  //         deviceCalculation.violation = [];
+  //       }
+  //       if (
+  //         deviceCalculation.CURRENT_STATUS != 3 &&
+  //         deviceCalculation.violation.length > 0
+  //       ) {
+  //         //added a loop to remove extra violations
+  //         const violationsLoop = deviceCalculation.violation.length;
+  //         for (let q = 0; q < violationsLoop; q++) {
+  //           if (
+  //             deviceCalculation.violation[0].startedAt.eventDate != currentDate
+  //           ) {
+  //             if (
+  //               deviceCalculation.violation[0].endedAt.eventDate != currentDate
+  //             ) {
+  //               deviceCalculation.violation.splice(0, 1);
+  //             }
+  //           }
+  //         }
+  //       }
+  //       const currentLogEventDateTime = {
+  //         eventDate: element.eventDate,
+  //         eventTime: element.eventTime,
+  //         CURRENT_STATUS_TIME: 0,
+  //       };
+
+  //       deviceCalculation = updateVariables(
+  //         deviceCalculation,
+  //         user.homeTerminalTimeZone.tzCode,
+  //         nextLogEventDateTime,
+  //         currentLogEventDateTime,
+  //       );
+  //       newcurrentCalculations = deviceCalculation;
+
+  //       newcurrentCalculations = checkViolations(
+  //         newcurrentCalculations,
+  //         user.homeTerminalTimeZone.tzCode,
+  //         nextLogEventDateTime,
+  //         currentLogEventDateTime,
+  //       );
+  //       if (newcurrentCalculations?.violation.length > 0) {
+  //         violationArray.push(...newcurrentCalculations.violation);
+  //       }
+  //       //checkPTI
+  //       if (!latestCSV.meta.pti) {
+  //         console.log('Please get latest build with PTI');
+  //       }
+
+  //       latestCSV.meta.pti = this.checkPti(
+  //         latestCSV.meta.pti,
+  //         deviceCalculation.CURRENT_STATUS,
+  //         newcurrentCalculations.ON_DUTY_NOT_DRIVING_WITHOUT_DRIVE,
+  //         newcurrentCalculations.engineStart,
+  //       );
+  //     });
+  //     if (newcurrentCalculations.CYCLE_DAY > 0) {
+  //       newcurrentCalculations.CYCLE_DATA.push({
+  //         hoursWorked: newcurrentCalculations.HOURS_WORKED,
+  //         day: newcurrentCalculations.CYCLE_DAY,
+  //         date: latestCSV.date,
+  //       });
+  //     }
+  //     const clockCalculationParams = {
+  //       CONSECUTIVE_DRIVING: newcurrentCalculations.CONSECUTIVE_DRIVING,
+  //       DRIVING_WITH_OUT_SPLIT: newcurrentCalculations.DRIVING_WITH_OUT_SPLIT,
+  //       ON_DUTY_NOT_DRIVING_CYCLE:
+  //         newcurrentCalculations.ON_DUTY_NOT_DRIVING_CYCLE,
+  //       TOTAL_SHIFT_COUNTER: newcurrentCalculations.TOTAL_SHIFT_COUNTER,
+  //       CURRENT_STATUS: newcurrentCalculations.CURRENT_STATUS,
+  //       SHIFT_STARTED: newcurrentCalculations.SHIFT_STARTED,
+  //       RECAPE_HOURS: newcurrentCalculations.RECAPE_HOURS,
+  //       RECAPE_STATUS: newcurrentCalculations.RECAPE_STATUS,
+  //     };
+
+  //     newcurrentCalculations.violation.push(...violationArray);
+  //     const currentClocks = calculateClocks(clockCalculationParams);
+
+  //     const mergedVoilations = this.mergeAndFilterArrays(
+  //       newcurrentCalculations.violation,
+  //       newcurrentCalculations.violation,
+  //     );
+  //     latestCSV.meta.powerUp = newcurrentCalculations.powerUp;
+  //     newcurrentCalculations.violation = mergedVoilations;
+  //     latestCSV.meta.deviceCalculations = newcurrentCalculations;
+  //     latestCSV.meta.clockData = currentClocks;
+  //     latestCSV.meta.voilations = mergedVoilations;
+  //     // latestCSV[0]._doc.meta.dateTime= moment().tz(user.homeTerminalTimeZone.tzCode).unix();
+  //     return latestCSV;
+  //   } catch (error) {
+  //     return error;
+  //   }
+  // };
   calculateHOS = (latestCSV: any, lastCalculations, user: any) => {
     try {
       const csvDataOfDutyStatus =
@@ -90,7 +285,7 @@ export class DriverCsvService {
 
       let deviceCalculation = lastCalculations; // previous day's valid calculations run till 23:59:59
 
-      const allHosRelatedStatuses = [];
+      let allHosRelatedStatuses = [];
       deviceCalculation.violation = [];
 
       // Filter all valid and active duty statuses
@@ -110,18 +305,30 @@ export class DriverCsvService {
       );
 
       let newcurrentCalculations; //this is the variable to put all device calulations after each log
-      const violationArray = [];
-      const currentDate = allHosRelatedStatuses[0].eventDate;
+      let violationArray = [];
+      let currentDate = allHosRelatedStatuses[0].eventDate;
       deviceCalculation.SHIFT_START_DATE = [];
+      deviceCalculation.engineStart = false;
       deviceCalculation.CYCLE_START_DATE = {
         eventDate: '',
         eventTime: '',
       };
-      if (deviceCalculation.SHIFT_STARTED == true) {
-        latestCSV.meta.pti = deviceCalculation.pti;
-      }
-      latestCSV.meta.pti = '2';
+      // if(deviceCalculation.SHIFT_STARTED == true){
 
+      //   latestCSV.meta.pti = deviceCalculation.pti;
+      // }
+      latestCSV.meta.pti = '0';
+      let count = 0;
+      let pti = [];
+      // let tempPti = [];
+
+      // if (
+      //   deviceCalculation.SHIFT_STARTED == true &&
+      //   deviceCalculation.CURRENT_STATUS == '3'
+      // ) {
+      //   tempPti = lastCalculations.ptiViolation;
+      // }
+      delete lastCalculations.ptiViolation;
       if (
         deviceCalculation.CURRENT_STATUS != allHosRelatedStatuses[0].eventCode
       ) {
@@ -193,7 +400,7 @@ export class DriverCsvService {
           deviceCalculation.violation.length > 0
         ) {
           //added a loop to remove extra violations
-          const violationsLoop = deviceCalculation.violation.length;
+          let violationsLoop = deviceCalculation.violation.length;
           for (let q = 0; q < violationsLoop; q++) {
             if (
               deviceCalculation.violation[0].startedAt.eventDate != currentDate
@@ -206,7 +413,7 @@ export class DriverCsvService {
             }
           }
         }
-        const currentLogEventDateTime = {
+        let currentLogEventDateTime = {
           eventDate: element.eventDate,
           eventTime: element.eventTime,
           CURRENT_STATUS_TIME: 0,
@@ -234,13 +441,32 @@ export class DriverCsvService {
           console.log('Please get latest build with PTI');
         }
 
-        latestCSV.meta.pti = this.checkPti(
-          latestCSV.meta.pti,
-          deviceCalculation.CURRENT_STATUS,
-          newcurrentCalculations.ON_DUTY_NOT_DRIVING_WITHOUT_DRIVE,
-          newcurrentCalculations.engineStart,
-        );
+        if (
+          newcurrentCalculations.SHIFT_STARTED &&
+          newcurrentCalculations.SHIFT_START_DATE.length > 0
+        ) {
+          latestCSV.meta.pti = this.checkPti(
+            latestCSV.meta.pti,
+            deviceCalculation.CURRENT_STATUS,
+            newcurrentCalculations.ON_DUTY_NOT_DRIVING_WITHOUT_DRIVE,
+            newcurrentCalculations.engineStart,
+          );
+          if (newcurrentCalculations.SHIFT_START_DATE.length > pti.length) {
+            pti.push({
+              type: latestCSV.meta.pti,
+              SHIFT_START_DATE: newcurrentCalculations.SHIFT_START_DATE[count],
+            });
+            count += 1;
+          }
+          if (
+            newcurrentCalculations.SHIFT_START_DATE.length == pti.length &&
+            latestCSV.meta.pti == '3'
+          ) {
+            pti[count - 1].type = latestCSV.meta.pti;
+          }
+        }
       });
+      latestCSV.meta.ptiViolation = pti;
       if (newcurrentCalculations.CYCLE_DAY > 0) {
         newcurrentCalculations.CYCLE_DATA.push({
           hoursWorked: newcurrentCalculations.HOURS_WORKED,
@@ -263,7 +489,7 @@ export class DriverCsvService {
       newcurrentCalculations.violation.push(...violationArray);
       const currentClocks = calculateClocks(clockCalculationParams);
 
-      const mergedVoilations = this.mergeAndFilterArrays(
+      let mergedVoilations = this.mergeAndFilterArrays(
         newcurrentCalculations.violation,
         newcurrentCalculations.violation,
       );
@@ -278,6 +504,7 @@ export class DriverCsvService {
       return error;
     }
   };
+
 
   calculateRecape = (deviceCalculation) => {
     //      if (deviceCalculation.CYCLE_DAY > 7) {
