@@ -13,7 +13,7 @@ import {
   Body,
   Res,
   Headers,
-  Logger,
+  Logger,Injectable,Scope,
   Req,
   UseInterceptors,
   Delete,
@@ -39,6 +39,7 @@ import { ClientProxy, MessagePattern } from '@nestjs/microservices';
 import { firstValueFrom, filter } from 'rxjs';
 
 @WebSocketGateway({ cors: true })
+@Injectable()
 export class WebsocketGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -50,28 +51,42 @@ export class WebsocketGateway
     @Inject('DRIVER_SERVICE') private readonly driverClient: ClientProxy,
     @Inject('REPORT_SERVICE') private readonly reportClient: ClientProxy,
     @Inject('AppService') private readonly HOSService: AppService,
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientProxy,
   ) {}
 
   @WebSocketServer() server: Server;
   private clients: Map<string, any> = new Map();
   async handleConnection(client: Socket, ...args: any[]) {
     // Access the authorization token from the client's handshake
-
-    const tokenPayload: JwtPayload = await this.socketManager.validateToken(
-      client.handshake.headers.authorization,
-    );
-    const user = JSON.parse(tokenPayload.sub);
-
-    const objectClient: any = { id: user.id, client: client.id };
-    // objectClient = JSON.stringify(objectClient);
     try {
-      await firstValueFrom<MessagePatternResponseType>(
-        this.driverClient.send({ cmd: 'update_driver_client' }, objectClient),
+      const tokenPayload: JwtPayload = await this.socketManager.validateToken(
+        client.handshake.headers.authorization,
       );
+      const user = JSON.parse(tokenPayload.sub);
+      const objectClient: any = { id: user.id, client: client.id };
+      // objectClient = JSON.stringify(objectClient);
+
+      try {
+        if (user.isDriver) {
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send(
+              { cmd: 'update_driver_client' },
+              objectClient,
+            ),
+          );
+        } else {
+          await firstValueFrom<MessagePatternResponseType>(
+            this.usersClient.send({ cmd: 'update_user_client' }, objectClient),
+          );
+        }
+      } catch (error) {
+        console.error('Error updating client information:', error);
+      }
+
+      console.log('New client ', user?.firstName, ' connected with token:');
     } catch (error) {
-      console.error('Error handling connection:', error);
+      Logger.error('Error handling connection:', error);
     }
-    console.log('New client connected with token:');
   }
 
   handleDisconnect(client: Socket) {
@@ -123,6 +138,12 @@ export class WebsocketGateway
 
       if (resp) {
         // this.server.to(socketId)
+        Logger.log('sync sent to --->');
+        Logger.log(SpecificClient);
+
+        Logger.log('sync sent to driverId --->');
+        Logger.log(driverId);
+
         this.server.to(SpecificClient).emit('syncResponse', {
           message: 'Success',
           data: resp,
@@ -178,7 +199,84 @@ export class WebsocketGateway
       });
     }
   }
+  // here is a message event which will keep us updates
+  @SubscribeMessage('addLiveStopLocation')
+  async addLiveStopLocation(
+    @MessageBody()
+    data,
+  ) {
+    try {
+      const { queryParams, reqBody } = data;
 
+      let user;
+      let { meta } = reqBody;
+      const { historyOfLocation } = reqBody;
+      const { date, driverId } = queryParams;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+      }
+      const SpecificClient = user.client;
+      const tenantId = user.tenantId;
+
+      // Ascending order sorting wrt to date time
+      const sortedArray = await sortLiveLocations(historyOfLocation);
+
+      //  Get recent location
+      const recentHistory = sortedArray[sortedArray.length - 1];
+
+      // Meta object creation
+      if (meta?.address == '') {
+        delete recentHistory?.address;
+      }
+      if (!meta) {
+        meta = {};
+      }
+      meta['lastActivity'] = {
+        vinNo: recentHistory.vinNo,
+        vehicleNo: recentHistory.vehicleNo,
+        odoMeterMillage: recentHistory?.odometer,
+        engineHours: recentHistory?.engineHours,
+        currentTime: recentHistory?.time,
+        currentDate: recentHistory?.date,
+        latitude: recentHistory?.latitude,
+        longitude: recentHistory?.longitude,
+        address: recentHistory?.address,
+        speed: recentHistory?.speed,
+        currentEventCode: recentHistory?.status || '1',
+        currentEventType: recentHistory?.eventType,
+        fuel: recentHistory?.fuel,
+        coolantLevel: recentHistory?.coolantLevel,
+        coolantTemperature: recentHistory?.coolantTemperature,
+        oilLevel: recentHistory?.oilLevel,
+        oilTemprature: recentHistory?.oilTemprature,
+      };
+      user.id = user.id ? user.id : user._id;
+      // Assign recent location to units by message pattern
+      const messagePatternUnits =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+        );
+      if (messagePatternUnits.isError) {
+        mapMessagePatternResponseToException(messagePatternUnits);
+      }
+
+      // Pass related data to the model
+
+      this.server.to(SpecificClient).emit('locationAdd', {
+        message: 'entry added successfully',
+        data: {},
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
   @SubscribeMessage('addLocation')
   async addLiveLocation(
     @MessageBody()
@@ -218,6 +316,8 @@ export class WebsocketGateway
         meta = {};
       }
       meta['lastActivity'] = {
+        vinNo: recentHistory.vinNo,
+        vehicleNo: recentHistory.vehicleNo,
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
         currentTime: recentHistory?.time,
@@ -259,26 +359,25 @@ export class WebsocketGateway
       throw error;
     }
   }
-// only message for BO to keep track of change in status
-// not complete blocker od client id
-@SubscribeMessage('allcurrentStatuses')
-async getAllCurrentStatuses(
-  @MessageBody()
-  tenantId,
-) {
-  try {
-    const messagePatternUnits =
-    await firstValueFrom<MessagePatternResponseType>(
-      this.unitClient.send({ cmd: 'get_all_current_statuses' }, tenantId),
-    );
-  if (messagePatternUnits.isError) {
-    mapMessagePatternResponseToException(messagePatternUnits);
+  // only message for BO to keep track of change in status
+  // not complete blocker od client id
+  @SubscribeMessage('allcurrentStatuses')
+  async getAllCurrentStatuses(
+    @MessageBody()
+    tenantId,
+  ) {
+    try {
+      const messagePatternUnits =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.unitClient.send({ cmd: 'get_all_current_statuses' }, tenantId),
+        );
+      if (messagePatternUnits.isError) {
+        mapMessagePatternResponseToException(messagePatternUnits);
+      }
+    } catch (error) {
+      throw error;
+    }
   }
-
-  } catch (error) {
-    throw error;
-  }
-}
   @SubscribeMessage('addStops') //branch change
   async addStops(
     @MessageBody()
@@ -289,7 +388,7 @@ async getAllCurrentStatuses(
 
       let user;
       let { meta } = reqBody;
-      const { historyOfLocation } = reqBody;
+      let { historyOfLocation } = reqBody;
       const { date, driverId } = queryParams;
       if (driverId) {
         const messagePatternDriver =
@@ -311,14 +410,25 @@ async getAllCurrentStatuses(
       const recentHistory = sortedArray[sortedArray.length - 1];
 
       // Meta object creation
-      if (meta?.address == '') {
-        delete recentHistory?.address;
+      // if (meta?.address == '') {
+      //   delete recentHistory?.address;
+      // }
+      let address;
+       if (recentHistory?.address == '') {
+        address = await this.driverCsvService.getAddress(
+          recentHistory.latitude,
+          recentHistory.longitude,
+        );
+        sortedArray[sortedArray.length - 1].address = address;
+        historyOfLocation = sortedArray
       }
       if (!meta) {
         meta = {};
       }
 
       meta['lastActivity'] = {
+        vinNo: recentHistory.vinNo,
+        vehicleNo: recentHistory.vehicleNo,
         odoMeterMillage: recentHistory?.odometer,
         engineHours: recentHistory?.engineHours,
         currentTime: recentHistory?.time,
@@ -344,7 +454,7 @@ async getAllCurrentStatuses(
       if (messagePatternUnits.isError) {
         mapMessagePatternResponseToException(messagePatternUnits);
       }
-
+      historyOfLocation
       // Pass related data to the model
       const response = await this.HOSService.addStops({
         driverId: driverId,
@@ -356,6 +466,43 @@ async getAllCurrentStatuses(
         message: 'entry added successfully',
         data: {},
       });
+    } catch (error) {
+      throw error;
+    }
+  }
+  @SubscribeMessage('runHOS')
+  async runHOS(
+    @MessageBody() queryParams:any,
+  
+   
+  ) {
+    try {
+      const { date, driverId } = queryParams;
+      let user;
+      let SpecificClient;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+        SpecificClient = user?.client;
+      }
+      
+      let dateOfQuery = moment(date);
+      dateOfQuery = dateOfQuery.subtract(1, 'days');
+      const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+      const query = {
+        start: dateQuery,
+        end: dateQuery,
+      };
+      await this.driverCsvService.runCalculationOnDateHOS(query, user);
+     
+    
+     
     } catch (error) {
       throw error;
     }

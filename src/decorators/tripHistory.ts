@@ -12,10 +12,10 @@ import {
   HOS,
 } from '@shafiqrathore/logeld-tenantbackend-common-future';
 
-export default function specificDaytripDecorators() {
-  const specificDaytripDecorators: Array<CombineDecoratorType> = [
-    Get('/specificDateTrip'),
-    SetMetadata('permissions', ['tralts2t6a']),
+export default function tripHistory() {
+  const tripHistory: Array<CombineDecoratorType> = [
+    Get('/tripHistory'),
+    SetMetadata('permissions', ['t1r2i3ph']),
     ApiResponse({ status: HttpStatus.OK }),
     ApiParam({
       name: 'driverId',
@@ -30,5 +30,5 @@ export default function specificDaytripDecorators() {
     ApiResponse({ status: HttpStatus.CONFLICT, type: ConflictException }),
     ApiOperation(GetOperationId('HOS', 'LastUnknownLocation')),
   ];
-  return CombineDecorators(specificDaytripDecorators);
+  return CombineDecorators(tripHistory);
 }

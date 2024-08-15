@@ -71,10 +71,12 @@ class unidentifiedLogObject {
   })
   malfunctionIndicatorStatusForEld: string;
 
-  @IsNotEmpty({ message: 'eventDataCheckValue should not be empty!!' })
+  // @IsNotEmpty({ message: 'eventDataCheckValue should not be empty!!' })
+  @IsOptional()
   eventDataCheckValue: string;
 
-  @IsNotEmpty({ message: 'lineDataCheckValue should not be empty!!' })
+  // @IsNotEmpty({ message: 'lineDataCheckValue should not be empty!!' })
+  @IsOptional()
   lineDataCheckValue: string;
 
   @IsNotEmpty({ message: 'cmvVinNo should not be empty!!' })

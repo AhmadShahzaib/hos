@@ -121,6 +121,21 @@ const getProxyObject = (
         });
       },
       inject: [ConfigurationService],
+    },{
+      provide: 'USERS_SERVICE',
+      useFactory: (config: ConfigurationService) => {
+        const port: number = Number(config.get('USERS_MICROSERVICE_PORT'));
+        const host = config.get('USERS_MICROSERVICE_HOST');
+
+        return ClientProxyFactory.create({
+          transport: Transport.TCP,
+          options: {
+            port,
+            host,
+          },
+        });
+      },
+      inject: [ConfigurationService],
     },
     {
       provide: 'REPORT_SERVICE',

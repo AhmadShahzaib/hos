@@ -46,7 +46,7 @@ import { mapKeys, camelCase } from 'lodash';
 import LogsDocument from 'mongoDb/document/document';
 import { LogsService } from 'services/logs.service';
 import { DriverCsvService } from 'services/driverCsv.service';
-
+import tripHistory from '../decorators/tripHistory';
 import { AppService } from '../services/app.service';
 import { LogEntryRequestModel } from 'models/logEntry.request.model';
 import { LastKnownLocationRequest } from 'models/lastKnownLocation';
@@ -98,6 +98,7 @@ import { updateLogform } from 'utils/updateLogform';
 import mobileCorrectionDecoratorsUnidenfied from 'decorators/mobileCorrectionDecoratorsUnidenfied';
 import { calculateAccumulatedMiles } from 'utils/accumolatedMiles';
 import { sortLiveLocations } from 'utils/sortLiveLocations';
+import GetDriverDiagnosticsDataDecorators from 'decorators/getDriverDiagnosticsData';
 
 @Controller('HOS')
 @ApiTags('HOS')
@@ -129,6 +130,51 @@ export class AppController extends BaseController {
   @UseInterceptors(new MessagePatternResponseInterceptor())
   @GetDriverLiveDataDecorators()
   async GetDriverLiveData(
+    @Param('id') driverId: string,
+    @Headers('Authorization') authToken: string,
+    @Res() response: Response,
+    @Req() request: Request,
+  ) {
+    try {
+      const driver = (request.user as any) ?? { tenantId: undefined };
+      // const liveDriverData = await getLiveDriverData(
+      //   driverId,
+      //   this.HOSService,
+      //   driver.companyTimeZone,
+      // );
+      // let responseData;
+      // if (liveDriverData.length > 0) {
+      //   responseData = new DriverLiveData(liveDriverData[0], liveDriverData[1]);
+      // }
+      // const [liveDriverData] = await Promise.all(promises);
+      let responseData;
+      // if (liveDriverData.length > 0) {
+      //   responseData = new DriverLiveData(liveDriverData[0], liveDriverData[1]);
+      responseData = await this.HOSService.getUnitData(driverId);
+      // }
+      // add google api here and calculate address of otherThenDriving statuses
+
+      const address = await this.driverCsvService.getAddress(
+        responseData?.lastKnownLocation?.latitude,
+        responseData?.lastKnownLocation?.longitude,
+      );
+      if (address != '') {
+        responseData.lastKnownLocation.address = address;
+      }
+      return response.status(200).send({
+        message: 'Success',
+        data: responseData?.meta || {},
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Diagnostic Endpoint
+
+  @UseInterceptors(new MessagePatternResponseInterceptor())
+  @GetDriverDiagnosticsDataDecorators()
+  async GetDriverDiagnosticsData(
     @Param('id') driverId: string,
     @Headers('Authorization') authToken: string,
     @Res() response: Response,
@@ -416,8 +462,8 @@ export class AppController extends BaseController {
           logs.totalVehicleMilesDutyStatus,
           logs.totalEngineHoursDutyStatus,
           logs.truck,
-          logs.shippingDocument,
-          logs.tralier,
+          logs.shippingId,
+          logs.trailerId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -545,8 +591,8 @@ export class AppController extends BaseController {
           logs.odometer,
           logs.engineHour,
           logs.truck,
-          logs.shippingDocument,
-          logs.tralier,
+          logs.shippingId,
+          logs.trailerId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -586,8 +632,8 @@ export class AppController extends BaseController {
           logs.odometer,
           logs.engineHour,
           logs.truck,
-          logs.shippingDocument,
-          logs.tralier,
+          logs.shippingId,
+          logs.trailerId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -759,8 +805,8 @@ export class AppController extends BaseController {
           startMiles,
           startEngineHours,
           logs.truck,
-          logs.shippingDocument,
-          logs.tralier,
+          logs.shippingId,
+          logs.trailerId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -881,13 +927,14 @@ export class AppController extends BaseController {
     @Res() response,
   ) {
     try {
+     
       const driverId = data.driverId;
       const date = data.date;
       let user;
-
+      let editRequest;
       // Parsing token for timezone
-
       let messagePatternDriver;
+    
 
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
         this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
@@ -895,87 +942,75 @@ export class AppController extends BaseController {
       if (messagePatternDriver?.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
+     
       user = messagePatternDriver?.data;
       // user.companyTimeZone = user.companyTimeZone;
-
       const SpecificClient = user?.client;
       // Creating dateTime for driver notification
-      const dateTime = moment.tz(date, user?.homeTerminalTimeZone?.tzCode).unix();
-
-      // Create csv pdf for before and after
-      // const isConverted = await this.HOSService.generateCsvImages(
-      //   dateTime,
-      //   data,
-      // );
-      // const images = isConverted.data;
-
-      /**
-       * Push Notification - START
-       */
+      const dateTime = moment
+        .tz(date, user?.homeTerminalTimeZone?.tzCode)
+        .unix();
       let images;
-
+      let mesaage;
       user.id = user._id;
+      try{
       // Get edited
+     
+    
       const isEdit = await this.logService.getPendingRequests(user);
-      if (isEdit.length > 0) {
-        // Create csv pdf for before and after
-        const isConverted = await this.HOSService.generateCsvImages(user);
-        images = isConverted.data;
-      }
+     
+      
+        if (isEdit.length > 0) {
+        
+          // Create csv pdf for before and after
+          const isConverted = await this.HOSService.generateCsvImages(user);
+          images = isConverted.data;
+         
+        }
+    
+       mesaage = 'Edit Inset log!';
+       editRequest = images != undefined ? [...images] : [];
+    } catch (error) {
+     
 
-      const mesaage = 'Edit Inset log!';
+      return response.status(200).send({
+        statusCode: 400,
+        message: 'error while creating image',
+        data: error,
+      });
+    }
+   
       const notificationObj = {
         logs: [],
-        editRequest: images != undefined ? [...images] : [],
+        editRequest:  [],
+        // editRequest: images != undefined ? [...images] : [],
         dateTime,
         notificationType: 1,
         driverId: driverId,
         editStatusFromBO: 'save',
       };
+      Logger.log('object created');
+      Logger.log(SpecificClient);
 
-      const isSilent = false;
-      // let WebsocketGateway: WebsocketGateway;
-
-      this.gateway.notifyDriver(
+      await this.gateway.notifyDriver(
         SpecificClient,
         'notifyDriver',
         mesaage,
         notificationObj,
       );
-      // let notificationStatus = await dispatchNotification(
-      //   title,
-      //   notificationObj,
-      //   deviceInfo,
-      //   this.pushNotificationClient,
-      //   isSilent,
-      // );
-      /**
-       * Push Notification - END
-       */
 
-      // const isNotified = await this.HOSService.updateNotificationStatus(
-      //   driverId,
-      //   notificationStatus,
-      //   dateTime,
-      // );
-      // if (!isNotified) {
-      //   return response.status(200).send({
-      //     statusCode: 200,
-      //     message: 'Something went wrong while dispatching notification!',
-      //     data: {},
-      //   });
-      // }
       return response.status(200).send({
         statusCode: 200,
-        // message:
-        //   notificationStatus == 'Sent'
-        //     ? 'Notification dispatched!'
-        //     : 'Something went wrong while dispatching notification',
-        // notificationStatus,
+        message: 'Sync Sent ',
         data: {},
       });
     } catch (error) {
-      throw error;
+      return response.status(200).send({
+        statusCode: 400,
+        message: 'error while sending sync',
+
+        data: error,
+      });
     }
   }
 
@@ -1277,19 +1312,20 @@ export class AppController extends BaseController {
         const driverData = messagePatternDriver.data;
         driverData.id = driverData._id;
         let images;
-        const isEdit = await this.logService.getPendingRequests(driverData);
-        // Logger.log(isEdit);
-        if (isEdit.length > 0) {
-          // Logger.log("Create csv pdf");
+        // const isEdit = await this.logService.getPendingRequests(driverData);
+        // // Logger.log(isEdit);
+        // if (isEdit.length > 0) {
+        //   // Logger.log("Create csv pdf");
 
-          // Create csv pdf for before and after
-          const isConverted = await this.HOSService.generateCsvImages(
-            driverData,
-          );
-          // Logger.log("after");
+        //   // Create csv pdf for before and after
+        //   //taking too much time.
+        //   const isConverted = await this.HOSService.generateCsvImages(
+        //     driverData,
+        //   );
+        //   // Logger.log("after");
 
-          images = isConverted.data;
-        }
+        //   images = isConverted.data;
+        // }
         const title = `Edit request ${
           isApproved == 'confirm' ? 'confirmed' : 'cancelled'
         }!`;
@@ -1527,7 +1563,7 @@ export class AppController extends BaseController {
 
         return hours * 3600 + minutes * 60 + seconds;
       }
-
+//dev update
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
 
@@ -1571,7 +1607,7 @@ export class AppController extends BaseController {
       //     (element.status == '4' && element.eventType == '1')
       //   );
       // });
-// mayble will later on it
+      // mayble will later on it
       // add google api here and calculate address of otherThenDriving statuses
       // for (let i = 0; i < otherThenDriving.length; i++) {
       //   let address = await this.driverCsvService.getAddress(
@@ -1580,10 +1616,10 @@ export class AppController extends BaseController {
       //   );
       //   otherThenDriving[i].address = address;
       // }
-      // let responseArray = [...otherThenDriving, ...driving];
-      const responseArray = allLocations;
+      let responseArray = [...allLocations, ...stops.data];
+      //  responseArray = ;
 
-      // responseArray = responseArray.sort((a, b) => a.time - b.time);
+      responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
 
       return res.status(response.statusCode).send({
@@ -1595,7 +1631,71 @@ export class AppController extends BaseController {
       throw error;
     }
   }
+  @tripHistory()
+  async tripHistory(
+    @Query('driverId') driverId: string,
+    @Query('date') date: string = moment().format('YYYY-MM-DD'),
 
+    @Res() res,
+    @Req() request: Request,
+  ) {
+    try {
+      const queryObj = {
+        driverId: driverId,
+        date: date,
+      };
+
+      const messagePatternDriver =
+        await firstValueFrom<MessagePatternResponseType>(
+          this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+        );
+      if (messagePatternDriver.isError) {
+        mapMessagePatternResponseToException(messagePatternDriver);
+      }
+      // query to get all tracking records of that day.
+      const response = await this.HOSService.getLiveLocation(queryObj);
+
+      // -----------------------------------------------------------------
+      const locations = [];
+      function convertToSeconds(time) {
+        const hours = parseInt(time.slice(0, 2));
+        const minutes = parseInt(time.slice(2, 4));
+        const seconds = parseInt(time.slice(4, 6));
+
+        return hours * 3600 + minutes * 60 + seconds;
+      }
+
+      const allLocations = JSON.parse(JSON.stringify(response.data));
+      const stops = await this.HOSService.getStopsLocation(queryObj);
+      if (stops.data[0]) {
+        for (let i = 0; i < stops.data.length; i++) {
+          let address
+          if(stops.data[i].address == '' ){
+             address = await this.driverCsvService.getAddress(
+              stops.data[i].latitude,
+              stops.data[i].longitude,
+            );
+           
+            stops.data[i].address = address;
+          }
+        }
+      }
+     
+      let responseArray = [...allLocations, ...stops.data];
+      //  responseArray = ;
+
+      responseArray = responseArray.sort((a, b) => a.time - b.time);
+      // ------------------------------------------------------------------------
+
+      return res.status(response.statusCode).send({
+        statusCode: response.statusCode,
+        message: response.message,
+        data: responseArray,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
   /**
    * driver live location : GET - V2
    * Author : Farzan

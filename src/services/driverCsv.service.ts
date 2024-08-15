@@ -83,6 +83,201 @@ export class DriverCsvService {
 
   //this function will get the csv object of one day calculate hos on the basis of it and return the hos calculated till end of the day or current DateTime according to
   // the driver timezone
+  // calculateHOS = (latestCSV: any, lastCalculations, user: any) => {
+  //   try {
+  //     const csvDataOfDutyStatus =
+  //       latestCSV.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
+
+  //     let deviceCalculation = lastCalculations; // previous day's valid calculations run till 23:59:59
+
+  //     const allHosRelatedStatuses = [];
+  //     deviceCalculation.violation = [];
+
+  //     // Filter all valid and active duty statuses
+  //     csvDataOfDutyStatus.forEach((element, index) => {
+  //       if (
+  //         (element.eventType == 1 || element.eventType == 3) &&
+  //         element.eventRecordStatus == 1 // represents active
+  //       ) {
+  //         // get all the statuses of event type 1 and event type 3
+  //         allHosRelatedStatuses.push(element);
+  //       }
+  //     });
+
+  //     // Sort the statuses
+  //     allHosRelatedStatuses.sort((a, b) =>
+  //       a.eventTime.localeCompare(b.eventTime),
+  //     );
+
+  //     let newcurrentCalculations; //this is the variable to put all device calulations after each log
+  //     const violationArray = [];
+  //     const currentDate = allHosRelatedStatuses[0].eventDate;
+  //     deviceCalculation.SHIFT_START_DATE = [];
+  //     deviceCalculation.CYCLE_START_DATE = {
+  //       eventDate: '',
+  //       eventTime: '',
+  //     };
+  //     // if (deviceCalculation.SHIFT_STARTED == true) {
+  //     //   latestCSV.meta.pti = deviceCalculation.pti;
+  //     // }
+  //     latestCSV.meta.pti = '2';
+
+  //     if (
+  //       deviceCalculation.CURRENT_STATUS != allHosRelatedStatuses[0].eventCode
+  //     ) {
+  //       deviceCalculation.ON_DUTY_CURRENT_TIME = 0;
+  //     }
+  //     if (deviceCalculation.CYCLE_DAY > 0) {
+  //       deviceCalculation.CYCLE_DAY += 1;
+  //     }
+  //     deviceCalculation.HOURS_WORKED = 0; // for cycle worked hours
+  //     deviceCalculation.powerUp = latestCSV.meta.powerUp;
+  //     deviceCalculation = this.calculateRecape(deviceCalculation);
+
+  //     //
+  //     // Looping all duty statuses
+  //     allHosRelatedStatuses.forEach((element, index) => {
+  //       let nextLogEventDateTime;
+  //       if (element.eventType == 1) {
+  //         deviceCalculation.CURRENT_STATUS = element.eventCode; // Getting eventCode
+  //       } else if (element.eventType == 3) {
+  //         deviceCalculation.CURRENT_STATUS = element.eventCode == 2 ? 4 : 1; // as PC/YM represents OFF/ON Duty, From PC/YM assigning as ON Duty == 4 and OFF DUTY == 1
+  //       }
+  //       if (index > 0) {
+  //         deviceCalculation.ON_DUTY_CURRENT_TIME = 0;
+  //       }
+  //       if (index + 1 < allHosRelatedStatuses.length) {
+  //         deviceCalculation.timeDifferenceInSeconds = calculateTimeDifference(
+  //           element.eventTime,
+  //           allHosRelatedStatuses[index + 1].eventTime,
+  //         ); // Get time difference in seconds between two logs.
+  //         deviceCalculation.currentDateTime =
+  //           element.eventDate + allHosRelatedStatuses[index + 1].eventTime;
+  //         nextLogEventDateTime = {
+  //           eventDate: allHosRelatedStatuses[index + 1].eventDate,
+  //           eventTime: allHosRelatedStatuses[index + 1].eventTime,
+  //         };
+  //       } else if (index + 1 == allHosRelatedStatuses.length) {
+  //         let endTime;
+  //         if (
+  //           element.eventDate ==
+  //           moment().tz(user.homeTerminalTimeZone.tzCode).format('MMDDYY')
+  //         ) {
+  //           endTime = moment()
+  //             .tz(user.homeTerminalTimeZone.tzCode)
+  //             .format('HHmmss');
+  //         } else {
+  //           endTime = '235959';
+  //         }
+  //         nextLogEventDateTime = {
+  //           eventDate: element.eventDate,
+  //           eventTime: endTime,
+  //         };
+
+  //         // Check wether the day is current day or previous
+  //         //if
+  //         //current day get time according to timezone
+  //         //else
+  //         //add end day time if not current day.
+  //         deviceCalculation.currentDateTime = element.eventDate + endTime;
+  //         deviceCalculation.timeDifferenceInSeconds = calculateTimeDifference(
+  //           element.eventTime,
+  //           endTime,
+  //         ); // Get time difference in seconds between last log and end day
+  //       }
+  //       if (!deviceCalculation.violation) {
+  //         deviceCalculation.violation = [];
+  //       }
+  //       if (
+  //         deviceCalculation.CURRENT_STATUS != 3 &&
+  //         deviceCalculation.violation.length > 0
+  //       ) {
+  //         //added a loop to remove extra violations
+  //         const violationsLoop = deviceCalculation.violation.length;
+  //         for (let q = 0; q < violationsLoop; q++) {
+  //           if (
+  //             deviceCalculation.violation[0].startedAt.eventDate != currentDate
+  //           ) {
+  //             if (
+  //               deviceCalculation.violation[0].endedAt.eventDate != currentDate
+  //             ) {
+  //               deviceCalculation.violation.splice(0, 1);
+  //             }
+  //           }
+  //         }
+  //       }
+  //       const currentLogEventDateTime = {
+  //         eventDate: element.eventDate,
+  //         eventTime: element.eventTime,
+  //         CURRENT_STATUS_TIME: 0,
+  //       };
+
+  //       deviceCalculation = updateVariables(
+  //         deviceCalculation,
+  //         user.homeTerminalTimeZone.tzCode,
+  //         nextLogEventDateTime,
+  //         currentLogEventDateTime,
+  //       );
+  //       newcurrentCalculations = deviceCalculation;
+
+  //       newcurrentCalculations = checkViolations(
+  //         newcurrentCalculations,
+  //         user.homeTerminalTimeZone.tzCode,
+  //         nextLogEventDateTime,
+  //         currentLogEventDateTime,
+  //       );
+  //       if (newcurrentCalculations?.violation.length > 0) {
+  //         violationArray.push(...newcurrentCalculations.violation);
+  //       }
+  //       //checkPTI
+  //       if (!latestCSV.meta.pti) {
+  //         console.log('Please get latest build with PTI');
+  //       }
+
+  //       latestCSV.meta.pti = this.checkPti(
+  //         latestCSV.meta.pti,
+  //         deviceCalculation.CURRENT_STATUS,
+  //         newcurrentCalculations.ON_DUTY_NOT_DRIVING_WITHOUT_DRIVE,
+  //         newcurrentCalculations.engineStart,
+  //       );
+  //     });
+  //     if (newcurrentCalculations.CYCLE_DAY > 0) {
+  //       newcurrentCalculations.CYCLE_DATA.push({
+  //         hoursWorked: newcurrentCalculations.HOURS_WORKED,
+  //         day: newcurrentCalculations.CYCLE_DAY,
+  //         date: latestCSV.date,
+  //       });
+  //     }
+  //     const clockCalculationParams = {
+  //       CONSECUTIVE_DRIVING: newcurrentCalculations.CONSECUTIVE_DRIVING,
+  //       DRIVING_WITH_OUT_SPLIT: newcurrentCalculations.DRIVING_WITH_OUT_SPLIT,
+  //       ON_DUTY_NOT_DRIVING_CYCLE:
+  //         newcurrentCalculations.ON_DUTY_NOT_DRIVING_CYCLE,
+  //       TOTAL_SHIFT_COUNTER: newcurrentCalculations.TOTAL_SHIFT_COUNTER,
+  //       CURRENT_STATUS: newcurrentCalculations.CURRENT_STATUS,
+  //       SHIFT_STARTED: newcurrentCalculations.SHIFT_STARTED,
+  //       RECAPE_HOURS: newcurrentCalculations.RECAPE_HOURS,
+  //       RECAPE_STATUS: newcurrentCalculations.RECAPE_STATUS,
+  //     };
+
+  //     newcurrentCalculations.violation.push(...violationArray);
+  //     const currentClocks = calculateClocks(clockCalculationParams);
+
+  //     const mergedVoilations = this.mergeAndFilterArrays(
+  //       newcurrentCalculations.violation,
+  //       newcurrentCalculations.violation,
+  //     );
+  //     latestCSV.meta.powerUp = newcurrentCalculations.powerUp;
+  //     newcurrentCalculations.violation = mergedVoilations;
+  //     latestCSV.meta.deviceCalculations = newcurrentCalculations;
+  //     latestCSV.meta.clockData = currentClocks;
+  //     latestCSV.meta.voilations = mergedVoilations;
+  //     // latestCSV[0]._doc.meta.dateTime= moment().tz(user.homeTerminalTimeZone.tzCode).unix();
+  //     return latestCSV;
+  //   } catch (error) {
+  //     return error;
+  //   }
+  // };
   calculateHOS = (latestCSV: any, lastCalculations, user: any) => {
     try {
       const csvDataOfDutyStatus =
@@ -90,7 +285,7 @@ export class DriverCsvService {
 
       let deviceCalculation = lastCalculations; // previous day's valid calculations run till 23:59:59
 
-      const allHosRelatedStatuses = [];
+      let allHosRelatedStatuses = [];
       deviceCalculation.violation = [];
 
       // Filter all valid and active duty statuses
@@ -110,18 +305,30 @@ export class DriverCsvService {
       );
 
       let newcurrentCalculations; //this is the variable to put all device calulations after each log
-      const violationArray = [];
-      const currentDate = allHosRelatedStatuses[0].eventDate;
+      let violationArray = [];
+      let currentDate = allHosRelatedStatuses[0].eventDate;
       deviceCalculation.SHIFT_START_DATE = [];
+      deviceCalculation.engineStart = false;
       deviceCalculation.CYCLE_START_DATE = {
         eventDate: '',
         eventTime: '',
       };
-      if (deviceCalculation.SHIFT_STARTED == true) {
-        latestCSV.meta.pti = deviceCalculation.pti;
-      }
-      latestCSV.meta.pti = '2';
+      // if(deviceCalculation.SHIFT_STARTED == true){
 
+      //   latestCSV.meta.pti = deviceCalculation.pti;
+      // }
+      latestCSV.meta.pti = '0';
+      let count = 0;
+      let pti = [];
+      // let tempPti = [];
+
+      // if (
+      //   deviceCalculation.SHIFT_STARTED == true &&
+      //   deviceCalculation.CURRENT_STATUS == '3'
+      // ) {
+      //   tempPti = lastCalculations.ptiViolation;
+      // }
+      delete lastCalculations.ptiViolation;
       if (
         deviceCalculation.CURRENT_STATUS != allHosRelatedStatuses[0].eventCode
       ) {
@@ -193,7 +400,7 @@ export class DriverCsvService {
           deviceCalculation.violation.length > 0
         ) {
           //added a loop to remove extra violations
-          const violationsLoop = deviceCalculation.violation.length;
+          let violationsLoop = deviceCalculation.violation.length;
           for (let q = 0; q < violationsLoop; q++) {
             if (
               deviceCalculation.violation[0].startedAt.eventDate != currentDate
@@ -206,7 +413,7 @@ export class DriverCsvService {
             }
           }
         }
-        const currentLogEventDateTime = {
+        let currentLogEventDateTime = {
           eventDate: element.eventDate,
           eventTime: element.eventTime,
           CURRENT_STATUS_TIME: 0,
@@ -234,13 +441,32 @@ export class DriverCsvService {
           console.log('Please get latest build with PTI');
         }
 
-        latestCSV.meta.pti = this.checkPti(
-          latestCSV.meta.pti,
-          deviceCalculation.CURRENT_STATUS,
-          newcurrentCalculations.ON_DUTY_NOT_DRIVING_WITHOUT_DRIVE,
-          newcurrentCalculations.engineStart,
-        );
+        if (
+          newcurrentCalculations.SHIFT_STARTED &&
+          newcurrentCalculations.SHIFT_START_DATE.length > 0
+        ) {
+          latestCSV.meta.pti = this.checkPti(
+            latestCSV.meta.pti,
+            deviceCalculation.CURRENT_STATUS,
+            newcurrentCalculations.ON_DUTY_NOT_DRIVING_WITHOUT_DRIVE,
+            newcurrentCalculations.engineStart,
+          );
+          if (newcurrentCalculations.SHIFT_START_DATE.length > pti.length) {
+            pti.push({
+              type: latestCSV.meta.pti,
+              SHIFT_START_DATE: newcurrentCalculations.SHIFT_START_DATE[count],
+            });
+            count += 1;
+          }
+          if (
+            newcurrentCalculations.SHIFT_START_DATE.length == pti.length &&
+            latestCSV.meta.pti == '3'
+          ) {
+            pti[count - 1].type = latestCSV.meta.pti;
+          }
+        }
       });
+      latestCSV.meta.ptiViolation = pti;
       if (newcurrentCalculations.CYCLE_DAY > 0) {
         newcurrentCalculations.CYCLE_DATA.push({
           hoursWorked: newcurrentCalculations.HOURS_WORKED,
@@ -263,7 +489,7 @@ export class DriverCsvService {
       newcurrentCalculations.violation.push(...violationArray);
       const currentClocks = calculateClocks(clockCalculationParams);
 
-      const mergedVoilations = this.mergeAndFilterArrays(
+      let mergedVoilations = this.mergeAndFilterArrays(
         newcurrentCalculations.violation,
         newcurrentCalculations.violation,
       );
@@ -278,6 +504,7 @@ export class DriverCsvService {
       return error;
     }
   };
+
 
   calculateRecape = (deviceCalculation) => {
     //      if (deviceCalculation.CYCLE_DAY > 7) {
@@ -538,6 +765,7 @@ export class DriverCsvService {
         : '1';
       newLog.eventTime = '000000';
       newLog.eventDate = moment(date).format('MMDDYY');
+      newLog.eventRecordStatus = '1';
       newLog.eventSequenceIdNumber = generateUniqueHexId();
       const logCheckSum = this.getLogChecksum(newLog);
       newLog.eventDataCheckValue = logCheckSum['eventDataCheckValue'];
@@ -690,7 +918,6 @@ export class DriverCsvService {
               lastCalculations.powerUp = false;
             }
             const response = await this.addToDB(latestCSV, user);
-           
           } else {
             // need to test create missing Csv as i don't have latestCsv now
 
@@ -740,21 +967,22 @@ export class DriverCsvService {
           }
           await this.updateRecordMade(user, latestCSV);
         }
-        const meta = await this.updateMetaVariables(latestCSV);
+        // this potion is commented because there is no need to update hos only from here.
+        // const meta = await this.updateMetaVariables(latestCSV);
 
-        if (user?._id) {
-          user.id = user?._id?.toString(); // for making unit get by grivierid
-        }
-        const messagePatternUnits =
-          await firstValueFrom<MessagePatternResponseType>(
-            this.unitClient.send(
-              { cmd: 'assign_meta_to_units' },
-              { meta, user },
-            ),
-          );
-        if (messagePatternUnits.isError) {
-          mapMessagePatternResponseToException(messagePatternUnits);
-        }
+        // if (user?._id) {
+        //   user.id = user?._id?.toString(); // for making unit get by grivierid
+        // }
+        // const messagePatternUnits =
+        //   await firstValueFrom<MessagePatternResponseType>(
+        //     this.unitClient.send(
+        //       { cmd: 'assign_meta_to_units' },
+        //       { meta, user },
+        //     ),
+        //   );
+        // if (messagePatternUnits.isError) {
+        //   mapMessagePatternResponseToException(messagePatternUnits);
+        // }
       }
     } catch (error) {}
   };
@@ -765,8 +993,8 @@ export class DriverCsvService {
       driverId: '',
       date: '2023-10-25',
       // driverName: 'Sharif',
-      // vehicleName: '1998',
-      shippingId: 'erfdf',
+      vehicleName: '',
+      shippingId: '',
       signature: '',
       hoursWorked: 19220020,
       distance: '0',
@@ -775,28 +1003,54 @@ export class DriverCsvService {
       clock: {},
       // homeTerminalTimeZone: {},
       // tenantId: '',
+      lastKnownActivity: {},
       isPti: '',
     };
 
     recordMade.driverId = user?._id;
     recordMade.date = latestCSV?.date;
     // recordMade.driverName = user?.driverFullName;
-    // recordMade.vehicleName = user?.trailerNumber;
-    recordMade.violations = latestCSV?.meta?.voilations;
+    const csvDataOfDutyStatus =
+      latestCSV.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
+    csvDataOfDutyStatus.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
+
+    const shippingIds = [];
+    const trailerIds = [];
+    const vehicleIds = [];
+    csvDataOfDutyStatus.forEach((record) => {
+      if (!shippingIds.includes(record.shippingId)) {
+        shippingIds.push(record.shippingId);
+      }
+      if (!trailerIds.includes(record.trailerId)) {
+        trailerIds.push(record.trailerId);
+      }
+      if (!vehicleIds.includes(record.vehicleId)) {
+        if (record.vehicleId !== '') {
+          vehicleIds.push(record.vehicleId);
+        }
+      }
+    });
+
+    recordMade.vehicleName = vehicleIds.toString() ?? null;
+    // recordMade.violations = latestCSV?.meta?.voilations;
     recordMade.status = {
       currentEventType: latestCSV.csv.timePlaceLine.currentEventType,
 
       currentEventCode: latestCSV.csv.timePlaceLine.currentEventCode,
     };
-    // recordMade.lastKnownActivity = user?.meta?.lastActivity;
-
+    let statuses = latestCSV.csv.eldEventListForDriversRecordOfDutyStatus;
+    recordMade.lastKnownActivity['location'] =
+      statuses[statuses.length - 1].address;
+    let signature;
     if (
       latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords.length > 0
     ) {
       recordMade.shippingId =
         latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords[0].shippingDocumentNumber;
+      signature = true;
     } else {
       recordMade.shippingId = '';
+      signature = false;
     }
     if (
       latestCSV.csv.eldEventListForDriverCertificationOfOwnRecords.length > 0
@@ -805,16 +1059,34 @@ export class DriverCsvService {
     } else {
       recordMade.signature = '0';
     }
-    recordMade.hoursWorked =
-      latestCSV.meta?.deviceCalculations?.HOURS_WORKED;
+    recordMade.hoursWorked = latestCSV.meta?.deviceCalculations?.HOURS_WORKED;
     recordMade.distance = latestCSV.meta?.totalVehicleMiles;
     // recordMade.homeTerminalTimeZone = user?.homeTerminalTimeZone;
     // recordMade.tenantId = user?.tenantId;
     //Add violations here
     recordMade.clock = latestCSV.meta.clockData;
-    recordMade.violations = latestCSV.meta.voilations;
+    let voilationtemp = JSON.stringify(latestCSV.meta.voilations)
+    recordMade.violations = JSON.parse(voilationtemp);
+    if (!signature) {
+      recordMade.violations.push({ type: 'SIGNATURE_MISSING' });
+    }
     recordMade.isPti = latestCSV?.meta?.pti;
+    if (recordMade.isPti == '1') {
+      recordMade.violations.push({ type: 'PTI_MISSING' });
+    } else if (recordMade.isPti == '3') {
+      recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+    }
 
+    // add vehicle and trailer and shipping violations
+    if (recordMade.vehicleName === '') {
+      recordMade.violations.push({ type: 'NO_VEHICLE' });
+    }
+    if (shippingIds.toString() === '') {
+      recordMade.violations.push({ type: 'NO_SHIPPING_ID' });
+    }
+    if (trailerIds.toString() === '') {
+      recordMade.violations.push({ type: 'NO_TRAILER_ID' });
+    }
     // call function and update or add deatils here.
     const resRecord = await this.addAndUpdateDriverRecord(recordMade);
     return resRecord;
@@ -1011,32 +1283,28 @@ export class DriverCsvService {
     await this.flowOfHOSForPrevious(recentCSV.graphData, user);
   };
 
-//**************************************** */
+  //**************************************** */
   // this is the main function for getting Logform
   getLogform = async (query, user) => {
     const recentCSV = await this.getFromDB(query, user); // this line is for getting the previous csv available for the given driver
-    const csvOfDate= recentCSV.graphData[0];
+    const csvOfDate = recentCSV.graphData[0];
     const csvDataOfDutyStatus =
-    csvOfDate.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
-    csvDataOfDutyStatus.sort((a, b) =>
-    a.eventTime.localeCompare(b.eventTime),
-  );
+      csvOfDate.csv.eldEventListForDriversRecordOfDutyStatus; // get all the duty statuses
+    csvDataOfDutyStatus.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
 
-  const shippingIds = [];
-  const trailerIds =[];
-  csvDataOfDutyStatus.forEach(record => {
-    if (!shippingIds.includes(record.shippingId)) {
+    const shippingIds = [];
+    const trailerIds = [];
+    csvDataOfDutyStatus.forEach((record) => {
+      if (!shippingIds.includes(record.shippingId)) {
         shippingIds.push(record.shippingId);
-    }
-    if (!trailerIds.includes(record.trailerId)) {
+      }
+      if (!trailerIds.includes(record.trailerId)) {
         trailerIds.push(record.trailerId);
-    }
-});
-return {shippingIds,trailerIds}
-
+      }
+    });
+    return { shippingIds, trailerIds };
   };
 
-  
   transferLog = async (sequenceId, date, duration, user, type) => {
     // console.log('this is the date of status==========>', date);
 
@@ -1366,7 +1634,8 @@ return {shippingIds,trailerIds}
         .findOneAndUpdate({ month: month, day: day }, data, {
           upsert: true,
           new: true,
-        }).sort({ date: 1 })
+        })
+        .sort({ date: 1 })
         .lean();
       // }
       response = result;
@@ -1394,7 +1663,14 @@ return {shippingIds,trailerIds}
         collectionName,
       );
       let response;
-      data.date = moment.unix(date).format('YYYY-MM-DD');
+      Logger.log('ppoint where we check date');
+      Logger.log(date);
+      Logger.log(driverInfo.homeTerminalTimeZone.tzCode);
+
+      data.date = moment
+        .unix(date)
+        .tz(driverInfo.homeTerminalTimeZone.tzCode)
+        .format('YYYY-MM-DD');
       data = { ...data, month: month, day: day };
       let result;
       // const result = await dynamicModel
@@ -1777,7 +2053,8 @@ return {shippingIds,trailerIds}
     }
 
     let finalCsv = logsOfSelectedDate[0].csv;
-    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const unsortDutyHours =
+      finalCsv['eldEventListForDriversRecordOfDutyStatus'];
     const dutyHours = unsortDutyHours.sort((a, b) =>
       a.eventTime.localeCompare(b.eventTime),
     );
@@ -1883,7 +2160,10 @@ return {shippingIds,trailerIds}
 
           //eventHandler variable
           const logEventTime = moment(initialDutyHours.eventTime, 'HHmmss');
-          const statusChangeEventTime = moment(currentDrObj.eventTime, 'HHmmss');
+          const statusChangeEventTime = moment(
+            currentDrObj.eventTime,
+            'HHmmss',
+          );
           let eventTimeHandler = await getHours(
             initialDutyHours.eventTime,
             currentDrObj.eventTime,
@@ -2183,7 +2463,8 @@ return {shippingIds,trailerIds}
     normalizationType,
   ) => {
     const finalCsv = logsOfSelectedDate[0].csv;
-    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const unsortDutyHours =
+      finalCsv['eldEventListForDriversRecordOfDutyStatus'];
     const indexes = [];
     let drAlertFlag = false;
     const activeLogs = [];
@@ -2653,7 +2934,8 @@ return {shippingIds,trailerIds}
     }
 
     let finalCsv = logsOfSelectedDate[0].csv;
-    const unsortDutyHours = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    const unsortDutyHours =
+      finalCsv['eldEventListForDriversRecordOfDutyStatus'];
     const dutyHours = unsortDutyHours.sort((a, b) =>
       a.eventTime.localeCompare(b.eventTime),
     );
@@ -2756,7 +3038,10 @@ return {shippingIds,trailerIds}
 
           //eventHandler variable
           const logEventTime = moment(initialDutyHours.eventTime, 'HHmmss');
-          const statusChangeEventTime = moment(currentDrObj.eventTime, 'HHmmss');
+          const statusChangeEventTime = moment(
+            currentDrObj.eventTime,
+            'HHmmss',
+          );
           let eventTimeHandler = await getHours(
             initialDutyHours.eventTime,
             currentDrObj.eventTime,
@@ -3906,13 +4191,12 @@ return {shippingIds,trailerIds}
         { $set: data },
         { upsert: true, returnDocument: 'after' },
       );
-  
+
       return record;
     } catch (error) {
       Logger.log(error);
-      throw error
+      throw error;
     }
-    
   };
   findByDriveAndDate = async (ids, queryParams) => {
     let records;
@@ -3954,6 +4238,24 @@ return {shippingIds,trailerIds}
       },
       date: {
         $in: date,
+      },
+    }); //driver
+    if (driverQuery.length > 0) {
+      for (let i = 0; i < driverQuery.length; i++) {
+        records.push(driverQuery[i]['_doc']);
+      }
+    }
+    return records;
+  };
+  findByDriverIDWithDate = async (ids, startDate, endDate) => {
+    const records = [];
+    const driverQuery = await this.recordTable.find({
+      driverId: {
+        $in: ids,
+      },
+      date: {
+        $gte: startDate,
+        $lte: endDate,
       },
     });
     if (driverQuery.length > 0) {

@@ -61,7 +61,8 @@ export const UnidentifiedLogsSchema = new mongoose.Schema(
     startTime: { type: String },
     endTime: { type: String },
     rejected: [],
-    tenantId:{type:String,required:true},
+    tenantId: { type: String, required: true },
+    isDeleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,

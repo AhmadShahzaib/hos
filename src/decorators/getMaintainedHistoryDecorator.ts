@@ -18,7 +18,7 @@ export default function GetMaintainedHistoryDecorator() {
   const getMaintainedHistoryDecorator: Array<CombineDecoratorType> = [
     // Get('getHistoryByParam/:id'),
     Get('history'),
-    SetMetadata('permissions', [HOS.HISTORY]),
+    SetMetadata('permissions', ["hi29stc50"]),
     ApiQuery({
       name: 'detail',
       description: 'detail (system generated id) is required.',

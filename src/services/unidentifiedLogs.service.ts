@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginationDto } from 'dto/pagination.dto';
 import UnidentifiedLogsDocument from 'mongoDb/document/unidentifiedLog.document';
-import { Model,Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { paginator } from 'utils/pagination';
 
 @Injectable()
@@ -69,7 +69,7 @@ export class UnidentifiedLogsService {
         data: {},
       };
     }
-const currentDriver=  unidentifiedLog.driverId;
+    const currentDriver = unidentifiedLog.driverId;
     unidentifiedLog.driverId = 'unidentified';
     unidentifiedLog.type = 'unidentified-unassigned';
     await unidentifiedLog.save();
@@ -78,7 +78,7 @@ const currentDriver=  unidentifiedLog.driverId;
       statusCode: 200,
       message: 'Unidenitfied log assignment cancelled successfully!.',
       data: unidentifiedLog,
-      currentDriver:currentDriver
+      currentDriver: currentDriver,
     };
   };
 
@@ -281,6 +281,9 @@ const currentDriver=  unidentifiedLog.driverId;
         obj.type = 'unidentified-assigned';
         obj.origin.address = object.originAddress;
         obj.destination.address = object.destinationAddress;
+        obj.eventCode= object.eventCode;
+        obj.eventType= object.eventType;
+
         await obj.save();
 
         const response = {
@@ -325,30 +328,54 @@ const currentDriver=  unidentifiedLog.driverId;
       data: {},
     };
   };
-  deleteMany = async (ids) => {
-    // const objectIds = ids.map(id => new Types.ObjectId(id));
-    const obj = await this.unidentifiedLogsModel.deleteMany({
+
+  findAllUnidentified = async (ids) => {
+    const response = await this.unidentifiedLogsModel.find({
       _id: {
         $in: ids,
       },
     });
-    if (obj.deletedCount > 0) {
-      const response = {
-        statusCode: 200,
-        message: 'Log deleted successfully!',
-        data: {},
-      };
-      return response;
-    }
-
-    const response = {
-      statusCode: 200,
-      message: 'Not Found!',
-      data: {},
-    };
     return response;
-
   };
+
+  deleteMany = async (ids) => {
+    try {
+      // Perform the updateMany operation to set isDeleted to true for the given IDs
+      const result = await this.unidentifiedLogsModel.updateMany(
+        {
+          _id: {
+            $in: ids,
+          },
+        },
+        {
+          $set: { isDeleted: true },
+        },
+      );
+
+      // Check the modified count and prepare the response
+      if (result.modifiedCount > 0) {
+        return {
+          statusCode: 200,
+          message: 'Logs deleted successfully!',
+          data: {},
+        };
+      } else {
+        return {
+          statusCode: 404,
+          message: 'Not Found!',
+          data: {},
+        };
+      }
+    } catch (error) {
+      // Handle any errors that occurred during the update
+      return {
+        statusCode: 500,
+        message: 'Internal Server Error',
+        data: { error: error.message },
+      };
+    }
+  };
+
   /**
    * Edit Inset Logs
    * Description:

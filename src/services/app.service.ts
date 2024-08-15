@@ -118,9 +118,10 @@ export class AppService {
   // crud operations below.
 
   getEldOnDeviceId = async (eldId) => {
-    const messagePatternDevice = await firstValueFrom<MessagePatternResponseType>(
-      this.deviceClient.send({ cmd: 'get_device_by_id' }, eldId),
-    );
+    const messagePatternDevice =
+      await firstValueFrom<MessagePatternResponseType>(
+        this.deviceClient.send({ cmd: 'get_device_by_id' }, eldId),
+      );
 
     if (messagePatternDevice.isError) {
       Logger.log(`Error while finding eld against eldId`);
@@ -330,7 +331,19 @@ export class AppService {
 
   //   return coordinates;
   // };
+  checkIfDocumentExists = async (driverId, date) => {
+    try {
+      const exists = await this.driverLiveLocationModel.exists({
+        driverId: driverId,
+        date: date,
+      });
 
+      return !!exists;
+    } catch (error) {
+      console.error('Error checking document existence:', error);
+      throw error;
+    }
+  };
   /**
    * driver live location - V2
    * Author : Farzan
@@ -339,21 +352,29 @@ export class AppService {
     const { driverId, tenantId, date, historyOfLocation } = obj;
 
     // Collect data for current date
-    const driverLiveLocationTrackable =
-      await this.driverLiveLocationModel.findOne({
-        driverId: driverId,
-        date: date,
-      });
+    const driverLiveLocationTrackable = await this.checkIfDocumentExists(
+      driverId,
+      date,
+    );
 
     // Append latest locations to the previous ones
     if (driverLiveLocationTrackable) {
-      driverLiveLocationTrackable.historyOfLocation = [
-        ...driverLiveLocationTrackable.historyOfLocation,
-        ...historyOfLocation,
-      ];
+      // driverLiveLocationTrackable.historyOfLocation = [
+      //   ...driverLiveLocationTrackable.historyOfLocation,
+      //   ...historyOfLocation,
+      // ];
 
-      // Update the latest changes
-      await driverLiveLocationTrackable.save();
+      // // Update the latest changes
+      // await driverLiveLocationTrackable.save();
+      const result = await this.driverLiveLocationModel.updateOne(
+        { driverId: driverId, date: date },
+        {
+          $push: {
+            historyOfLocation: { $each: historyOfLocation },
+          },
+        },
+        { upsert: true }, // This option creates the document if it doesn't exist
+      );
     } else {
       // If record not exists, create a new one
       const isCreated = await this.driverLiveLocationModel.create({
@@ -388,56 +409,53 @@ export class AppService {
     return {
       statusCode: 200,
       message: 'Live location updated successfully!',
-      data: driverLiveLocationTrackable?.historyOfLocation
-        ? driverLiveLocationTrackable?.historyOfLocation
-        : [obj?.historyOfLocation],
+      data: {},
+      // driverLiveLocationTrackable?.historyOfLocation
+      //   ? driverLiveLocationTrackable?.historyOfLocation
+      //   : [obj?.historyOfLocation],
     };
   };
- /**
+  /**
    * driver stops - V2
    * Author : Not Farzan
    */
- addStops = async (obj) => {
-  const { driverId, tenantId, date, historyOfLocation } = obj;
+  addStops = async (obj) => {
+    const { driverId, tenantId, date, historyOfLocation } = obj;
 
-  // Collect data for current date
-  const driverStopLocationTrackable =
-    await this.driverStopLocationModel.findOne({
-      driverId: driverId,
-      date: date,
-    });
+    // Collect data for current date
+    const driverStopLocationTrackable =
+      await this.driverStopLocationModel.findOne({
+        driverId: driverId,
+        date: date,
+      });
 
-  // Append latest locations to the previous ones
-  if (driverStopLocationTrackable) {
-    driverStopLocationTrackable.historyOfLocation = [
-      ...driverStopLocationTrackable.historyOfLocation,
-      ...historyOfLocation,
-    ];
+    // Append latest locations to the previous ones
+    if (driverStopLocationTrackable) {
+      driverStopLocationTrackable.historyOfLocation = [
+        ...driverStopLocationTrackable.historyOfLocation,
+        ...historyOfLocation,
+      ];
 
-    // Update the latest changes
-    await driverStopLocationTrackable.save();
-  } else {
-    // If record not exists, create a new one
-    const isCreated = await this.driverStopLocationModel.create({
-      driverId,
-      tenantId,
-      date,
-      historyOfLocation,
-    
-    });
+      // Update the latest changes
+      await driverStopLocationTrackable.save();
+    } else {
+      // If record not exists, create a new one
+      const isCreated = await this.driverStopLocationModel.create({
+        driverId,
+        tenantId,
+        date,
+        historyOfLocation,
+      });
+    }
 
-    
-    
-  }
-
-  return {
-    statusCode: 200,
-    message: 'Live location updated successfully!',
-    data: driverStopLocationTrackable?.historyOfLocation
-      ? driverStopLocationTrackable?.historyOfLocation
-      : [obj?.historyOfLocation],
+    return {
+      statusCode: 200,
+      message: 'Live location updated successfully!',
+      data: driverStopLocationTrackable?.historyOfLocation
+        ? driverStopLocationTrackable?.historyOfLocation
+        : [obj?.historyOfLocation],
+    };
   };
-};
 
   /**
    * driver specific day trips
@@ -474,38 +492,37 @@ export class AppService {
     };
   };
 
-    /**
+  /**
    * driver specific day trips stops
    * Author : No Farzan
    */
-    getStopsLocation = async (obj) => {
-      const query = {
-        driverId: obj.driverId,
-        date: obj.date, // YYYY-MM-DD
-      };
-  
-      const specificDayTrip = await this.driverStopLocationModel.findOne(query);
-  
-      let decodedHistoryOfLocation;
-      if (specificDayTrip) {
-        // length == 0, indicates the previous day trips that are encrypted.
-        // length != 0, indicates the current day trip. The current day trip is not encrypted.
-        if (specificDayTrip.historyOfLocation.length == 0) {
-         
-        } else {
-          decodedHistoryOfLocation = specificDayTrip.historyOfLocation;
-        }
-      }
-  
-      return {
-        statusCode: 200,
-        message: 'Live location fetched successfully!',
-        data:
-          decodedHistoryOfLocation && decodedHistoryOfLocation.length > 0
-            ? decodedHistoryOfLocation
-            : [],
-      };
+  getStopsLocation = async (obj) => {
+    const query = {
+      driverId: obj.driverId,
+      date: obj.date, // YYYY-MM-DD
     };
+
+    const specificDayTrip = await this.driverStopLocationModel.findOne(query);
+
+    let decodedHistoryOfLocation;
+    if (specificDayTrip) {
+      // length == 0, indicates the previous day trips that are encrypted.
+      // length != 0, indicates the current day trip. The current day trip is not encrypted.
+      if (specificDayTrip.historyOfLocation.length == 0) {
+      } else {
+        decodedHistoryOfLocation = specificDayTrip.historyOfLocation;
+      }
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Live location fetched successfully!',
+      data:
+        decodedHistoryOfLocation && decodedHistoryOfLocation.length > 0
+          ? decodedHistoryOfLocation
+          : [],
+    };
+  };
   maintainHistory = async (user, type, csvBeforeUpdate, csvAfterUpdate) => {
     const response = await this.editInsertLogModel.create({
       editedBy: {
@@ -806,7 +823,7 @@ export class AppService {
 
         dutyStatusList[index]['shippingId'] = payloadLog.shippingId;
         dutyStatusList[index]['trailerId'] = payloadLog.trailerId;
-        dutyStatusList[index]['eventLatitude'] = payloadLog.eventLatitude;        
+        dutyStatusList[index]['eventLatitude'] = payloadLog.eventLatitude;
         dutyStatusList[index]['eventLongitude'] = payloadLog.eventLongitude;
         dutyStatusList[index]['totalVehicleMilesDutyStatus'] =
           payloadLog.totalVehicleMilesDutyStatus;
@@ -1171,75 +1188,84 @@ export class AppService {
   };
 
   generateCsvImages = async (data) => {
-    const imageStrings = {};
-    const responseArr = [];
-    let obj;
-
-    const isEdit = await this.editInsertLogModel.find({
-      driverId: data.id,
-      isApproved: 'pending',
-    });
-    if (!isEdit) {
-      return {
-        statusCode: 200,
-        message: 'Edit request not found!',
-        data: {},
-      };
-    }
-
-    /* The above code is a TypeScript loop that iterates over an array called `isEdit`. */
-    for (let i = 0; i < isEdit.length; i++) {
-      const unixDateTime = isEdit[i].dateTime;
-      const DateOfEdit = moment
-        .unix(Number(unixDateTime))
-        .tz(data.homeTerminalTimeZone.tzCode);
-      console.log(
-        DateOfEdit.format('YYYY-MM-DDTHH:mm:ss.SSSZ') +
-          '------------- This is the logs Date',
-      );
-      console.log(
-        isEdit[i].editDate +
-          '------------- This is the Date correction is requested',
-      );
-
-      obj = {
+    try {
+      const imageStrings = {};
+      const responseArr = [];
+      let obj;
+    
+      const isEdit = await this.editInsertLogModel.find({
         driverId: data.id,
-        tenantId: data.tenantId,
-        date: DateOfEdit.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-      };
+        isApproved: 'pending',
+      });
+     
+      if (!isEdit) {
+        return {
+          statusCode: 200,
+          message: 'Edit request not found!',
+          data: {},
+        };
+      }
+      /* The above code is a TypeScript loop that iterates over an array called `isEdit`. */
+      for (let i = 0; i < isEdit.length; i++) {
+        
+        const unixDateTime = isEdit[i].dateTime;
+        const DateOfEdit = moment
+          .unix(Number(unixDateTime))
+          .tz(data.homeTerminalTimeZone.tzCode);
+        console.log(
+          DateOfEdit.format('YYYY-MM-DDTHH:mm:ss.SSSZ') +
+            '------------- This is the logs Date',
+        );
+        console.log(
+          isEdit[i].editDate +
+            '------------- This is the Date correction is requested',
+        );
 
-      /* The above code is declaring two variables, `csvBeforeUpdate` and `csvAfterUpdate`, and
+        obj = {
+          driverId: data.id,
+          tenantId: data.tenantId,
+          date: DateOfEdit.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+        };
+
+        /* The above code is declaring two variables, `csvBeforeUpdate` and `csvAfterUpdate`, and
      assigning them values from the `csv` properties of the `csvBeforeUpdate` and `csvAfterUpdate`
      objects within the `isEdit` array at index `i`. */
-      const csvBeforeUpdate = isEdit[i].csvBeforeUpdate.csv;
-      const csvAfterUpdate = isEdit[i].csvAfterUpdate.csv;
+        const csvBeforeUpdate = isEdit[i].csvBeforeUpdate.csv;
+        const csvAfterUpdate = isEdit[i].csvAfterUpdate.csv;
+      
+        imageStrings['csvBeforeUpdate'] = await this.convertToImage(
+          obj,
+          csvBeforeUpdate,
+        );
+        imageStrings['csvAfterUpdate'] = await this.convertToImage(
+          obj,
+          csvAfterUpdate,
+        );
+        Logger.log("--10")
+        responseArr.push({
+          dateTime: isEdit[i].dateTime,
+          date: isEdit[i].editDate,
+          csvBeforeUpdate: imageStrings['csvBeforeUpdate']
+            ? imageStrings['csvBeforeUpdate']
+            : '',
+          csvAfterUpdate: imageStrings['csvAfterUpdate']
+            ? imageStrings['csvAfterUpdate']
+            : '',
+        });
+      }
 
-      imageStrings['csvBeforeUpdate'] = await this.convertToImage(
-        obj,
-        csvBeforeUpdate,
-      );
-      imageStrings['csvAfterUpdate'] = await this.convertToImage(
-        obj,
-        csvAfterUpdate,
-      );
-
-      responseArr.push({
-        dateTime: isEdit[i].dateTime,
-        date: isEdit[i].editDate,
-        csvBeforeUpdate: imageStrings['csvBeforeUpdate']
-          ? imageStrings['csvBeforeUpdate']
-          : '',
-        csvAfterUpdate: imageStrings['csvAfterUpdate']
-          ? imageStrings['csvAfterUpdate']
-          : '',
-      });
+      return {
+        statusCode: 200,
+        message: 'Image conversion success!',
+        data: responseArr,
+      };
+    } catch (error) {
+      return {
+        statusCode: 400,
+        message: 'Image conversion failed!',
+        data: error,
+      };
     }
-
-    return {
-      statusCode: 200,
-      message: 'Image conversion success!',
-      data: responseArr,
-    };
   };
 
   /**
