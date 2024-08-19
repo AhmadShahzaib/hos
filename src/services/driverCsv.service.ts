@@ -505,7 +505,6 @@ export class DriverCsvService {
     }
   };
 
-
   calculateRecape = (deviceCalculation) => {
     //      if (deviceCalculation.CYCLE_DAY > 7) {
     //       Logger.log('Cycle Day greater than 8 #');
@@ -1065,18 +1064,20 @@ export class DriverCsvService {
     // recordMade.tenantId = user?.tenantId;
     //Add violations here
     recordMade.clock = latestCSV.meta.clockData;
-    let voilationtemp = JSON.stringify(latestCSV.meta.voilations)
+    let voilationtemp = JSON.stringify(latestCSV.meta.voilations);
     recordMade.violations = JSON.parse(voilationtemp);
     if (!signature) {
       recordMade.violations.push({ type: 'SIGNATURE_MISSING' });
     }
 
     let ptiObject = latestCSV?.meta?.ptiViolation;
-    for (let ptiData of ptiObject) {
-      if (ptiData.type == '1') {
-        recordMade.violations.push({ type: 'PTI_MISSING' });
-      } else if (ptiData.type == '3') {
-        recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+    if (ptiObject.length > 0) {
+      for (let ptiData of ptiObject) {
+        if (ptiData.type == '1') {
+          recordMade.violations.push({ type: 'PTI_MISSING' });
+        } else if (ptiData.type == '3') {
+          recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+        }
       }
     }
 
