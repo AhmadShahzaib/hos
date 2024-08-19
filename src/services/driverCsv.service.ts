@@ -1070,11 +1070,14 @@ export class DriverCsvService {
     if (!signature) {
       recordMade.violations.push({ type: 'SIGNATURE_MISSING' });
     }
-    recordMade.isPti = latestCSV?.meta?.pti;
-    if (recordMade.isPti == '1') {
-      recordMade.violations.push({ type: 'PTI_MISSING' });
-    } else if (recordMade.isPti == '3') {
-      recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+
+    let ptiObject = latestCSV?.meta?.ptiViolation;
+    for (let ptiData of ptiObject) {
+      if (ptiData.type == '1') {
+        recordMade.violations.push({ type: 'PTI_MISSING' });
+      } else if (ptiData.type == '3') {
+        recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+      }
     }
 
     // add vehicle and trailer and shipping violations
