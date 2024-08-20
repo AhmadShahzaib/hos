@@ -648,6 +648,33 @@ export class DriverCsvController extends BaseController {
       // console.log(`After the function call`);
       // The funtion above calculates the missing intermediates virtually. It doesn't saves them anywhere, it's just to show - END
 
+      if (resp.graphData[0].csv) {
+        let addressUpdated =
+          await this.driverCsvService.calculateAndUpdateAddress(resp, user);
+        if (addressUpdated) {
+          const title = 'Address added in logs!';
+          const notificationObj = {
+            logs: [],
+            dateTime: resp.graphData[0].date,
+            driverId: user.id,
+            notificationType: 4,
+            editStatusFromBO: 'location',
+          };
+          const deviceInfo = {
+            deviceToken: user.deviceToken,
+            deviceType: user.deviceType,
+          };
+
+          await dispatchNotification(
+            title,
+            notificationObj,
+            deviceInfo,
+            this.pushNotificationClient,
+            true, // repressents notification is silent or not
+          );
+        }
+      }
+
       if (resp) {
         return response.status(201).send({
           message: 'Success',

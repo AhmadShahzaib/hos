@@ -1282,6 +1282,70 @@ export class DriverCsvService {
     }
     return lastCalculations;
   };
+
+//calculate address of each day logs
+
+  calculateAndUpdateAddress = async (resp, user) => {
+  
+    let latestCSV;
+    const csv = resp.graphData[0].csv;
+    const dutyStatus = csv.eldEventListForDriversRecordOfDutyStatus;
+    let address;
+    let addressUpdated = false;
+    for (let index = 0; index < dutyStatus.length; index++) {
+      const element = dutyStatus[index];
+      if (element.address == '') {
+        address = await this.getAddress(
+          element.eventLatitude,
+          element.eventLongitude,
+        );
+
+        resp.graphData[0].csv.eldEventListForDriversRecordOfDutyStatus[
+          index
+        ].address = address;
+        addressUpdated = true;
+      }
+    }
+    const powerActivity = csv.cmvEnginePowerUpShutDownActivity;
+
+    for (let index = 0; index < powerActivity.length; index++) {
+      const element = powerActivity[index];
+      if (element.address == '') {
+        address = await this.getAddress(
+          element.eventLatitude,
+          element.eventLongitude,
+        );
+
+        resp.graphData[0].csv.cmvEnginePowerUpShutDownActivity[index].address =
+          address;
+        addressUpdated = true;
+      }
+    }
+    const login = csv.eldLoginLogoutReport;
+
+    for (let index = 0; index < login.length; index++) {
+      const element = login[index];
+      if (!element.address || element.address == '') {
+        address = await this.getAddress(
+          element.loginLatitude,
+          element.loginLongitude,
+        );
+
+        resp.graphData[0].csv.eldLoginLogoutReport[index]['address'] = address;
+        addressUpdated = true;
+      }
+    }
+    latestCSV = {
+      meta: resp.graphData[0].meta,
+      csv: resp.graphData[0].csv,
+      originalLogs: resp.graphData[0].originalLogs,
+      date: resp.graphData[0].date,
+    };
+    if (addressUpdated) {
+      await this.addToDB(latestCSV, user);
+    }
+    return addressUpdated;
+  };
   //**************************************** */
   // this is the main function for calculating HOS on recent
   runCalculationOnDateHOS = async (query, user) => {
