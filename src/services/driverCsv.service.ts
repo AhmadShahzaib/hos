@@ -1071,7 +1071,7 @@ export class DriverCsvService {
     }
 
     let ptiObject = latestCSV?.meta?.ptiViolation;
-    if (ptiObject.length > 0) {
+    if (ptiObject && ptiObject.length > 0) {
       for (let ptiData of ptiObject) {
         if (ptiData.type == '1') {
           recordMade.violations.push({ type: 'PTI_MISSING' });
@@ -1079,6 +1079,8 @@ export class DriverCsvService {
           recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
         }
       }
+    }else if (!ptiObject){
+      latestCSV.meta.ptiViolation = [];
     }
 
     // add vehicle and trailer and shipping violations
