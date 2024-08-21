@@ -456,7 +456,33 @@ export class AppService {
         : [obj?.historyOfLocation],
     };
   };
+  // remove previous and add new stops
+  reAddStops = async (obj) => {
+    const { driverId, date, historyOfLocation } = obj;
 
+    // Collect data for current date
+    const driverStopLocationTrackable =
+      await this.driverStopLocationModel.findOne({
+        driverId: driverId,
+        date: date,
+      });
+
+    // Append latest locations to the previous ones
+    if (driverStopLocationTrackable) {
+      driverStopLocationTrackable.historyOfLocation = [...historyOfLocation];
+
+      // Update the latest changes
+      await driverStopLocationTrackable.save();
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Live location updated successfully!',
+      data: driverStopLocationTrackable?.historyOfLocation
+        ? driverStopLocationTrackable?.historyOfLocation
+        : [obj?.historyOfLocation],
+    };
+  };
   /**
    * driver specific day trips
    * Author : Farzan

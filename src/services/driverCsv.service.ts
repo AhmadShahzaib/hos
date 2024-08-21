@@ -505,7 +505,6 @@ export class DriverCsvService {
     }
   };
 
-
   calculateRecape = (deviceCalculation) => {
     //      if (deviceCalculation.CYCLE_DAY > 7) {
     //       Logger.log('Cycle Day greater than 8 #');
@@ -1065,16 +1064,23 @@ export class DriverCsvService {
     // recordMade.tenantId = user?.tenantId;
     //Add violations here
     recordMade.clock = latestCSV.meta.clockData;
-    let voilationtemp = JSON.stringify(latestCSV.meta.voilations)
+    let voilationtemp = JSON.stringify(latestCSV.meta.voilations);
     recordMade.violations = JSON.parse(voilationtemp);
     if (!signature) {
       recordMade.violations.push({ type: 'SIGNATURE_MISSING' });
     }
-    recordMade.isPti = latestCSV?.meta?.pti;
-    if (recordMade.isPti == '1') {
-      recordMade.violations.push({ type: 'PTI_MISSING' });
-    } else if (recordMade.isPti == '3') {
-      recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+
+    let ptiObject = latestCSV?.meta?.ptiViolation;
+    if (ptiObject && ptiObject.length > 0) {
+      for (let ptiData of ptiObject) {
+        if (ptiData.type == '1') {
+          recordMade.violations.push({ type: 'PTI_MISSING' });
+        } else if (ptiData.type == '3') {
+          recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+        }
+      }
+    }else if (!ptiObject){
+      latestCSV.meta.ptiViolation = [];
     }
 
     // add vehicle and trailer and shipping violations
@@ -1275,6 +1281,70 @@ export class DriverCsvService {
       };
     }
     return lastCalculations;
+  };
+
+//calculate address of each day logs
+
+  calculateAndUpdateAddress = async (resp, user) => {
+  
+    let latestCSV;
+    const csv = resp.graphData[0].csv;
+    const dutyStatus = csv.eldEventListForDriversRecordOfDutyStatus;
+    let address;
+    let addressUpdated = false;
+    for (let index = 0; index < dutyStatus.length; index++) {
+      const element = dutyStatus[index];
+      if (element.address == '') {
+        address = await this.getAddress(
+          element.eventLatitude,
+          element.eventLongitude,
+        );
+
+        resp.graphData[0].csv.eldEventListForDriversRecordOfDutyStatus[
+          index
+        ].address = address;
+        addressUpdated = true;
+      }
+    }
+    const powerActivity = csv.cmvEnginePowerUpShutDownActivity;
+
+    for (let index = 0; index < powerActivity.length; index++) {
+      const element = powerActivity[index];
+      if (element.address == '') {
+        address = await this.getAddress(
+          element.eventLatitude,
+          element.eventLongitude,
+        );
+
+        resp.graphData[0].csv.cmvEnginePowerUpShutDownActivity[index].address =
+          address;
+        addressUpdated = true;
+      }
+    }
+    const login = csv.eldLoginLogoutReport;
+
+    for (let index = 0; index < login.length; index++) {
+      const element = login[index];
+      if (!element.address || element.address == '') {
+        address = await this.getAddress(
+          element.loginLatitude,
+          element.loginLongitude,
+        );
+
+        resp.graphData[0].csv.eldLoginLogoutReport[index]['address'] = address;
+        addressUpdated = true;
+      }
+    }
+    latestCSV = {
+      meta: resp.graphData[0].meta,
+      csv: resp.graphData[0].csv,
+      originalLogs: resp.graphData[0].originalLogs,
+      date: resp.graphData[0].date,
+    };
+    if (addressUpdated) {
+      await this.addToDB(latestCSV, user);
+    }
+    return addressUpdated;
   };
   //**************************************** */
   // this is the main function for calculating HOS on recent

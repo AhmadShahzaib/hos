@@ -9,7 +9,7 @@ import {
 export default function DeleteDriverCsvLogDecorator() {
   const DeleteDriverCsvLogDecorator: Array<CombineDecoratorType> = [
     Delete('csv/delete/log/:driverId'),
-    SetMetadata('permissions', [HOS.ADD_LOG]),
+    SetMetadata('permissions', ["d9lx3450"]),
     ApiParam({
         name: 'driverId',
         description: "driverId is required",

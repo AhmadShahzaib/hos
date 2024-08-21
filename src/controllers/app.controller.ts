@@ -1645,26 +1645,27 @@ export class AppController extends BaseController {
         date: date,
       };
 
-      const messagePatternDriver =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
-        );
-      if (messagePatternDriver.isError) {
-        mapMessagePatternResponseToException(messagePatternDriver);
-      }
+      // const messagePatternDriver =
+      //   await firstValueFrom<MessagePatternResponseType>(
+      //     this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+      //   );
+      // if (messagePatternDriver.isError) {
+      //   mapMessagePatternResponseToException(messagePatternDriver);
+      // }
       // query to get all tracking records of that day.
       const response = await this.HOSService.getLiveLocation(queryObj);
 
       // -----------------------------------------------------------------
-      const locations = [];
-      function convertToSeconds(time) {
-        const hours = parseInt(time.slice(0, 2));
-        const minutes = parseInt(time.slice(2, 4));
-        const seconds = parseInt(time.slice(4, 6));
+      // const locations = [];
+      // function convertToSeconds(time) {
+      //   const hours = parseInt(time.slice(0, 2));
+      //   const minutes = parseInt(time.slice(2, 4));
+      //   const seconds = parseInt(time.slice(4, 6));
 
-        return hours * 3600 + minutes * 60 + seconds;
-      }
-
+      //   return hours * 3600 + minutes * 60 + seconds;
+      // }
+      // -----------------------------------------------------------------
+      let addressUpdated = false;
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
       if (stops.data[0]) {
@@ -1677,16 +1678,44 @@ export class AppController extends BaseController {
             );
            
             stops.data[i].address = address;
+            addressUpdated = true
           }
         }
       }
-     
+      if(addressUpdated){
+        await this.HOSService.reAddStops({
+          driverId: driverId,
+          
+          date,
+          historyOfLocation: stops.data,
+        });
+      }
       let responseArray = [...allLocations, ...stops.data];
       //  responseArray = ;
 
       responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
+ // ------------------------------------------------------------------------
+ let address;
+ if(responseArray.length > 1){
 
+   if(responseArray[0].address == '' ){
+     address = await this.driverCsvService.getAddress(
+       responseArray[0].latitude,
+       responseArray[0].longitude,
+    );
+   
+    responseArray[0].address = address;
+   }
+   if(responseArray[responseArray.length-1].address == '' ){
+     address = await this.driverCsvService.getAddress(
+       responseArray[responseArray.length-1].latitude,
+       responseArray[responseArray.length-1].longitude,
+    );
+   
+    responseArray[responseArray.length-1].address = address;
+   }
+ }
       return res.status(response.statusCode).send({
         statusCode: response.statusCode,
         message: response.message,
