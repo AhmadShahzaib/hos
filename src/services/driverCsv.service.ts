@@ -1006,7 +1006,7 @@ export class DriverCsvService {
       isPti: '',
     };
 
-    recordMade.driverId = user?._id;
+    recordMade.driverId = user?._id ? user?._id : user?.id ;
     recordMade.date = latestCSV?.date;
     // recordMade.driverName = user?.driverFullName;
     const csvDataOfDutyStatus =
