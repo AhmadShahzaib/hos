@@ -630,7 +630,7 @@ export class DriverCsvService {
     }
 
     // Get logs of river between date
-    const logsOfSelectedDate = await this.get_logs_between_range({
+    let logsOfSelectedDate = await this.get_logs_between_range({
       driverId: driverId,
       startDate: date,
       endDate: date,
@@ -642,17 +642,83 @@ export class DriverCsvService {
         data: {},
       });
     }
+    let finalCsv = logsOfSelectedDate[0].csv;
+
+    let logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    let index;
+
+    let dutyHours = this.sortingDateTime(logsData);
+    for (let i = 0; i < dutyHours.length; i++) {
+      if (eventSequenceIdNumber == dutyHours[i].eventSequenceIdNumber) {
+        index = i;
+      }
+    }
+    if (dutyHours[index].eventTime == '000000') {
+      let dateOfQuery = moment(date);
+      dateOfQuery = dateOfQuery.subtract(1, 'days');
+      let dateQuery = dateOfQuery.format('YYYY-MM-DD');
+
+      logsOfSelectedDate = await this.get_logs_between_range({
+        driverId: driverId,
+        startDate: dateQuery,
+        endDate: dateQuery,
+      });
+      finalCsv = logsOfSelectedDate[0].csv;
+      logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+      dutyHours = this.sortingDateTime(logsData);
+      let foundLog,
+        dontSkip = true;
+      for (let i = dutyHours.length - 1; i >= 0; i--) {
+        Logger.log(i);
+        if (
+          dutyHours[i].eventCode == '3' &&
+          dutyHours[i].eventRecordStatus == '1' &&
+          dutyHours[i].eventType == '1'
+        ) {
+          index = i;
+          foundLog = true;
+          i = -1;
+        } else if (
+          dutyHours[i].eventCode !== '3' &&
+          dutyHours[i].eventRecordStatus == '1' &&
+          dutyHours[i].eventType == '1'
+        ) {
+          logsOfSelectedDate = await this.get_logs_between_range({
+            driverId: driverId,
+            startDate: date,
+            endDate: date,
+          });
+          dontSkip = false;
+          i = -1;
+        }
+      }
+      if (dontSkip && foundLog) {
+        eventSequenceIdNumber = dutyHours[index].eventSequenceIdNumber;
+        date = dateQuery;
+      }
+    }
     // point where actual functions called.
     if (type == 0) {
       // Normalize the logs
-      normalizedResp = await this.autoNormalizeDuty(
+      // normalizedResp = await this.autoNormalizeDuty(
+      //   logsOfSelectedDate,
+      //   eventSequenceIdNumber,
+      //   // this.get_logs_between_range,
+      //   driverId,
+      //   date,
+      //   user,
+      //   normalizationType,
+      // );
+      speed = -1;
+      normalizedResp = await this.manuallyNormalizeDuty(
         logsOfSelectedDate,
         eventSequenceIdNumber,
-        // this.get_logs_between_range,
+        // get_logs_between_range,
         driverId,
         date,
         user,
-        normalizationType,
+        speed, // in mPh
+        normalizationType, // for pc or driving PC=1, dr=1
       );
       235959;
     } else {
@@ -688,7 +754,7 @@ export class DriverCsvService {
 
       for (let i = 0; i < Object.keys(object).length; i++) {
         for (let j = 0; j < array.length; j++) {
-          const indexDate = moment(array[j].eventDate, 'MMDDYY').format(
+          let indexDate = moment(array[j].eventDate, 'MMDDYY').format(
             'YYYY-MM-DD',
           );
           console.log(`eventDate in array ----- `, array[j].eventDate);
@@ -701,7 +767,7 @@ export class DriverCsvService {
       }
 
       for (let i = 0; i < Object.keys(object).length; i++) {
-        const logsOfSelectedDate = await this.get_logs_between_range({
+        let logsOfSelectedDate = await this.get_logs_between_range({
           driverId: driverId,
           startDate: Object.keys(object)[i],
           endDate: Object.keys(object)[i],
