@@ -848,6 +848,7 @@ export class AppService {
         dutyStatusList[index]['eventRecordOrigin'] = '3';
 
         dutyStatusList[index]['shippingId'] = payloadLog.shippingId;
+        dutyStatusList[index]['vehicleId'] = payloadLog.vehicleId;
         dutyStatusList[index]['trailerId'] = payloadLog.trailerId;
         dutyStatusList[index]['eventLatitude'] = payloadLog.eventLatitude;
         dutyStatusList[index]['eventLongitude'] = payloadLog.eventLongitude;
