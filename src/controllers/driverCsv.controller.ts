@@ -872,7 +872,7 @@ export class DriverCsvController extends BaseController {
   ) {
     try {
       Logger.log('In Normalize Decorato Endpoint');
-      let SpecificClient;
+
       const { date, type, normalizationType } = queryParams;
       const { driverId } = params;
       const { eventSequenceIdNumber } = reqBody;
@@ -911,6 +911,7 @@ export class DriverCsvController extends BaseController {
       );
       // Initiation notificaion dispatch
 
+      const title = 'Normalization logs executed!';
       const notificationObj = {
         logs: [],
         dateTime: date,
@@ -918,13 +919,19 @@ export class DriverCsvController extends BaseController {
         notificationType: 4,
         editStatusFromBO: 'normalize',
       };
-
-      await this.gateway.syncDriver(
-        SpecificClient,
-        user,
-        date,
-        notificationObj,
-      );
+      const deviceInfo = {
+        deviceToken: user.deviceToken,
+        deviceType: user.deviceType,
+      };
+      if (Object.keys(normalizedResp.data).length > 0) {
+        await dispatchNotification(
+          title,
+          notificationObj,
+          deviceInfo,
+          this.pushNotificationClient,
+          true, // repressents notification is silent or not
+        );
+      }
       return res.status(normalizedResp.statusCode).send({
         statusCode: normalizedResp.statusCode,
         message: normalizedResp.message,
@@ -934,7 +941,6 @@ export class DriverCsvController extends BaseController {
       throw err;
     }
   }
-
   /**
    * @description : Test endpoint to get missing intermediates
    */

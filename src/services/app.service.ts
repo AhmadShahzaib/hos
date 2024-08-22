@@ -892,9 +892,9 @@ export class AppService {
                   dutyStatusListLengthBeforeEdit,
                   dutyStatusList,
                 );
-                item.intermediateType = getIntermediateType(
-                  dutyStatusList[drIn],
-                );
+                // item.intermediateType = getIntermediateType(
+                //   dutyStatusList[drIn],
+                // );
               }
             }
             // else {
