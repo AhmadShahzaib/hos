@@ -317,7 +317,10 @@ export class AppController extends BaseController {
       }
 
       const driverCsvAfter = JSON.parse(JSON.stringify(driverCsv));
-
+// data.before = {
+//   date: date,
+//   time: ""
+// }
       data.csvBeforeUpdate = {
         csv: driverCsv[0].csv,
         voilations: driverCsv[0].meta?.voilations,

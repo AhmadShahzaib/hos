@@ -606,6 +606,8 @@ export class DriverCsvController extends BaseController {
       const { query, params } = request;
       // this section is for getting driver data if the request is from admin.
       let user;
+      let SpecificClient;
+
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -615,6 +617,8 @@ export class DriverCsvController extends BaseController {
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
+        
+        SpecificClient = user?.client;
       } else {
         user = request.user;
       }
@@ -660,18 +664,13 @@ export class DriverCsvController extends BaseController {
             notificationType: 4,
             editStatusFromBO: 'location',
           };
-          const deviceInfo = {
-            deviceToken: user.deviceToken,
-            deviceType: user.deviceType,
-          };
-
-          await dispatchNotification(
-            title,
+          await this.gateway.syncDriver(
+            SpecificClient,
+            user,
+            notificationObj.dateTime,
             notificationObj,
-            deviceInfo,
-            this.pushNotificationClient,
-            true, // repressents notification is silent or not
           );
+          
         }
       }
 
