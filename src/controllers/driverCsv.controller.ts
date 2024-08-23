@@ -670,18 +670,7 @@ export class DriverCsvController extends BaseController {
             notificationObj.dateTime,
             notificationObj,
           );
-          // const deviceInfo = {
-          //   deviceToken: user.deviceToken,
-          //   deviceType: user.deviceType,
-          // };
-
-          // await dispatchNotification(
-          //   title,
-          //   notificationObj,
-          //   deviceInfo,
-          //   this.pushNotificationClient,
-          //   true, // repressents notification is silent or not
-          // );
+          
         }
       }
 
