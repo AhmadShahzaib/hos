@@ -32,6 +32,8 @@ export class InsertDutyStatusDTO {
      @IsOptional()
      tralier: string
          @IsOptional()
+         vehicleId: string
+         @IsOptional()
     notes:string
     @IsOptional()
     state:string

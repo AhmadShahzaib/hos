@@ -2038,6 +2038,7 @@ export class DriverCsvController extends BaseController {
         truck,
         shippingDocument,
         tralier,
+        vehicleId,
         notes,
         state,
       } = data;
@@ -2094,6 +2095,7 @@ export class DriverCsvController extends BaseController {
           truck,
           shippingDocument,
           tralier,
+          vehicleId,
           companyTimeZone,
           notes,
           state,
