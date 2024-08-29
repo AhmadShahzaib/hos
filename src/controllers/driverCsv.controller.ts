@@ -101,6 +101,38 @@ export class DriverCsvController extends BaseController {
     super();
   }
 
+  @MessagePattern({ cmd: 'run_hos' })
+  async runHos(requestParam: any): Promise<any> {
+    try {
+      const { date, driverId } = requestParam;
+      let user;
+      let SpecificClient;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+        SpecificClient = user?.client;
+      }
+
+      let dateOfQuery = moment(date);
+      dateOfQuery = dateOfQuery.subtract(1, 'days');
+      const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+      const query = {
+        start: dateQuery,
+        end: dateQuery,
+      };
+      await this.driverCsvService.runCalculationOnDateHOS(query, user);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   @liveApiUnit()
   async addLiveApiUnit(
     @Body() data: any,
@@ -508,10 +540,7 @@ export class DriverCsvController extends BaseController {
         user = messagePatternDriver.data;
       }
       const completeObj = csv.data[0];
-      const resp: any = await this.driverCsvService.addToDB(
-        completeObj,
-        user,
-      );
+      const resp: any = await this.driverCsvService.addToDB(completeObj, user);
       return resp;
     } catch (err) {
       Logger.error({ message: err.message, stack: err.stack });
@@ -617,7 +646,7 @@ export class DriverCsvController extends BaseController {
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
-        
+
         SpecificClient = user?.client;
       } else {
         user = request.user;
@@ -670,7 +699,6 @@ export class DriverCsvController extends BaseController {
             notificationObj.dateTime,
             notificationObj,
           );
-          
         }
       }
 
