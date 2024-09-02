@@ -45,7 +45,7 @@ export const EditInsertLogsSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['correction', 'transfer'],
+      enum: ['Insert','Edit', 'transfer'],
     },
     shippingId: {
       type: String,
