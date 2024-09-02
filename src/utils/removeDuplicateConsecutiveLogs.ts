@@ -1,6 +1,8 @@
 /**
  * Function author - Ahmad Shahzaib
  */
+import { getIntermediateType } from 'utils/getIntermediateType';
+
 export async function removeDuplicateConsecutiveLogss(logs) {
   const activeLogs = [];
   const filteredLogs = []; // Create a new array for filtered logs
@@ -94,8 +96,8 @@ export async function moveIntermediateLog(logs, newlog) {
       break;
     }
     if (foundlog && filteredLogs[i].eventType == '2') {
-      // filteredLogs[i].intermediateType = getIntermediateType(newlog);
-      filteredLogs.splice(i, 1); // comment this line and you will get functionality done.
+      filteredLogs[i].intermediateType = getIntermediateType(newlog);
+      // filteredLogs.splice(i, 1); // comment this line and you will get functionality done.
     }
     if (
       filteredLogs[i].eventSequenceIdNumber == newlog.eventSequenceIdNumber &&

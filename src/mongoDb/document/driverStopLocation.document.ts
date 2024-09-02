@@ -13,6 +13,7 @@ interface HistoryOfLocation {
 }
 export default interface driverStopLocation extends Document {
   driverId: string;
+  vehicleId:string;
   tenantId: string;
   date: string; // YYYY-MM-DD
   historyOfLocation: HistoryOfLocation[];
