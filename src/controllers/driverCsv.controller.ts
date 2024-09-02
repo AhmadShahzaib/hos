@@ -228,7 +228,7 @@ export class DriverCsvController extends BaseController {
       if (recentCSV != 2) {
         if (recentCSV.length == 0) {
           const datesBetween = getDatesBetweenUnixTimestamps(
-            moment().subtract(14, 'day').unix(),
+            moment().subtract(29, 'day').unix(),
             moment().subtract(1, 'day').unix(),
             user.homeTerminalTimeZone.tzCode,
           );

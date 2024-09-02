@@ -48,7 +48,7 @@ import { getInBetweenLogs } from 'utils/findInBetweenLogs';
 import { addFirstandLast } from 'utils/addFirstandLastLog';
 import { createNewLog } from 'utils/createNewLog';
 import { insertLog } from 'utils/insertLog';
-import { removeDuplicateConsecutiveLogs } from 'utils/removeDuplicateConsecutiveLogs';
+import { removeDuplicateConsecutiveLogs, moveIntermediateLog } from 'utils/removeDuplicateConsecutiveLogs';
 import RecordTable from 'mongoDb/document/recordTable.document';
 import { timeDifference } from 'utils/timeDifference';
 import { isArray } from 'lodash';
@@ -4245,6 +4245,12 @@ export class DriverCsvService {
       dutyStatusLogs = dutyStatusLogs.filter((element) => {
         return element.eventRecordStatus != '2';
       });
+      const intermediate  = dutyStatusLogs.filter((element) => {
+        return element.eventType == '2';
+      });
+      dutyStatusLogs = dutyStatusLogs.filter((element) => {
+        return element.eventType != '2';
+      });
       // let { filterd, arr } = await getInBetweenLogs(
       //   dutyStatusLogs,
       //   startTime,
@@ -4297,9 +4303,15 @@ export class DriverCsvService {
       //   addedLogs[index + 1].eventTime = endTime
 
       // }
+      addedLogs.filter((item)=>{return item.eventType !== "2"})
+      
       let finalLogs = await removeDuplicateConsecutiveLogs(addedLogs);
+      finalLogs = [...addedLogs,...intermediate];
+      finalLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
+      finalLogs = await moveIntermediateLog(finalLogs, newLog);
       finalLogs = [...finalLogs, ...inActiveLogs];
-      addedLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
+
+      finalLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
       const csv = JSON.parse(
         JSON.stringify(
           Array.isArray(logsOfSelectedDate)
