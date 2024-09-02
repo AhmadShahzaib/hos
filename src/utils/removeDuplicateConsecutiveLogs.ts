@@ -86,3 +86,25 @@ export async function removeDuplicateConsecutiveLogs(logs) {
 
   return filteredLogs;
 }
+export async function moveIntermediateLog(logs, newlog) {
+  let filteredLogs = [...logs]; // Copy the original logs array
+  let foundlog = false;
+  for (let i = 0; i < filteredLogs.length; i++) {
+    if (foundlog && filteredLogs[i].eventType !== '2') {
+      break;
+    }
+    if (foundlog && filteredLogs[i].eventType == '2') {
+      // filteredLogs[i].intermediateType = getIntermediateType(newlog);
+      filteredLogs.splice(i, 1); // comment this line and you will get functionality done.
+    }
+    if (
+      filteredLogs[i].eventSequenceIdNumber == newlog.eventSequenceIdNumber &&
+      filteredLogs[i].eventCode == newlog.eventCode &&
+      filteredLogs[i].eventType == newlog.eventType
+    ) {
+      foundlog = true;
+    }
+  }
+
+  return filteredLogs;
+}

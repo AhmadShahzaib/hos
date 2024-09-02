@@ -298,7 +298,13 @@ export class AppController extends BaseController {
           : `${parsedToken.firstName} ${parsedToken.lastName}`,
         role: parsedToken.isDriver == true ? 'driver' : 'Admin',
       };
-      data.type = 'correction';
+      if(data?.actionType == 1 || data?.actionType == 3){
+
+        data.type = 'Edit';
+      }else if(data?.actionType == 2 ){
+
+        data.type = 'Insert';
+      }
 
       // Get Original Csv
       const date = data?.logs?.date;

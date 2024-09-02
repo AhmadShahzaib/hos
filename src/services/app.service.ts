@@ -1032,6 +1032,7 @@ export class AppService {
       }
 
       dutyStatusList = [...dutyStatusList, ...inActiveLogs];
+      dutyStatusList = this.updateLogsWithIntermediateType(dutyStatusList)
 
       // Sort the altered array
       dutyStatusList.sort((a, b) => {
@@ -1071,7 +1072,24 @@ export class AppService {
     });
     return array;
   };
-
+// updateLogsWithIntermediateType
+updateLogsWithIntermediateType = (logs) => {
+  for (let i = 0; i < logs.length; i++) {
+    if (logs[i].eventType == '2') {
+      // Find the most recent previous log with eventType == '1' and eventRecordStatus == '1'
+      for (let j = i - 1; j >= 0; j--) {
+        if (logs[j].eventType == '1' && logs[j].eventRecordStatus == '1') {
+          // Found the required previous log, now get the intermediateType
+          const intermediateType = getIntermediateType(logs[j]);
+          // Update the intermediateType of the current log
+          logs[i].intermediateType = intermediateType;
+          break; // Exit the loop after finding the required log
+        }
+      }
+    }
+  }
+  return logs;
+};
   // get next log itrarting on intermediate
   getNextIndex = (index, dutyStatusListLengthBeforeEdit, dutyStatusList) => {
     let drIn = index;
