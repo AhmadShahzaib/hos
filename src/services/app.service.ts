@@ -349,7 +349,7 @@ export class AppService {
    * Author : Farzan
    */
   addLiveLocation = async (obj) => {
-    const { driverId, tenantId, date, historyOfLocation } = obj;
+    const { driverId,vehicleId, tenantId, date, historyOfLocation } = obj;
 
     // Collect data for current date
     const driverLiveLocationTrackable = await this.checkIfDocumentExists(
@@ -367,7 +367,7 @@ export class AppService {
       // // Update the latest changes
       // await driverLiveLocationTrackable.save();
       const result = await this.driverLiveLocationModel.updateOne(
-        { driverId: driverId, date: date },
+        { driverId: driverId,vehicleId:vehicleId, date: date },
         {
           $push: {
             historyOfLocation: { $each: historyOfLocation },
@@ -379,6 +379,7 @@ export class AppService {
       // If record not exists, create a new one
       const isCreated = await this.driverLiveLocationModel.create({
         driverId,
+        vehicleId,
         tenantId,
         date,
         historyOfLocation,
@@ -420,7 +421,7 @@ export class AppService {
    * Author : Not Farzan
    */
   addStops = async (obj) => {
-    const { driverId, tenantId, date, historyOfLocation } = obj;
+    const { driverId,vehicleId, tenantId, date, historyOfLocation } = obj;
 
     // Collect data for current date
     const driverStopLocationTrackable =
@@ -442,6 +443,7 @@ export class AppService {
       // If record not exists, create a new one
       const isCreated = await this.driverStopLocationModel.create({
         driverId,
+        vehicleId,
         tenantId,
         date,
         historyOfLocation,

@@ -16,6 +16,7 @@ const historyOfLocation = new mongoose.Schema({
 export const DriverLiveLocationSchema = new mongoose.Schema(
   {
     driverId: { type: String, required: true },
+    vehicleId: { type: String, required: true },
     tenantId: { type: String, required: true },
     date: { type: String, rquired: true }, // YYYY-MM-DD
     historyOfLocation: [historyOfLocation],
