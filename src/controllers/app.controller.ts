@@ -163,7 +163,7 @@ export class AppController extends BaseController {
       }
       let responseUnitLive = responseData?.meta;
       responseUnitLive.driverName = responseData?.driverFullName;
-      responseUnitLive.vehicleName = responseData?.vehicles;
+      responseUnitLive.vehicleName = responseData?.manualVehicleId;
 
       return response.status(200).send({
         message: 'Success',
@@ -302,11 +302,9 @@ export class AppController extends BaseController {
           : `${parsedToken.firstName} ${parsedToken.lastName}`,
         role: parsedToken.isDriver == true ? 'driver' : 'Admin',
       };
-      if(data?.actionType == 1 || data?.actionType == 3){
-
+      if (data?.actionType == 1 || data?.actionType == 3) {
         data.type = 'Edit';
-      }else if(data?.actionType == 2 ){
-
+      } else if (data?.actionType == 2) {
         data.type = 'Insert';
       }
 
