@@ -161,9 +161,13 @@ export class AppController extends BaseController {
       if (address != '') {
         responseData.lastKnownLocation.address = address;
       }
+      let responseUnitLive = responseData?.meta;
+      responseUnitLive.driverName = responseData?.driverFullName;
+      responseUnitLive.vehicleName = responseData?.vehicles;
+
       return response.status(200).send({
         message: 'Success',
-        data: responseData?.meta || {},
+        data: responseUnitLive || {},
       });
     } catch (error) {
       throw error;
@@ -317,10 +321,10 @@ export class AppController extends BaseController {
       }
 
       const driverCsvAfter = JSON.parse(JSON.stringify(driverCsv));
-// data.before = {
-//   date: date,
-//   time: ""
-// }
+      // data.before = {
+      //   date: date,
+      //   time: ""
+      // }
       data.csvBeforeUpdate = {
         csv: driverCsv[0].csv,
         voilations: driverCsv[0].meta?.voilations,
@@ -935,14 +939,12 @@ export class AppController extends BaseController {
     @Res() response,
   ) {
     try {
-     
       const driverId = data.driverId;
       const date = data.date;
       let user;
       let editRequest;
       // Parsing token for timezone
       let messagePatternDriver;
-    
 
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
         this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
@@ -950,7 +952,7 @@ export class AppController extends BaseController {
       if (messagePatternDriver?.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
-     
+
       user = messagePatternDriver?.data;
       // user.companyTimeZone = user.companyTimeZone;
       const SpecificClient = user?.client;
@@ -961,36 +963,30 @@ export class AppController extends BaseController {
       let images;
       let mesaage;
       user.id = user._id;
-      try{
-      // Get edited
-     
-    
-      const isEdit = await this.logService.getPendingRequests(user);
-     
-      
+      try {
+        // Get edited
+
+        const isEdit = await this.logService.getPendingRequests(user);
+
         if (isEdit.length > 0) {
-        
           // Create csv pdf for before and after
           const isConverted = await this.HOSService.generateCsvImages(user);
           images = isConverted.data;
-         
         }
-    
-       mesaage = 'Edit Inset log!';
-       editRequest = images != undefined ? [...images] : [];
-    } catch (error) {
-     
 
-      return response.status(200).send({
-        statusCode: 400,
-        message: 'error while creating image',
-        data: error,
-      });
-    }
-   
+        mesaage = 'Edit Inset log!';
+        editRequest = images != undefined ? [...images] : [];
+      } catch (error) {
+        return response.status(200).send({
+          statusCode: 400,
+          message: 'error while creating image',
+          data: error,
+        });
+      }
+
       const notificationObj = {
         logs: [],
-        editRequest:  [],
+        editRequest: [],
         // editRequest: images != undefined ? [...images] : [],
         dateTime,
         notificationType: 1,
@@ -1571,7 +1567,7 @@ export class AppController extends BaseController {
 
         return hours * 3600 + minutes * 60 + seconds;
       }
-//dev update
+      //dev update
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
 
@@ -1678,22 +1674,22 @@ export class AppController extends BaseController {
       const stops = await this.HOSService.getStopsLocation(queryObj);
       if (stops.data[0]) {
         for (let i = 0; i < stops.data.length; i++) {
-          let address
-          if(stops.data[i].address == '' ){
-             address = await this.driverCsvService.getAddress(
+          let address;
+          if (stops.data[i].address == '') {
+            address = await this.driverCsvService.getAddress(
               stops.data[i].latitude,
               stops.data[i].longitude,
             );
-           
+
             stops.data[i].address = address;
-            addressUpdated = true
+            addressUpdated = true;
           }
         }
       }
-      if(addressUpdated){
+      if (addressUpdated) {
         await this.HOSService.reAddStops({
           driverId: driverId,
-          
+
           date,
           historyOfLocation: stops.data,
         });
@@ -1703,27 +1699,26 @@ export class AppController extends BaseController {
 
       responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
- // ------------------------------------------------------------------------
- let address;
- if(responseArray.length > 1){
+      // ------------------------------------------------------------------------
+      let address;
+      if (responseArray.length > 1) {
+        if (responseArray[0].address == '') {
+          address = await this.driverCsvService.getAddress(
+            responseArray[0].latitude,
+            responseArray[0].longitude,
+          );
 
-   if(responseArray[0].address == '' ){
-     address = await this.driverCsvService.getAddress(
-       responseArray[0].latitude,
-       responseArray[0].longitude,
-    );
-   
-    responseArray[0].address = address;
-   }
-   if(responseArray[responseArray.length-1].address == '' ){
-     address = await this.driverCsvService.getAddress(
-       responseArray[responseArray.length-1].latitude,
-       responseArray[responseArray.length-1].longitude,
-    );
-   
-    responseArray[responseArray.length-1].address = address;
-   }
- }
+          responseArray[0].address = address;
+        }
+        if (responseArray[responseArray.length - 1].address == '') {
+          address = await this.driverCsvService.getAddress(
+            responseArray[responseArray.length - 1].latitude,
+            responseArray[responseArray.length - 1].longitude,
+          );
+
+          responseArray[responseArray.length - 1].address = address;
+        }
+      }
       return res.status(response.statusCode).send({
         statusCode: response.statusCode,
         message: response.message,
