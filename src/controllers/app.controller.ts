@@ -210,9 +210,12 @@ export class AppController extends BaseController {
       if (address != '') {
         responseData.lastKnownLocation.address = address;
       }
+      let responseUnitLive = responseData?.meta;
+      responseUnitLive.driverName = responseData?.driverFullName;
+      responseUnitLive.vehicleName = responseData?.manualVehicleId;
       return response.status(200).send({
         message: 'Success',
-        data: responseData?.meta || {},
+        data: responseUnitLive || {},
       });
     } catch (error) {
       throw error;
