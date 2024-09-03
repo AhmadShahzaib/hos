@@ -260,14 +260,14 @@ export class DriverCsvController extends BaseController {
           message: resp.message,
         });
       }
-      const meta = this.driverCsvService.updateMetaVariables(body);
-      const messagePatternUnits =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
-        );
-      if (messagePatternUnits.isError) {
-        mapMessagePatternResponseToException(messagePatternUnits);
-      }
+      // const meta = this.driverCsvService.updateMetaVariables(body);
+      // const messagePatternUnits =
+      //   await firstValueFrom<MessagePatternResponseType>(
+      //     this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+      //   );
+      // if (messagePatternUnits.isError) {
+      //   mapMessagePatternResponseToException(messagePatternUnits);
+      // }
       // let dateOfQuery = moment(body.date);
       // dateOfQuery = dateOfQuery.subtract(1, 'days');
       // let dateQuery = dateOfQuery.format('YYYY-MM-DD');
