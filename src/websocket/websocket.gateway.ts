@@ -232,9 +232,9 @@ export class WebsocketGateway
       const recentHistory = sortedArray[sortedArray.length - 1];
 
       // Meta object creation
-      if (meta?.address == '') {
-        delete recentHistory?.address;
-      }
+     Logger.log("time at which request recieved. ")
+
+     Logger.log(recentHistory?.time)
       if (!meta) {
         meta = {};
       }
