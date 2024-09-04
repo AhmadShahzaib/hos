@@ -7,11 +7,13 @@ const historyOfLocation = new mongoose.Schema({
   latitude: { type: String },
   longitude: { type: String },
   odometer: { type: String },
-  duration:{type:Number},
   speed: { type: String },
-  eventType: { type: String },
-  status: { type: String },
+  origin: { type: String },
+  moving: { type: String },
   time: { type: String },
+  direction: { type: String },
+  duration:{type:Number},
+  
 });
 
 export const DriverStopLocationSchema = new mongoose.Schema(
