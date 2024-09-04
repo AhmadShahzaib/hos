@@ -2,12 +2,16 @@ interface HistoryOfLocation {
   address?: string;
   date?: string;
   engineHours?: string;
+  direction?: string;
+
   latitude?: string;
   longitude?: string;
   odometer?: string;
   speed?: string;
-  eventType: string,
-  status?: string;
+  moving?:string,
+  origin: string,
+  // eventType: string,
+  // status?: string;
   time?: string;
 }
 export default interface DriverLiveLocationDocument extends Document {
