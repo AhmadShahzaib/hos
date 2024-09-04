@@ -8,7 +8,7 @@ import {
 export default function notifyDriverAboutEditInsertDecorator() {
   const notifyDriverAboutEditInsertDecorator: Array<CombineDecoratorType> = [
     Patch('/notify/driver'),
-    SetMetadata('permissions', [HOS.EDIT_LOG]),
+    SetMetadata('permissions', ["e6v5e4st0"]),
   ];
   return CombineDecorators(notifyDriverAboutEditInsertDecorator);
 }

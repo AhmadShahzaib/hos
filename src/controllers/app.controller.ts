@@ -1012,13 +1012,13 @@ export class AppController extends BaseController {
 
       return response.status(200).send({
         statusCode: 200,
-        message: 'Sync Sent ',
+        message: 'Notified Driver ',
         data: {},
       });
     } catch (error) {
       return response.status(200).send({
         statusCode: 400,
-        message: 'error while sending sync',
+        message: 'error while sending Alert',
 
         data: error,
       });
