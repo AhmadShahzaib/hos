@@ -824,10 +824,25 @@ export class DriverCsvService {
       finalCsv.eldEventListForDriversRecordOfDutyStatus = [];
       finalCsv.eldLoginLogoutReport = [];
       finalCsv.cmvEnginePowerUpShutDownActivity = [];
-      newLog.eventCode = finalCsv.timePlaceLine.currentEventCode;
-      newLog.eventType = finalCsv.timePlaceLine.currentEventType
-        ? finalCsv.timePlaceLine.currentEventType
-        : '1';
+      if(finalCsv.timePlaceLine.currentEventCode == ""){
+        newLog.eventCode = "1" ;
+  
+        }
+     else if(finalCsv.timePlaceLine.currentEventType !== ""){
+      newLog.eventType = finalCsv.timePlaceLine.currentEventType ;
+
+      }
+      if(finalCsv.timePlaceLine.currentEventType == ""){
+        newLog.eventType = "1" ;
+  
+        }
+     else if(finalCsv.timePlaceLine.currentEventCode !== ""){
+      newLog.eventCode = finalCsv.timePlaceLine.currentEventCode ;
+
+      }
+      // newLog.eventType = finalCsv.timePlaceLine.currentEventType
+      //   ? finalCsv.timePlaceLine.currentEventType
+      //   : '1';
       newLog.eventTime = '000000';
       newLog.eventDate = moment(date).format('MMDDYY');
       newLog.eventRecordStatus = '1';
