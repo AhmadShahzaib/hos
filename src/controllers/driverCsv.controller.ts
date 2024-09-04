@@ -119,14 +119,14 @@ export class DriverCsvController extends BaseController {
         SpecificClient = user?.client;
       }
 
-      let dateOfQuery = moment(date);
-      dateOfQuery = dateOfQuery.subtract(1, 'days');
-      const dateQuery = dateOfQuery.format('YYYY-MM-DD');
+      // let dateOfQuery = moment(date);
+      // dateOfQuery = dateOfQuery.subtract(1, 'days');
+      const dateQuery = date
       const query = {
         start: dateQuery,
         end: dateQuery,
       };
-      await this.driverCsvService.runCalculationOnDateHOS(query, user);
+      await this.driverCsvService.runCalculationOnRecentHOS(query, user);
       return true;
     } catch (error) {
       return false;
