@@ -993,8 +993,8 @@ export class AppController extends BaseController {
 
       const notificationObj = {
         logs: [],
-        editRequest: [],
-        // editRequest: images != undefined ? [...images] : [],
+        // editRequest: [],
+        editRequest: images != undefined ? [...images] : [],
         dateTime,
         notificationType: 1,
         driverId: driverId,
