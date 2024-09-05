@@ -4321,7 +4321,7 @@ export class DriverCsvService {
       addedLogs.filter((item)=>{return item.eventType !== "2"})
       
       let finalLogs = await removeDuplicateConsecutiveLogs(addedLogs);
-      finalLogs = [...addedLogs,...intermediate];
+      finalLogs = [...finalLogs,...intermediate];
       finalLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
       finalLogs = await moveIntermediateLog(finalLogs, newLog);
       finalLogs = [...finalLogs, ...inActiveLogs];
