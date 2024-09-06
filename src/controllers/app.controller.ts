@@ -996,7 +996,7 @@ export class AppController extends BaseController {
         editRequest: [],
         // editRequest: images != undefined ? [...images] : [],
         dateTime,
-        notificationType: 1,
+        notificationType: 3,
         driverId: driverId,
         editStatusFromBO: 'save',
       };
