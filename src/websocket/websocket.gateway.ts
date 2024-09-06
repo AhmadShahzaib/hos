@@ -420,7 +420,7 @@ export class WebsocketGateway
       }
       
       let dateOfQuery = moment(date);
-      dateOfQuery = dateOfQuery.subtract(1, 'days');
+      dateOfQuery = dateOfQuery.subtract(2, 'days');
       const dateQuery = dateOfQuery.format('YYYY-MM-DD');
       const query = {
         start: dateQuery,
