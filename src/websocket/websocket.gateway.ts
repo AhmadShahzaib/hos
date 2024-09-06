@@ -306,15 +306,15 @@ export class WebsocketGateway
       // const sortedArray = await sortLiveLocations(historyOfLocation);
 
      
-      user.id = user.id ? user.id : user._id;
+      // user.id = user.id ? user.id : user._id;
       // Assign recent location to units by message pattern
-      const messagePatternUnits =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
-        );
-      if (messagePatternUnits.isError) {
-        mapMessagePatternResponseToException(messagePatternUnits);
-      }
+      // const messagePatternUnits =
+      //   await firstValueFrom<MessagePatternResponseType>(
+      //     this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+      //   );
+      // if (messagePatternUnits.isError) {
+      //   mapMessagePatternResponseToException(messagePatternUnits);
+      // }
 
       // Pass related data to the model
       const response = await this.HOSService.addLiveLocation({
