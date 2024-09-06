@@ -973,13 +973,13 @@ export class AppController extends BaseController {
       try {
         // Get edited
 
-        const isEdit = await this.logService.getPendingRequests(user);
+        // const isEdit = await this.logService.getPendingRequests(user);
 
-        if (isEdit.length > 0) {
-          // Create csv pdf for before and after
-          const isConverted = await this.HOSService.generateCsvImages(user);
-          images = isConverted.data;
-        }
+        // if (isEdit.length > 0) {
+        //   // Create csv pdf for before and after
+        //   const isConverted = await this.HOSService.generateCsvImages(user);
+        //   images = isConverted.data;
+        // }
 
         mesaage = 'Edit Inset log!';
         editRequest = images != undefined ? [...images] : [];
@@ -993,8 +993,8 @@ export class AppController extends BaseController {
 
       const notificationObj = {
         logs: [],
-        // editRequest: [],
-        editRequest: images != undefined ? [...images] : [],
+        editRequest: [],
+        // editRequest: images != undefined ? [...images] : [],
         dateTime,
         notificationType: 1,
         driverId: driverId,
