@@ -27,7 +27,7 @@ import { checkSum, eventCheckSum } from 'utils/checkSum';
 import { fileCheckData } from 'utils/fileDataCheck';
 import {
   getIntermediateLocations,
-  getIntermediateLocationsWithSpeed,
+  getIntermediateLocationsWithSpeed,checkDistanceDifference
 } from 'utils/intermediateLocations';
 import { betweenLatLongInfo } from 'utils/betweenLatLongInfo';
 import { updateVariables } from 'shared/calculateClocks';
