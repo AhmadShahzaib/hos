@@ -3515,10 +3515,11 @@ export class DriverCsvService {
     normalizationType,
   ) => {
     let finalCsv = logsOfSelectedDate[0].csv;
-    const logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
-    const indexes = [];
+    let logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    let indexes = [];
+    let averageSpeed;
     let drAlertFlag = false;
-    const inActiveLogs = [];
+    let inActiveLogs = [];
     let dutyHours = this.sortingDateTime(logsData);
     for (let i = 0; i < dutyHours.length; i++) {
       if (eventSequenceIdNumber == dutyHours[i].eventSequenceIdNumber) {
@@ -3544,7 +3545,7 @@ export class DriverCsvService {
     });
 
     for (let i = indexes[0]; i < dutyHours.length; i++) {
-      const availableIntermediateLogs = [];
+      let availableIntermediateLogs = [];
 
       // Get a duty status for DR
       if (
@@ -3571,7 +3572,7 @@ export class DriverCsvService {
             const timeDrivingStatus = moment(dutyHours[i].eventTime, 'HHmmss');
             const diff = timeDrivingStatus.diff(timeChangeStatus);
             const diffSeconds = Math.abs(moment.duration(diff).asSeconds());
-            const hoursBase = await getHours(
+            let hoursBase = await getHours(
               dutyHours[i].eventTime,
               dutyHours[j].eventTime,
             );
@@ -3596,7 +3597,7 @@ export class DriverCsvService {
               ) {
                 return {
                   statusCode: 200,
-                  message: `Invalid Duration of vehicle miles!`, //if DR status found but time is less than hour
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
                   data: {},
                 };
               }
@@ -3606,18 +3607,24 @@ export class DriverCsvService {
               ) {
                 return {
                   statusCode: 200,
-                  message: `Invalid Duration of lat long!`, //if DR status found but time is less than hour
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
                   data: {},
                 };
               }
               if (milesDiff / hoursBase > 110 || milesDiff / hoursBase < 10) {
                 return {
                   statusCode: 200,
-                  message: `Invalid Duration of hours!`, //if DR status found but time is less than hour
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
                   data: {},
                 };
               }
-
+              if (hoursBase > 11) {
+                return {
+                  statusCode: 200,
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
+                  data: {},
+                };
+              }
               // If miles covered, intermediates would be created
               // const hours = Math.floor(diffSeconds / 3600);
               // const minutes = Math.floor((diffSeconds % 3600) / 60);
@@ -3644,9 +3651,9 @@ export class DriverCsvService {
 
               // variables
               let intermediateLogs;
-              const createdIntermediateLogs = [];
-              const spliceFlag = false;
-              const violation = false;
+              let createdIntermediateLogs = [];
+              let spliceFlag = false;
+              let violation = false;
 
               // Final and initial point lat long difference
               const initialLocation = {
@@ -3657,18 +3664,59 @@ export class DriverCsvService {
                 latitude: dutyHours[j].eventLatitude,
                 longitude: dutyHours[j].eventLongitude,
               };
+              const trueSpan = await checkDistanceDifference(
+                milesDiff,
+                initialLocation,
+                finalLocation,
+              );
+              if (!trueSpan) {
+                return {
+                  statusCode: 200,
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
+                  data: {},
+                };
+              }
+              // add get speed logic here
+              averageSpeed = speed;
+              if (speed == -1) {
+                let speedMilles = milesDiff / hoursBase;
+                let speedDistance = await this.addSpeedInDriving(
+                  dutyHours[i],
+                  dutyHours[j],
+                  hoursBase,
+                );
+                averageSpeed = (speedMilles + speedDistance) / 2;
+                while (averageSpeed * hoursBase > milesDiff) {
+                  averageSpeed -= 1;
+                }
+                //  averageSpeed = speedMilles
 
+                //  milesDiff/hoursBase
+                //   await this.addSpeedInDriving(
+                //   dutyHours[i],
+                //   dutyHours[j],
+                //   hoursBase,
+                // );
+                if (averageSpeed >= 110) {
+                  return {
+                    statusCode: 200,
+                    message: `Invalid Duration!`, //if DR status found but time is less than hour
+                    data: {},
+                  };
+                }
+              }
               const intermediatePoints =
                 await getIntermediateLocationsWithSpeed(
                   initialLocation,
                   finalLocation,
                   hoursBase,
-                  speed,
+                  averageSpeed,
+                  // speed
                 );
               if (intermediatePoints.length == 0) {
                 return {
                   statusCode: 200,
-                  message: `Invalid speed!`,
+                  message: `invalid duration!`,
                   data: {},
                 };
               }
@@ -3693,7 +3741,7 @@ export class DriverCsvService {
                 accumulatedEngineHours = JSON.stringify(
                   JSON.parse(accumulatedEngineHours) + 1,
                 );
-                const latLongInfo =
+                let latLongInfo =
                   createdIntermediateLogs.length == 0
                     ? await betweenLatLongInfo(
                         {
@@ -3717,7 +3765,7 @@ export class DriverCsvService {
                           longitude: intermediatePoints[k].longitude,
                         },
                       );
-                const distaneViaLatLon = latLongInfo.distance;
+                let distaneViaLatLon = latLongInfo.distance;
 
                 // Log information added
                 log.eventSequenceIdNumber = generateUniqueHexId();
@@ -3776,7 +3824,7 @@ export class DriverCsvService {
                         log.eventTime,
                         createdIntermediateLogs[k - 1].eventTime,
                       );
-                const speedMph =
+                let speedMph =
                   createdIntermediateLogs.length == 0
                     ? speed
                     : latLongInfo.distance / timeForSpeed;
@@ -3882,7 +3930,7 @@ export class DriverCsvService {
                 nextDutyStatus.eventTime,
                 lastIntermediateLog.eventTime,
               );
-              const speedMph = response.distance / timeForSpeed;
+              let speedMph = response.distance / timeForSpeed;
               lastIntermediateLog['speed'] = this.customRound(speedMph);
               speedMph > 100
                 ? (lastIntermediateLog['speedViolation'] = true)
@@ -3922,7 +3970,7 @@ export class DriverCsvService {
                 : 0,
             intermediateLogs: [],
           };
-          const nextDate = moment(date).add(1, 'day');
+          let nextDate = moment(date).add(1, 'day');
           const response = await this.recursiveNormalizeManual(
             // this.get_logs_between_range,
             driverId,
@@ -3942,7 +3990,7 @@ export class DriverCsvService {
 
     return {
       statusCode: 200,
-      message: 'eventSequenceIdNumber does not exist!', // if no DR status found
+      message: 'invalid Duration!', // if no DR status found
       data: {},
     };
   };
