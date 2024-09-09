@@ -128,3 +128,20 @@ function calculateDistance(point1, point2) {
 
   return distance;
 }
+
+
+export async function    checkDistanceDifference(milesDiff,
+  initialLocation,
+  finalLocation) {
+    // Fetch the directions from Google Maps Directions API
+    const response = await googleDirections(initialLocation, finalLocation);
+    let distance = response.data?.routes[0]?.legs[0]?.distance?.text; // Distance in textual format (e.g., "5.3 km")
+    distance = distanceToMilesConverter(distance || '0 mi');
+    let difference = Math.abs(distance - milesDiff);
+    if(difference > (distance*0.16)){
+      return false
+    }else{
+
+      return true
+    }
+}
