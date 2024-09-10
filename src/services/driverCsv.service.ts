@@ -855,10 +855,10 @@ export class DriverCsvService {
         .format('HHmmss');
 
       // add lines for set engine hours and miles to '0'
-      finalCsv.timeplaceline.currentTotalEngineHours =
-        latestCSV.csv.timeplaceline.currentTotalEngineHours;
-      finalCsv.timeplaceline.currentTotalVehicleMiles =
-        latestCSV.csv.timeplaceline.currentTotalVehicleMiles;
+      finalCsv.timePlaceLine.currentTotalEngineHours =
+        latestCSV.csv.timePlaceLine.currentTotalEngineHours;
+      finalCsv.timePlaceLine.currentTotalVehicleMiles =
+        latestCSV.csv.timePlaceLine.currentTotalVehicleMiles;
 
       let dataStr = '';
       Object.keys(finalCsv.timePlaceLine).map((item) => {
