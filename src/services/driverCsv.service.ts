@@ -854,6 +854,12 @@ export class DriverCsvService {
         .tz(moment(), companyTimeZone)
         .format('HHmmss');
 
+      // add lines for set engine hours and miles to '0'
+      finalCsv.timeplaceline.currentTotalEngineHours =
+        latestCSV.csv.timeplaceline.currentTotalEngineHours;
+      finalCsv.timeplaceline.currentTotalVehicleMiles =
+        latestCSV.csv.timeplaceline.currentTotalVehicleMiles;
+
       let dataStr = '';
       Object.keys(finalCsv.timePlaceLine).map((item) => {
         if (item !== 'lineDataCheckValue') {
