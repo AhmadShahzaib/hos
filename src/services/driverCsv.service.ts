@@ -27,7 +27,8 @@ import { checkSum, eventCheckSum } from 'utils/checkSum';
 import { fileCheckData } from 'utils/fileDataCheck';
 import {
   getIntermediateLocations,
-  getIntermediateLocationsWithSpeed,checkDistanceDifference
+  getIntermediateLocationsWithSpeed,
+  checkDistanceDifference,
 } from 'utils/intermediateLocations';
 import { betweenLatLongInfo } from 'utils/betweenLatLongInfo';
 import { updateVariables } from 'shared/calculateClocks';
@@ -48,7 +49,10 @@ import { getInBetweenLogs } from 'utils/findInBetweenLogs';
 import { addFirstandLast } from 'utils/addFirstandLastLog';
 import { createNewLog } from 'utils/createNewLog';
 import { insertLog } from 'utils/insertLog';
-import { removeDuplicateConsecutiveLogs, moveIntermediateLog } from 'utils/removeDuplicateConsecutiveLogs';
+import {
+  removeDuplicateConsecutiveLogs,
+  moveIntermediateLog,
+} from 'utils/removeDuplicateConsecutiveLogs';
 import RecordTable from 'mongoDb/document/recordTable.document';
 import { timeDifference } from 'utils/timeDifference';
 import { isArray } from 'lodash';
@@ -824,21 +828,15 @@ export class DriverCsvService {
       finalCsv.eldEventListForDriversRecordOfDutyStatus = [];
       finalCsv.eldLoginLogoutReport = [];
       finalCsv.cmvEnginePowerUpShutDownActivity = [];
-      if(finalCsv.timePlaceLine.currentEventCode == ""){
-        newLog.eventCode = "1" ;
-  
-        }
-     else if(finalCsv.timePlaceLine.currentEventType !== ""){
-      newLog.eventType = finalCsv.timePlaceLine.currentEventType ;
-
+      if (finalCsv.timePlaceLine.currentEventCode == '') {
+        newLog.eventCode = '1';
+      } else if (finalCsv.timePlaceLine.currentEventType !== '') {
+        newLog.eventType = finalCsv.timePlaceLine.currentEventType;
       }
-      if(finalCsv.timePlaceLine.currentEventType == ""){
-        newLog.eventType = "1" ;
-  
-        }
-     else if(finalCsv.timePlaceLine.currentEventCode !== ""){
-      newLog.eventCode = finalCsv.timePlaceLine.currentEventCode ;
-
+      if (finalCsv.timePlaceLine.currentEventType == '') {
+        newLog.eventType = '1';
+      } else if (finalCsv.timePlaceLine.currentEventCode !== '') {
+        newLog.eventCode = finalCsv.timePlaceLine.currentEventCode;
       }
       // newLog.eventType = finalCsv.timePlaceLine.currentEventType
       //   ? finalCsv.timePlaceLine.currentEventType
@@ -1087,7 +1085,7 @@ export class DriverCsvService {
       isPti: '',
     };
 
-    recordMade.driverId = user?._id ? user?._id : user?.id ;
+    recordMade.driverId = user?._id ? user?._id : user?.id;
     recordMade.date = latestCSV?.date;
     // recordMade.driverName = user?.driverFullName;
     const csvDataOfDutyStatus =
@@ -1160,7 +1158,7 @@ export class DriverCsvService {
           recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
         }
       }
-    }else if (!ptiObject){
+    } else if (!ptiObject) {
       latestCSV.meta.ptiViolation = [];
     }
 
@@ -1364,10 +1362,9 @@ export class DriverCsvService {
     return lastCalculations;
   };
 
-//calculate address of each day logs
+  //calculate address of each day logs
 
   calculateAndUpdateAddress = async (resp, user) => {
-  
     let latestCSV;
     const csv = resp.graphData[0].csv;
     const dutyStatus = csv.eldEventListForDriversRecordOfDutyStatus;
@@ -4308,7 +4305,7 @@ export class DriverCsvService {
       dutyStatusLogs = dutyStatusLogs.filter((element) => {
         return element.eventRecordStatus != '2';
       });
-      const intermediate  = dutyStatusLogs.filter((element) => {
+      const intermediate = dutyStatusLogs.filter((element) => {
         return element.eventType == '2';
       });
       dutyStatusLogs = dutyStatusLogs.filter((element) => {
@@ -4366,10 +4363,12 @@ export class DriverCsvService {
       //   addedLogs[index + 1].eventTime = endTime
 
       // }
-      addedLogs.filter((item)=>{return item.eventType !== "2"})
-      
+      addedLogs.filter((item) => {
+        return item.eventType !== '2';
+      });
+
       let finalLogs = await removeDuplicateConsecutiveLogs(addedLogs);
-      finalLogs = [...finalLogs,...intermediate];
+      finalLogs = [...finalLogs, ...intermediate];
       finalLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
       finalLogs = await moveIntermediateLog(finalLogs, newLog);
       finalLogs = [...finalLogs, ...inActiveLogs];

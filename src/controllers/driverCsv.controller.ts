@@ -121,7 +121,7 @@ export class DriverCsvController extends BaseController {
 
       // let dateOfQuery = moment(date);
       // dateOfQuery = dateOfQuery.subtract(1, 'days');
-      const dateQuery = date
+      const dateQuery = date;
       const query = {
         start: dateQuery,
         end: dateQuery,
@@ -241,6 +241,7 @@ export class DriverCsvController extends BaseController {
               date,
             );
             console.log(`In add date of  ---- >>> `, date);
+            console.log('created CSV ----> for date:', reqBody);
             await this.driverCsvService.addToDB(reqBody, user);
 
             // This code is to tpdate driver record need to add messagepattern to get unit  =  get_unit_by_driverId
