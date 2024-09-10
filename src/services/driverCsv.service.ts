@@ -854,12 +854,6 @@ export class DriverCsvService {
         .tz(moment(), companyTimeZone)
         .format('HHmmss');
 
-      // add lines for set engine hours and miles to '0'
-      finalCsv.timePlaceLine.currentTotalEngineHours =
-        latestCSV.csv.timePlaceLine.currentTotalEngineHours;
-      finalCsv.timePlaceLine.currentTotalVehicleMiles =
-        latestCSV.csv.timePlaceLine.currentTotalVehicleMiles;
-
       let dataStr = '';
       Object.keys(finalCsv.timePlaceLine).map((item) => {
         if (item !== 'lineDataCheckValue') {
@@ -869,6 +863,13 @@ export class DriverCsvService {
 
       const result = checkSum(dataStr);
       finalCsv.timePlaceLine.lineDataCheckValue = result.hexa;
+
+      // add lines for set engine hours and miles to '0'
+      finalCsv.timePlaceLine.currentTotalEngineHours =
+        latestCSV.csv.timePlaceLine.currentTotalEngineHours;
+      finalCsv.timePlaceLine.currentTotalVehicleMiles =
+        latestCSV.csv.timePlaceLine.currentTotalVehicleMiles;
+      //end
       latestCSV.csv = finalCsv;
       const originalLogs = {
         cmvEnginePowerUpShutDownActivity: [],
