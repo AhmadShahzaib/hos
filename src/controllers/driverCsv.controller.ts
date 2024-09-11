@@ -241,7 +241,7 @@ export class DriverCsvController extends BaseController {
               date,
             );
             console.log(`In add date of  ---- >>> `, date);
-            console.log('created CSV ----> for date:', reqBody);
+            // console.log('created CSV ----> for date:', reqBody);
             await this.driverCsvService.addToDB(reqBody, user);
 
             // This code is to tpdate driver record need to add messagepattern to get unit  =  get_unit_by_driverId

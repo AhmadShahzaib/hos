@@ -850,6 +850,14 @@ export class DriverCsvService {
       newLog.lineDataCheckValue = logCheckSum['lineDataCheckValue'];
       finalCsv.eldEventListForDriversRecordOfDutyStatus.push(newLog);
       finalCsv.timePlaceLine.currentDate = moment(date).format('MMDDYY');
+      finalCsv.timePlaceLine.currentTotalEngineHours =
+        latestCSV.csv.timePlaceLine.currentTotalEngineHours == ''
+          ? '1'
+          : latestCSV.csv.timePlaceLine.currentTotalEngineHours;
+      finalCsv.timePlaceLine.currentTotalVehicleMiles =
+        latestCSV.csv.timePlaceLine.currentTotalVehicleMiles == ''
+          ? '1'
+          : latestCSV.csv.timePlaceLine.currentTotalVehicleMiles;
       finalCsv.timePlaceLine.currentTime = moment
         .tz(moment(), companyTimeZone)
         .format('HHmmss');
@@ -864,12 +872,6 @@ export class DriverCsvService {
       const result = checkSum(dataStr);
       finalCsv.timePlaceLine.lineDataCheckValue = result.hexa;
 
-      // add lines for set engine hours and miles to '0'
-      finalCsv.timePlaceLine.currentTotalEngineHours =
-        latestCSV.csv.timePlaceLine.currentTotalEngineHours;
-      finalCsv.timePlaceLine.currentTotalVehicleMiles =
-        latestCSV.csv.timePlaceLine.currentTotalVehicleMiles;
-      //end
       latestCSV.csv = finalCsv;
       const originalLogs = {
         cmvEnginePowerUpShutDownActivity: [],
