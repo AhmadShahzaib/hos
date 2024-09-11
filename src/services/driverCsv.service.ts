@@ -579,7 +579,7 @@ export class DriverCsvService {
     try {
       // 1 => NoPTI
       // 2 => pti
-      if (onDutyTime > 15 * 60) {
+      if (onDutyTime > 1) {
         pti = '2';
       }
       // if (onDutyTime < 15 * 60 && currentStatus == 3) {
