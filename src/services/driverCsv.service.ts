@@ -852,11 +852,11 @@ export class DriverCsvService {
       finalCsv.timePlaceLine.currentDate = moment(date).format('MMDDYY');
       finalCsv.timePlaceLine.currentTotalEngineHours =
         latestCSV.csv.timePlaceLine.currentTotalEngineHours == ''
-          ? '1'
+          ? '0'
           : latestCSV.csv.timePlaceLine.currentTotalEngineHours;
       finalCsv.timePlaceLine.currentTotalVehicleMiles =
         latestCSV.csv.timePlaceLine.currentTotalVehicleMiles == ''
-          ? '1'
+          ? '0'
           : latestCSV.csv.timePlaceLine.currentTotalVehicleMiles;
       finalCsv.timePlaceLine.currentTime = moment
         .tz(moment(), companyTimeZone)
