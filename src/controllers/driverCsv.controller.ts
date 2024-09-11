@@ -492,6 +492,18 @@ export class DriverCsvController extends BaseController {
       return err;
     }
   }
+  @MessagePattern({ cmd: 'update_record_table' })
+  async update_record_table(requestParam: any): Promise<any> {
+    try {
+      const result = await this.driverCsvService.updateDriverRecordSignature(
+        requestParam,
+      );
+      return result;
+    } catch (err) {
+      Logger.error({ message: err.message, stack: err.stack });
+      return err;
+    }
+  }
   @UseInterceptors(new MessagePatternResponseInterceptor())
   @MessagePattern({ cmd: 'get_recordTable' })
   async get_record(requestParam: any): Promise<any> {

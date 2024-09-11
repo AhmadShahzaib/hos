@@ -4405,6 +4405,28 @@ export class DriverCsvService {
       throw error;
     }
   };
+
+//update signature violation in recordtable of 14 days. 
+updateDriverRecordSignature = async (data) => {
+  try {
+    for (const date of data.dates) {
+
+      const record = await this.recordTable.findOneAndUpdate(
+        { driverId: data.driverId, date: date }, // Match the document
+        { 
+          $pull: { violations: { type: "SIGNATURE_MISSING" } } // Remove the violation with type SIGNATURE_MISSING
+        },
+        { returnDocument: 'after' } // Return the updated document
+      );
+    }
+
+   return true;
+  } catch (error) {
+    Logger.log(error);
+    throw error;
+  }
+};
+
   addAndUpdateDriverRecord = async (data) => {
     try {
       const record = await this.recordTable.findOneAndUpdate(
