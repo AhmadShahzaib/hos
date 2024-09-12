@@ -9,7 +9,7 @@ import {
 export default function getLatLngFromAddressDecorator() {
   const getLatLngFromAddressDecorator: Array<CombineDecoratorType> = [
     Get('csv/getlatlng'),
-    SetMetadata('permissions', [HOS.LOCATION_UPDATE]),
+    SetMetadata('permissions', ["e6v5e4st0"]),
   ];
   return CombineDecorators(getLatLngFromAddressDecorator);
 }

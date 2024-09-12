@@ -200,7 +200,7 @@ export class WebsocketGateway
     }
   }
   // here is a message event which will keep us updates
-  @SubscribeMessage('addLiveStopLocation')
+  @SubscribeMessage('updateLive')
   async addLiveStopLocation(
     @MessageBody()
     data,
@@ -232,9 +232,9 @@ export class WebsocketGateway
       const recentHistory = sortedArray[sortedArray.length - 1];
 
       // Meta object creation
-      if (meta?.address == '') {
-        delete recentHistory?.address;
-      }
+     Logger.log("time at which request recieved. ")
+
+     Logger.log(recentHistory?.time)
       if (!meta) {
         meta = {};
       }
@@ -277,7 +277,7 @@ export class WebsocketGateway
       throw error;
     }
   }
-  @SubscribeMessage('addLocation')
+  @SubscribeMessage('addMoving')
   async addLiveLocation(
     @MessageBody()
     data,
@@ -288,7 +288,7 @@ export class WebsocketGateway
       let user;
       let { meta } = reqBody;
       const { historyOfLocation } = reqBody;
-      const { date, driverId } = queryParams;
+      const { date, driverId,vehicleId } = queryParams;
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -303,53 +303,26 @@ export class WebsocketGateway
       const tenantId = user.tenantId;
 
       // Ascending order sorting wrt to date time
-      const sortedArray = await sortLiveLocations(historyOfLocation);
+      // const sortedArray = await sortLiveLocations(historyOfLocation);
 
-      //  Get recent location
-      const recentHistory = sortedArray[sortedArray.length - 1];
-
-      // Meta object creation
-      if (meta?.address == '') {
-        delete recentHistory?.address;
-      }
-      if (!meta) {
-        meta = {};
-      }
-      meta['lastActivity'] = {
-        vinNo: recentHistory.vinNo,
-        vehicleNo: recentHistory.vehicleNo,
-        odoMeterMillage: recentHistory?.odometer,
-        engineHours: recentHistory?.engineHours,
-        currentTime: recentHistory?.time,
-        currentDate: recentHistory?.date,
-        latitude: recentHistory?.latitude,
-        longitude: recentHistory?.longitude,
-        address: recentHistory?.address,
-        speed: recentHistory?.speed,
-        currentEventCode: recentHistory?.status || '1',
-        currentEventType: recentHistory?.eventType,
-        fuel: recentHistory?.fuel,
-        coolantLevel: recentHistory?.coolantLevel,
-        coolantTemperature: recentHistory?.coolantTemperature,
-        oilLevel: recentHistory?.oilLevel,
-        oilTemprature: recentHistory?.oilTemprature,
-      };
-      user.id = user.id ? user.id : user._id;
+     
+      // user.id = user.id ? user.id : user._id;
       // Assign recent location to units by message pattern
-      const messagePatternUnits =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
-        );
-      if (messagePatternUnits.isError) {
-        mapMessagePatternResponseToException(messagePatternUnits);
-      }
+      // const messagePatternUnits =
+      //   await firstValueFrom<MessagePatternResponseType>(
+      //     this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+      //   );
+      // if (messagePatternUnits.isError) {
+      //   mapMessagePatternResponseToException(messagePatternUnits);
+      // }
 
       // Pass related data to the model
       const response = await this.HOSService.addLiveLocation({
         driverId: driverId,
+        vehicleId:vehicleId,
         tenantId,
         date,
-        historyOfLocation: sortedArray,
+        historyOfLocation: historyOfLocation,
       }); // await removed
       this.server.to(SpecificClient).emit('locationAdd', {
         message: 'entry added successfully',
@@ -389,7 +362,7 @@ export class WebsocketGateway
       let user;
       let { meta } = reqBody;
       let { historyOfLocation } = reqBody;
-      const { date, driverId } = queryParams;
+      const { date, driverId,vehicleId } = queryParams;
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -404,63 +377,17 @@ export class WebsocketGateway
       const tenantId = user.tenantId;
 
       // Ascending order sorting wrt to date time
-      const sortedArray = await sortLiveLocations(historyOfLocation);
+     
+     
 
-      //  Get recent location
-      const recentHistory = sortedArray[sortedArray.length - 1];
-
-      // Meta object creation
-      // if (meta?.address == '') {
-      //   delete recentHistory?.address;
-      // }
-      let address;
-       if (recentHistory?.address == '') {
-        address = await this.driverCsvService.getAddress(
-          recentHistory.latitude,
-          recentHistory.longitude,
-        );
-        sortedArray[sortedArray.length - 1].address = address;
-        historyOfLocation = sortedArray
-      }
-      if (!meta) {
-        meta = {};
-      }
-
-      meta['lastActivity'] = {
-        vinNo: recentHistory.vinNo,
-        vehicleNo: recentHistory.vehicleNo,
-        odoMeterMillage: recentHistory?.odometer,
-        engineHours: recentHistory?.engineHours,
-        currentTime: recentHistory?.time,
-        currentDate: recentHistory?.date,
-        latitude: recentHistory?.latitude,
-        longitude: recentHistory?.longitude,
-        address: recentHistory?.address,
-        speed: recentHistory?.speed,
-        currentEventCode: recentHistory?.status || '1',
-        currentEventType: recentHistory?.eventType,
-        fuel: recentHistory?.fuel,
-        coolantLevel: recentHistory?.coolantLevel,
-        coolantTemperature: recentHistory?.coolantTemperature,
-        oilLevel: recentHistory?.oilLevel,
-        oilTemprature: recentHistory?.oilTemprature,
-      };
-      user.id = user.id ? user.id : user._id;
-      // Assign recent location to units by message pattern
-      const messagePatternUnits =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
-        );
-      if (messagePatternUnits.isError) {
-        mapMessagePatternResponseToException(messagePatternUnits);
-      }
       historyOfLocation
       // Pass related data to the model
       const response = await this.HOSService.addStops({
         driverId: driverId,
+        vehicleId:vehicleId,
         tenantId,
         date,
-        historyOfLocation: sortedArray,
+        historyOfLocation: historyOfLocation,
       }); // await removed
       this.server.to(SpecificClient).emit('locationAdd', {
         message: 'entry added successfully',
@@ -493,7 +420,7 @@ export class WebsocketGateway
       }
       
       let dateOfQuery = moment(date);
-      dateOfQuery = dateOfQuery.subtract(1, 'days');
+      dateOfQuery = dateOfQuery.subtract(2, 'days');
       const dateQuery = dateOfQuery.format('YYYY-MM-DD');
       const query = {
         start: dateQuery,

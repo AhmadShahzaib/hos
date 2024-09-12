@@ -101,6 +101,38 @@ export class DriverCsvController extends BaseController {
     super();
   }
 
+  @MessagePattern({ cmd: 'run_hos' })
+  async runHos(requestParam: any): Promise<any> {
+    try {
+      const { date, driverId } = requestParam;
+      let user;
+      let SpecificClient;
+      if (driverId) {
+        const messagePatternDriver =
+          await firstValueFrom<MessagePatternResponseType>(
+            this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+          );
+        if (messagePatternDriver.isError) {
+          mapMessagePatternResponseToException(messagePatternDriver);
+        }
+        user = messagePatternDriver.data;
+        SpecificClient = user?.client;
+      }
+
+      // let dateOfQuery = moment(date);
+      // dateOfQuery = dateOfQuery.subtract(1, 'days');
+      const dateQuery = date;
+      const query = {
+        start: dateQuery,
+        end: dateQuery,
+      };
+      await this.driverCsvService.runCalculationOnRecentHOS(query, user);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   @liveApiUnit()
   async addLiveApiUnit(
     @Body() data: any,
@@ -196,7 +228,7 @@ export class DriverCsvController extends BaseController {
       if (recentCSV != 2) {
         if (recentCSV.length == 0) {
           const datesBetween = getDatesBetweenUnixTimestamps(
-            moment().subtract(14, 'day').unix(),
+            moment().subtract(29, 'day').unix(),
             moment().subtract(1, 'day').unix(),
             user.homeTerminalTimeZone.tzCode,
           );
@@ -209,6 +241,7 @@ export class DriverCsvController extends BaseController {
               date,
             );
             console.log(`In add date of  ---- >>> `, date);
+            // console.log('created CSV ----> for date:', reqBody);
             await this.driverCsvService.addToDB(reqBody, user);
 
             // This code is to tpdate driver record need to add messagepattern to get unit  =  get_unit_by_driverId
@@ -228,14 +261,14 @@ export class DriverCsvController extends BaseController {
           message: resp.message,
         });
       }
-      const meta = this.driverCsvService.updateMetaVariables(body);
-      const messagePatternUnits =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
-        );
-      if (messagePatternUnits.isError) {
-        mapMessagePatternResponseToException(messagePatternUnits);
-      }
+      // const meta = this.driverCsvService.updateMetaVariables(body);
+      // const messagePatternUnits =
+      //   await firstValueFrom<MessagePatternResponseType>(
+      //     this.unitClient.send({ cmd: 'assign_meta_to_units' }, { meta, user }),
+      //   );
+      // if (messagePatternUnits.isError) {
+      //   mapMessagePatternResponseToException(messagePatternUnits);
+      // }
       // let dateOfQuery = moment(body.date);
       // dateOfQuery = dateOfQuery.subtract(1, 'days');
       // let dateQuery = dateOfQuery.format('YYYY-MM-DD');
@@ -459,6 +492,18 @@ export class DriverCsvController extends BaseController {
       return err;
     }
   }
+  @MessagePattern({ cmd: 'update_record_table' })
+  async update_record_table(requestParam: any): Promise<any> {
+    try {
+      const result = await this.driverCsvService.updateDriverRecordSignature(
+        requestParam,
+      );
+      return result;
+    } catch (err) {
+      Logger.error({ message: err.message, stack: err.stack });
+      return err;
+    }
+  }
   @UseInterceptors(new MessagePatternResponseInterceptor())
   @MessagePattern({ cmd: 'get_recordTable' })
   async get_record(requestParam: any): Promise<any> {
@@ -508,10 +553,7 @@ export class DriverCsvController extends BaseController {
         user = messagePatternDriver.data;
       }
       const completeObj = csv.data[0];
-      const resp: any = await this.driverCsvService.addToDB(
-        completeObj,
-        user,
-      );
+      const resp: any = await this.driverCsvService.addToDB(completeObj, user);
       return resp;
     } catch (err) {
       Logger.error({ message: err.message, stack: err.stack });
@@ -606,6 +648,8 @@ export class DriverCsvController extends BaseController {
       const { query, params } = request;
       // this section is for getting driver data if the request is from admin.
       let user;
+      let SpecificClient;
+
       if (driverId) {
         const messagePatternDriver =
           await firstValueFrom<MessagePatternResponseType>(
@@ -615,6 +659,8 @@ export class DriverCsvController extends BaseController {
           mapMessagePatternResponseToException(messagePatternDriver);
         }
         user = messagePatternDriver.data;
+
+        SpecificClient = user?.client;
       } else {
         user = request.user;
       }
@@ -647,6 +693,27 @@ export class DriverCsvController extends BaseController {
       // //   newExtractedDutyStatus;
       // console.log(`After the function call`);
       // The funtion above calculates the missing intermediates virtually. It doesn't saves them anywhere, it's just to show - END
+
+      if (resp.graphData[0].csv) {
+        let addressUpdated =
+          await this.driverCsvService.calculateAndUpdateAddress(resp, user);
+        if (addressUpdated) {
+          const title = 'Address added in logs!';
+          const notificationObj = {
+            logs: [],
+            dateTime: resp.graphData[0].date,
+            driverId: user.id,
+            notificationType: 4,
+            editStatusFromBO: 'location',
+          };
+          await this.gateway.syncDriver(
+            SpecificClient,
+            user,
+            notificationObj.dateTime,
+            notificationObj,
+          );
+        }
+      }
 
       if (resp) {
         return response.status(201).send({
@@ -845,7 +912,7 @@ export class DriverCsvController extends BaseController {
   ) {
     try {
       Logger.log('In Normalize Decorato Endpoint');
-      let SpecificClient;
+
       const { date, type, normalizationType } = queryParams;
       const { driverId } = params;
       const { eventSequenceIdNumber } = reqBody;
@@ -884,6 +951,7 @@ export class DriverCsvController extends BaseController {
       );
       // Initiation notificaion dispatch
 
+      const title = 'Normalization logs executed!';
       const notificationObj = {
         logs: [],
         dateTime: date,
@@ -891,13 +959,19 @@ export class DriverCsvController extends BaseController {
         notificationType: 4,
         editStatusFromBO: 'normalize',
       };
-
-      await this.gateway.syncDriver(
-        SpecificClient,
-        user,
-        date,
-        notificationObj,
-      );
+      const deviceInfo = {
+        deviceToken: user.deviceToken,
+        deviceType: user.deviceType,
+      };
+      if (Object.keys(normalizedResp.data).length > 0) {
+        await dispatchNotification(
+          title,
+          notificationObj,
+          deviceInfo,
+          this.pushNotificationClient,
+          true, // repressents notification is silent or not
+        );
+      }
       return res.status(normalizedResp.statusCode).send({
         statusCode: normalizedResp.statusCode,
         message: normalizedResp.message,
@@ -907,7 +981,6 @@ export class DriverCsvController extends BaseController {
       throw err;
     }
   }
-
   /**
    * @description : Test endpoint to get missing intermediates
    */
@@ -2005,6 +2078,7 @@ export class DriverCsvController extends BaseController {
         truck,
         shippingDocument,
         tralier,
+        vehicleId,
         notes,
         state,
       } = data;
@@ -2061,6 +2135,7 @@ export class DriverCsvController extends BaseController {
           truck,
           shippingDocument,
           tralier,
+          vehicleId,
           companyTimeZone,
           notes,
           state,

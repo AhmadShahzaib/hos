@@ -349,7 +349,7 @@ export class AppService {
    * Author : Farzan
    */
   addLiveLocation = async (obj) => {
-    const { driverId, tenantId, date, historyOfLocation } = obj;
+    const { driverId,vehicleId, tenantId, date, historyOfLocation } = obj;
 
     // Collect data for current date
     const driverLiveLocationTrackable = await this.checkIfDocumentExists(
@@ -367,7 +367,7 @@ export class AppService {
       // // Update the latest changes
       // await driverLiveLocationTrackable.save();
       const result = await this.driverLiveLocationModel.updateOne(
-        { driverId: driverId, date: date },
+        { driverId: driverId,vehicleId:vehicleId, date: date },
         {
           $push: {
             historyOfLocation: { $each: historyOfLocation },
@@ -379,6 +379,7 @@ export class AppService {
       // If record not exists, create a new one
       const isCreated = await this.driverLiveLocationModel.create({
         driverId,
+        vehicleId,
         tenantId,
         date,
         historyOfLocation,
@@ -420,7 +421,7 @@ export class AppService {
    * Author : Not Farzan
    */
   addStops = async (obj) => {
-    const { driverId, tenantId, date, historyOfLocation } = obj;
+    const { driverId,vehicleId, tenantId, date, historyOfLocation } = obj;
 
     // Collect data for current date
     const driverStopLocationTrackable =
@@ -442,6 +443,7 @@ export class AppService {
       // If record not exists, create a new one
       const isCreated = await this.driverStopLocationModel.create({
         driverId,
+        vehicleId,
         tenantId,
         date,
         historyOfLocation,
@@ -456,7 +458,33 @@ export class AppService {
         : [obj?.historyOfLocation],
     };
   };
+  // remove previous and add new stops
+  reAddStops = async (obj) => {
+    const { driverId, date, historyOfLocation } = obj;
 
+    // Collect data for current date
+    const driverStopLocationTrackable =
+      await this.driverStopLocationModel.findOne({
+        driverId: driverId,
+        date: date,
+      });
+
+    // Append latest locations to the previous ones
+    if (driverStopLocationTrackable) {
+      driverStopLocationTrackable.historyOfLocation = [...historyOfLocation];
+
+      // Update the latest changes
+      await driverStopLocationTrackable.save();
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Live location updated successfully!',
+      data: driverStopLocationTrackable?.historyOfLocation
+        ? driverStopLocationTrackable?.historyOfLocation
+        : [obj?.historyOfLocation],
+    };
+  };
   /**
    * driver specific day trips
    * Author : Farzan
@@ -822,6 +850,7 @@ export class AppService {
         dutyStatusList[index]['eventRecordOrigin'] = '3';
 
         dutyStatusList[index]['shippingId'] = payloadLog.shippingId;
+        dutyStatusList[index]['vehicleId'] = payloadLog.vehicleId;
         dutyStatusList[index]['trailerId'] = payloadLog.trailerId;
         dutyStatusList[index]['eventLatitude'] = payloadLog.eventLatitude;
         dutyStatusList[index]['eventLongitude'] = payloadLog.eventLongitude;
@@ -865,9 +894,9 @@ export class AppService {
                   dutyStatusListLengthBeforeEdit,
                   dutyStatusList,
                 );
-                item.intermediateType = getIntermediateType(
-                  dutyStatusList[drIn],
-                );
+                // item.intermediateType = getIntermediateType(
+                //   dutyStatusList[drIn],
+                // );
               }
             }
             // else {
@@ -1005,6 +1034,7 @@ export class AppService {
       }
 
       dutyStatusList = [...dutyStatusList, ...inActiveLogs];
+    
 
       // Sort the altered array
       dutyStatusList.sort((a, b) => {
@@ -1022,6 +1052,8 @@ export class AppService {
         const timeB = parseInt(b.eventTime, 10);
         return timeA - timeB;
       });
+      dutyStatusList = this.updateLogsWithIntermediateType(dutyStatusList)
+
     }
     return dutyStatusList;
   };
@@ -1044,7 +1076,24 @@ export class AppService {
     });
     return array;
   };
-
+// updateLogsWithIntermediateType
+updateLogsWithIntermediateType = (logs) => {
+  for (let i = 0; i < logs.length; i++) {
+    if (logs[i].eventType == '2') {
+      // Find the most recent previous log with eventType == '1' and eventRecordStatus == '1'
+      for (let j = i - 1; j >= 0; j--) {
+        if ((logs[j].eventType == '1' || logs[j].eventType == '3') && logs[j].eventRecordStatus == '1') {
+          // Found the required previous log, now get the intermediateType
+          const intermediateType = getIntermediateType(logs[j]);
+          // Update the intermediateType of the current log
+          logs[i].intermediateType = intermediateType;
+          break; // Exit the loop after finding the required log
+        }
+      }
+    }
+  }
+  return logs;
+};
   // get next log itrarting on intermediate
   getNextIndex = (index, dutyStatusListLengthBeforeEdit, dutyStatusList) => {
     let drIn = index;

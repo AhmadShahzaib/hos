@@ -38,7 +38,7 @@ lastItem:boolean;
   };
   type: {
     type: string;
-    enum: ['correction', 'transfer'];
+    enum: ['Insert','Edit', 'transfer'];
   };
   shippingId: {
     type: string;

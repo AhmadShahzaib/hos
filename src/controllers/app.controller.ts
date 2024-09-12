@@ -161,9 +161,13 @@ export class AppController extends BaseController {
       if (address != '') {
         responseData.lastKnownLocation.address = address;
       }
+      let responseUnitLive = responseData?.meta;
+      responseUnitLive.driverName = responseData?.driverFullName;
+      responseUnitLive.vehicleName = responseData?.manualVehicleId;
+
       return response.status(200).send({
         message: 'Success',
-        data: responseData?.meta || {},
+        data: responseUnitLive || {},
       });
     } catch (error) {
       throw error;
@@ -206,9 +210,12 @@ export class AppController extends BaseController {
       if (address != '') {
         responseData.lastKnownLocation.address = address;
       }
+      let responseUnitLive = responseData?.meta;
+      responseUnitLive.driverName = responseData?.driverFullName;
+      responseUnitLive.vehicleName = responseData?.manualVehicleId;
       return response.status(200).send({
         message: 'Success',
-        data: responseData?.meta || {},
+        data: responseUnitLive || {},
       });
     } catch (error) {
       throw error;
@@ -298,7 +305,11 @@ export class AppController extends BaseController {
           : `${parsedToken.firstName} ${parsedToken.lastName}`,
         role: parsedToken.isDriver == true ? 'driver' : 'Admin',
       };
-      data.type = 'correction';
+      if (data?.actionType == 1 || data?.actionType == 3) {
+        data.type = 'Edit';
+      } else if (data?.actionType == 2) {
+        data.type = 'Insert';
+      }
 
       // Get Original Csv
       const date = data?.logs?.date;
@@ -317,7 +328,10 @@ export class AppController extends BaseController {
       }
 
       const driverCsvAfter = JSON.parse(JSON.stringify(driverCsv));
-
+      // data.before = {
+      //   date: date,
+      //   time: ""
+      // }
       data.csvBeforeUpdate = {
         csv: driverCsv[0].csv,
         voilations: driverCsv[0].meta?.voilations,
@@ -390,6 +404,7 @@ export class AppController extends BaseController {
           logs.truck,
           logs.shippingId,
           logs.trailerId,
+          logs.vehicleId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -464,6 +479,7 @@ export class AppController extends BaseController {
           logs.truck,
           logs.shippingId,
           logs.trailerId,
+          logs.vehicleId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -593,6 +609,7 @@ export class AppController extends BaseController {
           logs.truck,
           logs.shippingId,
           logs.trailerId,
+          logs.vehicleId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -634,6 +651,7 @@ export class AppController extends BaseController {
           logs.truck,
           logs.shippingId,
           logs.trailerId,
+          logs.vehicleId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -807,6 +825,7 @@ export class AppController extends BaseController {
           logs.truck,
           logs.shippingId,
           logs.trailerId,
+          logs.vehicleId,
           logs.notes,
           logs.state,
           user?.homeTerminalTimeZone?.tzCode,
@@ -927,14 +946,12 @@ export class AppController extends BaseController {
     @Res() response,
   ) {
     try {
-     
       const driverId = data.driverId;
       const date = data.date;
       let user;
       let editRequest;
       // Parsing token for timezone
       let messagePatternDriver;
-    
 
       messagePatternDriver = await firstValueFrom<MessagePatternResponseType>(
         this.driverClient.send({ cmd: 'get_driver_by_id' }, data?.driverId),
@@ -942,7 +959,7 @@ export class AppController extends BaseController {
       if (messagePatternDriver?.isError) {
         mapMessagePatternResponseToException(messagePatternDriver);
       }
-     
+
       user = messagePatternDriver?.data;
       // user.companyTimeZone = user.companyTimeZone;
       const SpecificClient = user?.client;
@@ -953,36 +970,30 @@ export class AppController extends BaseController {
       let images;
       let mesaage;
       user.id = user._id;
-      try{
-      // Get edited
-     
-    
-      const isEdit = await this.logService.getPendingRequests(user);
-     
-      
-        if (isEdit.length > 0) {
-        
-          // Create csv pdf for before and after
-          const isConverted = await this.HOSService.generateCsvImages(user);
-          images = isConverted.data;
-         
-        }
-    
-       mesaage = 'Edit Inset log!';
-       editRequest = images != undefined ? [...images] : [];
-    } catch (error) {
-     
+      try {
+        // Get edited
 
-      return response.status(200).send({
-        statusCode: 400,
-        message: 'error while creating image',
-        data: error,
-      });
-    }
-   
+        // const isEdit = await this.logService.getPendingRequests(user);
+
+        // if (isEdit.length > 0) {
+        //   // Create csv pdf for before and after
+        //   const isConverted = await this.HOSService.generateCsvImages(user);
+        //   images = isConverted.data;
+        // }
+
+        mesaage = 'Edit Inset log!';
+        editRequest = images != undefined ? [...images] : [];
+      } catch (error) {
+        return response.status(200).send({
+          statusCode: 400,
+          message: 'error while creating image',
+          data: error,
+        });
+      }
+
       const notificationObj = {
         logs: [],
-        editRequest:  [],
+        editRequest: [],
         // editRequest: images != undefined ? [...images] : [],
         dateTime,
         notificationType: 1,
@@ -1001,13 +1012,13 @@ export class AppController extends BaseController {
 
       return response.status(200).send({
         statusCode: 200,
-        message: 'Sync Sent ',
+        message: 'Notified Driver ',
         data: {},
       });
     } catch (error) {
       return response.status(200).send({
         statusCode: 400,
-        message: 'error while sending sync',
+        message: 'error while sending Alert',
 
         data: error,
       });
@@ -1563,7 +1574,7 @@ export class AppController extends BaseController {
 
         return hours * 3600 + minutes * 60 + seconds;
       }
-//dev update
+      //dev update
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
 
@@ -1645,48 +1656,76 @@ export class AppController extends BaseController {
         date: date,
       };
 
-      const messagePatternDriver =
-        await firstValueFrom<MessagePatternResponseType>(
-          this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
-        );
-      if (messagePatternDriver.isError) {
-        mapMessagePatternResponseToException(messagePatternDriver);
-      }
+      // const messagePatternDriver =
+      //   await firstValueFrom<MessagePatternResponseType>(
+      //     this.driverClient.send({ cmd: 'get_driver_by_id' }, driverId),
+      //   );
+      // if (messagePatternDriver.isError) {
+      //   mapMessagePatternResponseToException(messagePatternDriver);
+      // }
       // query to get all tracking records of that day.
       const response = await this.HOSService.getLiveLocation(queryObj);
 
       // -----------------------------------------------------------------
-      const locations = [];
-      function convertToSeconds(time) {
-        const hours = parseInt(time.slice(0, 2));
-        const minutes = parseInt(time.slice(2, 4));
-        const seconds = parseInt(time.slice(4, 6));
+      // const locations = [];
+      // function convertToSeconds(time) {
+      //   const hours = parseInt(time.slice(0, 2));
+      //   const minutes = parseInt(time.slice(2, 4));
+      //   const seconds = parseInt(time.slice(4, 6));
 
-        return hours * 3600 + minutes * 60 + seconds;
-      }
-
+      //   return hours * 3600 + minutes * 60 + seconds;
+      // }
+      // -----------------------------------------------------------------
+      let addressUpdated = false;
       const allLocations = JSON.parse(JSON.stringify(response.data));
       const stops = await this.HOSService.getStopsLocation(queryObj);
       if (stops.data[0]) {
         for (let i = 0; i < stops.data.length; i++) {
-          let address
-          if(stops.data[i].address == '' ){
-             address = await this.driverCsvService.getAddress(
+          let address;
+          if (stops.data[i].address == '') {
+            address = await this.driverCsvService.getAddress(
               stops.data[i].latitude,
               stops.data[i].longitude,
             );
-           
+
             stops.data[i].address = address;
+            addressUpdated = true;
           }
         }
       }
-     
+      if (addressUpdated) {
+        await this.HOSService.reAddStops({
+          driverId: driverId,
+
+          date,
+          historyOfLocation: stops.data,
+        });
+      }
       let responseArray = [...allLocations, ...stops.data];
       //  responseArray = ;
 
       responseArray = responseArray.sort((a, b) => a.time - b.time);
       // ------------------------------------------------------------------------
+      // ------------------------------------------------------------------------
+      let address;
+      if (responseArray.length > 1) {
+        if (responseArray[0].address == '') {
+          address = await this.driverCsvService.getAddress(
+            responseArray[0].latitude,
+            responseArray[0].longitude,
+          );
 
+          responseArray[0].address = address;
+        }
+        if (responseArray[responseArray.length - 1].address == '') {
+          address = await this.driverCsvService.getAddress(
+            responseArray[responseArray.length - 1].latitude,
+            responseArray[responseArray.length - 1].longitude,
+          );
+
+          responseArray[responseArray.length - 1].address = address;
+        }
+      }
       return res.status(response.statusCode).send({
         statusCode: response.statusCode,
         message: response.message,

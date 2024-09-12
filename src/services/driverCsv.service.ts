@@ -28,6 +28,7 @@ import { fileCheckData } from 'utils/fileDataCheck';
 import {
   getIntermediateLocations,
   getIntermediateLocationsWithSpeed,
+  checkDistanceDifference,
 } from 'utils/intermediateLocations';
 import { betweenLatLongInfo } from 'utils/betweenLatLongInfo';
 import { updateVariables } from 'shared/calculateClocks';
@@ -48,7 +49,10 @@ import { getInBetweenLogs } from 'utils/findInBetweenLogs';
 import { addFirstandLast } from 'utils/addFirstandLastLog';
 import { createNewLog } from 'utils/createNewLog';
 import { insertLog } from 'utils/insertLog';
-import { removeDuplicateConsecutiveLogs } from 'utils/removeDuplicateConsecutiveLogs';
+import {
+  removeDuplicateConsecutiveLogs,
+  moveIntermediateLog,
+} from 'utils/removeDuplicateConsecutiveLogs';
 import RecordTable from 'mongoDb/document/recordTable.document';
 import { timeDifference } from 'utils/timeDifference';
 import { isArray } from 'lodash';
@@ -505,7 +509,6 @@ export class DriverCsvService {
     }
   };
 
-
   calculateRecape = (deviceCalculation) => {
     //      if (deviceCalculation.CYCLE_DAY > 7) {
     //       Logger.log('Cycle Day greater than 8 #');
@@ -576,12 +579,12 @@ export class DriverCsvService {
     try {
       // 1 => NoPTI
       // 2 => pti
-      if (onDutyTime > 15 * 60) {
+      if (onDutyTime > 1) {
         pti = '2';
       }
-      if (onDutyTime < 15 * 60 && currentStatus == 3) {
-        pti = '3';
-      }
+      // if (onDutyTime < 15 * 60 && currentStatus == 3) {
+      //   pti = '3';
+      // }
       if (onDutyTime < 1 && currentStatus == 3) {
         pti = '1';
       }
@@ -631,7 +634,7 @@ export class DriverCsvService {
     }
 
     // Get logs of river between date
-    const logsOfSelectedDate = await this.get_logs_between_range({
+    let logsOfSelectedDate = await this.get_logs_between_range({
       driverId: driverId,
       startDate: date,
       endDate: date,
@@ -643,17 +646,83 @@ export class DriverCsvService {
         data: {},
       });
     }
+    let finalCsv = logsOfSelectedDate[0].csv;
+
+    let logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    let index;
+
+    let dutyHours = this.sortingDateTime(logsData);
+    for (let i = 0; i < dutyHours.length; i++) {
+      if (eventSequenceIdNumber == dutyHours[i].eventSequenceIdNumber) {
+        index = i;
+      }
+    }
+    if (dutyHours[index].eventTime == '000000') {
+      let dateOfQuery = moment(date);
+      dateOfQuery = dateOfQuery.subtract(1, 'days');
+      let dateQuery = dateOfQuery.format('YYYY-MM-DD');
+
+      logsOfSelectedDate = await this.get_logs_between_range({
+        driverId: driverId,
+        startDate: dateQuery,
+        endDate: dateQuery,
+      });
+      finalCsv = logsOfSelectedDate[0].csv;
+      logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+      dutyHours = this.sortingDateTime(logsData);
+      let foundLog,
+        dontSkip = true;
+      for (let i = dutyHours.length - 1; i >= 0; i--) {
+        Logger.log(i);
+        if (
+          dutyHours[i].eventCode == '3' &&
+          dutyHours[i].eventRecordStatus == '1' &&
+          dutyHours[i].eventType == '1'
+        ) {
+          index = i;
+          foundLog = true;
+          i = -1;
+        } else if (
+          dutyHours[i].eventCode !== '3' &&
+          dutyHours[i].eventRecordStatus == '1' &&
+          dutyHours[i].eventType == '1'
+        ) {
+          logsOfSelectedDate = await this.get_logs_between_range({
+            driverId: driverId,
+            startDate: date,
+            endDate: date,
+          });
+          dontSkip = false;
+          i = -1;
+        }
+      }
+      if (dontSkip && foundLog) {
+        eventSequenceIdNumber = dutyHours[index].eventSequenceIdNumber;
+        date = dateQuery;
+      }
+    }
     // point where actual functions called.
     if (type == 0) {
       // Normalize the logs
-      normalizedResp = await this.autoNormalizeDuty(
+      // normalizedResp = await this.autoNormalizeDuty(
+      //   logsOfSelectedDate,
+      //   eventSequenceIdNumber,
+      //   // this.get_logs_between_range,
+      //   driverId,
+      //   date,
+      //   user,
+      //   normalizationType,
+      // );
+      speed = -1;
+      normalizedResp = await this.manuallyNormalizeDuty(
         logsOfSelectedDate,
         eventSequenceIdNumber,
-        // this.get_logs_between_range,
+        // get_logs_between_range,
         driverId,
         date,
         user,
-        normalizationType,
+        speed, // in mPh
+        normalizationType, // for pc or driving PC=1, dr=1
       );
       235959;
     } else {
@@ -689,7 +758,7 @@ export class DriverCsvService {
 
       for (let i = 0; i < Object.keys(object).length; i++) {
         for (let j = 0; j < array.length; j++) {
-          const indexDate = moment(array[j].eventDate, 'MMDDYY').format(
+          let indexDate = moment(array[j].eventDate, 'MMDDYY').format(
             'YYYY-MM-DD',
           );
           console.log(`eventDate in array ----- `, array[j].eventDate);
@@ -702,7 +771,7 @@ export class DriverCsvService {
       }
 
       for (let i = 0; i < Object.keys(object).length; i++) {
-        const logsOfSelectedDate = await this.get_logs_between_range({
+        let logsOfSelectedDate = await this.get_logs_between_range({
           driverId: driverId,
           startDate: Object.keys(object)[i],
           endDate: Object.keys(object)[i],
@@ -759,10 +828,19 @@ export class DriverCsvService {
       finalCsv.eldEventListForDriversRecordOfDutyStatus = [];
       finalCsv.eldLoginLogoutReport = [];
       finalCsv.cmvEnginePowerUpShutDownActivity = [];
-      newLog.eventCode = finalCsv.timePlaceLine.currentEventCode;
-      newLog.eventType = finalCsv.timePlaceLine.currentEventType
-        ? finalCsv.timePlaceLine.currentEventType
-        : '1';
+      if (finalCsv.timePlaceLine.currentEventCode == '') {
+        newLog.eventCode = '1';
+      } else if (finalCsv.timePlaceLine.currentEventType !== '') {
+        newLog.eventType = finalCsv.timePlaceLine.currentEventType;
+      }
+      if (finalCsv.timePlaceLine.currentEventType == '') {
+        newLog.eventType = '1';
+      } else if (finalCsv.timePlaceLine.currentEventCode !== '') {
+        newLog.eventCode = finalCsv.timePlaceLine.currentEventCode;
+      }
+      // newLog.eventType = finalCsv.timePlaceLine.currentEventType
+      //   ? finalCsv.timePlaceLine.currentEventType
+      //   : '1';
       newLog.eventTime = '000000';
       newLog.eventDate = moment(date).format('MMDDYY');
       newLog.eventRecordStatus = '1';
@@ -772,6 +850,14 @@ export class DriverCsvService {
       newLog.lineDataCheckValue = logCheckSum['lineDataCheckValue'];
       finalCsv.eldEventListForDriversRecordOfDutyStatus.push(newLog);
       finalCsv.timePlaceLine.currentDate = moment(date).format('MMDDYY');
+      finalCsv.timePlaceLine.currentTotalEngineHours =
+        latestCSV.csv.timePlaceLine.currentTotalEngineHours == ''
+          ? '0'
+          : latestCSV.csv.timePlaceLine.currentTotalEngineHours;
+      finalCsv.timePlaceLine.currentTotalVehicleMiles =
+        latestCSV.csv.timePlaceLine.currentTotalVehicleMiles == ''
+          ? '0'
+          : latestCSV.csv.timePlaceLine.currentTotalVehicleMiles;
       finalCsv.timePlaceLine.currentTime = moment
         .tz(moment(), companyTimeZone)
         .format('HHmmss');
@@ -785,6 +871,7 @@ export class DriverCsvService {
 
       const result = checkSum(dataStr);
       finalCsv.timePlaceLine.lineDataCheckValue = result.hexa;
+
       latestCSV.csv = finalCsv;
       const originalLogs = {
         cmvEnginePowerUpShutDownActivity: [],
@@ -1007,7 +1094,7 @@ export class DriverCsvService {
       isPti: '',
     };
 
-    recordMade.driverId = user?._id;
+    recordMade.driverId = user?._id ? user?._id : user?.id;
     recordMade.date = latestCSV?.date;
     // recordMade.driverName = user?.driverFullName;
     const csvDataOfDutyStatus =
@@ -1065,16 +1152,23 @@ export class DriverCsvService {
     // recordMade.tenantId = user?.tenantId;
     //Add violations here
     recordMade.clock = latestCSV.meta.clockData;
-    let voilationtemp = JSON.stringify(latestCSV.meta.voilations)
+    let voilationtemp = JSON.stringify(latestCSV.meta.voilations);
     recordMade.violations = JSON.parse(voilationtemp);
     if (!signature) {
       recordMade.violations.push({ type: 'SIGNATURE_MISSING' });
     }
-    recordMade.isPti = latestCSV?.meta?.pti;
-    if (recordMade.isPti == '1') {
-      recordMade.violations.push({ type: 'PTI_MISSING' });
-    } else if (recordMade.isPti == '3') {
-      recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+
+    let ptiObject = latestCSV?.meta?.ptiViolation;
+    if (ptiObject && ptiObject.length > 0) {
+      for (let ptiData of ptiObject) {
+        if (ptiData.type == '1') {
+          recordMade.violations.push({ type: 'PTI_MISSING' });
+        } else if (ptiData.type == '3') {
+          recordMade.violations.push({ type: 'PTI_TIME_INSUFFICIENT' });
+        }
+      }
+    } else if (!ptiObject) {
+      latestCSV.meta.ptiViolation = [];
     }
 
     // add vehicle and trailer and shipping violations
@@ -1275,6 +1369,69 @@ export class DriverCsvService {
       };
     }
     return lastCalculations;
+  };
+
+  //calculate address of each day logs
+
+  calculateAndUpdateAddress = async (resp, user) => {
+    let latestCSV;
+    const csv = resp.graphData[0].csv;
+    const dutyStatus = csv.eldEventListForDriversRecordOfDutyStatus;
+    let address;
+    let addressUpdated = false;
+    for (let index = 0; index < dutyStatus.length; index++) {
+      const element = dutyStatus[index];
+      if (element.address == '') {
+        address = await this.getAddress(
+          element.eventLatitude,
+          element.eventLongitude,
+        );
+
+        resp.graphData[0].csv.eldEventListForDriversRecordOfDutyStatus[
+          index
+        ].address = address;
+        addressUpdated = true;
+      }
+    }
+    const powerActivity = csv.cmvEnginePowerUpShutDownActivity;
+
+    for (let index = 0; index < powerActivity.length; index++) {
+      const element = powerActivity[index];
+      if (element.address == '') {
+        address = await this.getAddress(
+          element.eventLatitude,
+          element.eventLongitude,
+        );
+
+        resp.graphData[0].csv.cmvEnginePowerUpShutDownActivity[index].address =
+          address;
+        addressUpdated = true;
+      }
+    }
+    const login = csv.eldLoginLogoutReport;
+
+    for (let index = 0; index < login.length; index++) {
+      const element = login[index];
+      if (!element.address || element.address == '') {
+        address = await this.getAddress(
+          element.loginLatitude,
+          element.loginLongitude,
+        );
+
+        resp.graphData[0].csv.eldLoginLogoutReport[index]['address'] = address;
+        addressUpdated = true;
+      }
+    }
+    latestCSV = {
+      meta: resp.graphData[0].meta,
+      csv: resp.graphData[0].csv,
+      originalLogs: resp.graphData[0].originalLogs,
+      date: resp.graphData[0].date,
+    };
+    if (addressUpdated) {
+      await this.addToDB(latestCSV, user);
+    }
+    return addressUpdated;
   };
   //**************************************** */
   // this is the main function for calculating HOS on recent
@@ -3364,10 +3521,11 @@ export class DriverCsvService {
     normalizationType,
   ) => {
     let finalCsv = logsOfSelectedDate[0].csv;
-    const logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
-    const indexes = [];
+    let logsData = finalCsv['eldEventListForDriversRecordOfDutyStatus'];
+    let indexes = [];
+    let averageSpeed;
     let drAlertFlag = false;
-    const inActiveLogs = [];
+    let inActiveLogs = [];
     let dutyHours = this.sortingDateTime(logsData);
     for (let i = 0; i < dutyHours.length; i++) {
       if (eventSequenceIdNumber == dutyHours[i].eventSequenceIdNumber) {
@@ -3393,7 +3551,7 @@ export class DriverCsvService {
     });
 
     for (let i = indexes[0]; i < dutyHours.length; i++) {
-      const availableIntermediateLogs = [];
+      let availableIntermediateLogs = [];
 
       // Get a duty status for DR
       if (
@@ -3420,7 +3578,7 @@ export class DriverCsvService {
             const timeDrivingStatus = moment(dutyHours[i].eventTime, 'HHmmss');
             const diff = timeDrivingStatus.diff(timeChangeStatus);
             const diffSeconds = Math.abs(moment.duration(diff).asSeconds());
-            const hoursBase = await getHours(
+            let hoursBase = await getHours(
               dutyHours[i].eventTime,
               dutyHours[j].eventTime,
             );
@@ -3445,7 +3603,7 @@ export class DriverCsvService {
               ) {
                 return {
                   statusCode: 200,
-                  message: `Invalid Duration of vehicle miles!`, //if DR status found but time is less than hour
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
                   data: {},
                 };
               }
@@ -3455,18 +3613,24 @@ export class DriverCsvService {
               ) {
                 return {
                   statusCode: 200,
-                  message: `Invalid Duration of lat long!`, //if DR status found but time is less than hour
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
                   data: {},
                 };
               }
               if (milesDiff / hoursBase > 110 || milesDiff / hoursBase < 10) {
                 return {
                   statusCode: 200,
-                  message: `Invalid Duration of hours!`, //if DR status found but time is less than hour
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
                   data: {},
                 };
               }
-
+              if (hoursBase > 11) {
+                return {
+                  statusCode: 200,
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
+                  data: {},
+                };
+              }
               // If miles covered, intermediates would be created
               // const hours = Math.floor(diffSeconds / 3600);
               // const minutes = Math.floor((diffSeconds % 3600) / 60);
@@ -3493,9 +3657,9 @@ export class DriverCsvService {
 
               // variables
               let intermediateLogs;
-              const createdIntermediateLogs = [];
-              const spliceFlag = false;
-              const violation = false;
+              let createdIntermediateLogs = [];
+              let spliceFlag = false;
+              let violation = false;
 
               // Final and initial point lat long difference
               const initialLocation = {
@@ -3506,18 +3670,59 @@ export class DriverCsvService {
                 latitude: dutyHours[j].eventLatitude,
                 longitude: dutyHours[j].eventLongitude,
               };
+              const trueSpan = await checkDistanceDifference(
+                milesDiff,
+                initialLocation,
+                finalLocation,
+              );
+              if (!trueSpan) {
+                return {
+                  statusCode: 200,
+                  message: `Invalid Duration!`, //if DR status found but time is less than hour
+                  data: {},
+                };
+              }
+              // add get speed logic here
+              averageSpeed = speed;
+              if (speed == -1) {
+                let speedMilles = milesDiff / hoursBase;
+                let speedDistance = await this.addSpeedInDriving(
+                  dutyHours[i],
+                  dutyHours[j],
+                  hoursBase,
+                );
+                averageSpeed = (speedMilles + speedDistance) / 2;
+                while (averageSpeed * hoursBase > milesDiff) {
+                  averageSpeed -= 1;
+                }
+                //  averageSpeed = speedMilles
 
+                //  milesDiff/hoursBase
+                //   await this.addSpeedInDriving(
+                //   dutyHours[i],
+                //   dutyHours[j],
+                //   hoursBase,
+                // );
+                if (averageSpeed >= 110) {
+                  return {
+                    statusCode: 200,
+                    message: `Invalid Duration!`, //if DR status found but time is less than hour
+                    data: {},
+                  };
+                }
+              }
               const intermediatePoints =
                 await getIntermediateLocationsWithSpeed(
                   initialLocation,
                   finalLocation,
                   hoursBase,
-                  speed,
+                  averageSpeed,
+                  // speed
                 );
               if (intermediatePoints.length == 0) {
                 return {
                   statusCode: 200,
-                  message: `Invalid speed!`,
+                  message: `invalid duration!`,
                   data: {},
                 };
               }
@@ -3542,7 +3747,7 @@ export class DriverCsvService {
                 accumulatedEngineHours = JSON.stringify(
                   JSON.parse(accumulatedEngineHours) + 1,
                 );
-                const latLongInfo =
+                let latLongInfo =
                   createdIntermediateLogs.length == 0
                     ? await betweenLatLongInfo(
                         {
@@ -3566,7 +3771,7 @@ export class DriverCsvService {
                           longitude: intermediatePoints[k].longitude,
                         },
                       );
-                const distaneViaLatLon = latLongInfo.distance;
+                let distaneViaLatLon = latLongInfo.distance;
 
                 // Log information added
                 log.eventSequenceIdNumber = generateUniqueHexId();
@@ -3625,7 +3830,7 @@ export class DriverCsvService {
                         log.eventTime,
                         createdIntermediateLogs[k - 1].eventTime,
                       );
-                const speedMph =
+                let speedMph =
                   createdIntermediateLogs.length == 0
                     ? speed
                     : latLongInfo.distance / timeForSpeed;
@@ -3731,7 +3936,7 @@ export class DriverCsvService {
                 nextDutyStatus.eventTime,
                 lastIntermediateLog.eventTime,
               );
-              const speedMph = response.distance / timeForSpeed;
+              let speedMph = response.distance / timeForSpeed;
               lastIntermediateLog['speed'] = this.customRound(speedMph);
               speedMph > 100
                 ? (lastIntermediateLog['speedViolation'] = true)
@@ -3771,7 +3976,7 @@ export class DriverCsvService {
                 : 0,
             intermediateLogs: [],
           };
-          const nextDate = moment(date).add(1, 'day');
+          let nextDate = moment(date).add(1, 'day');
           const response = await this.recursiveNormalizeManual(
             // this.get_logs_between_range,
             driverId,
@@ -3791,7 +3996,7 @@ export class DriverCsvService {
 
     return {
       statusCode: 200,
-      message: 'eventSequenceIdNumber does not exist!', // if no DR status found
+      message: 'invalid Duration!', // if no DR status found
       data: {},
     };
   };
@@ -4086,6 +4291,7 @@ export class DriverCsvService {
     truck,
     shippingDocument,
     tralier,
+    vehicleId,
     notes,
     state,
     timezone,
@@ -4107,6 +4313,12 @@ export class DriverCsvService {
       });
       dutyStatusLogs = dutyStatusLogs.filter((element) => {
         return element.eventRecordStatus != '2';
+      });
+      const intermediate = dutyStatusLogs.filter((element) => {
+        return element.eventType == '2';
+      });
+      dutyStatusLogs = dutyStatusLogs.filter((element) => {
+        return element.eventType != '2';
       });
       // let { filterd, arr } = await getInBetweenLogs(
       //   dutyStatusLogs,
@@ -4130,6 +4342,7 @@ export class DriverCsvService {
         truck,
         shippingDocument,
         tralier,
+        vehicleId,
         timezone,
         notes,
         state,
@@ -4159,9 +4372,17 @@ export class DriverCsvService {
       //   addedLogs[index + 1].eventTime = endTime
 
       // }
+      addedLogs.filter((item) => {
+        return item.eventType !== '2';
+      });
+
       let finalLogs = await removeDuplicateConsecutiveLogs(addedLogs);
+      finalLogs = [...finalLogs, ...intermediate];
+      finalLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
+      finalLogs = await moveIntermediateLog(finalLogs, newLog);
       finalLogs = [...finalLogs, ...inActiveLogs];
-      addedLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
+
+      finalLogs.sort((a, b) => a.eventTime.localeCompare(b.eventTime));
       const csv = JSON.parse(
         JSON.stringify(
           Array.isArray(logsOfSelectedDate)
@@ -4184,6 +4405,28 @@ export class DriverCsvService {
       throw error;
     }
   };
+
+//update signature violation in recordtable of 14 days. 
+updateDriverRecordSignature = async (data) => {
+  try {
+    for (const date of data.dates) {
+
+      const record = await this.recordTable.findOneAndUpdate(
+        { driverId: data.driverId, date: date }, // Match the document
+        { 
+          $pull: { violations: { type: "SIGNATURE_MISSING" } } // Remove the violation with type SIGNATURE_MISSING
+        },
+        { returnDocument: 'after' } // Return the updated document
+      );
+    }
+
+   return true;
+  } catch (error) {
+    Logger.log(error);
+    throw error;
+  }
+};
+
   addAndUpdateDriverRecord = async (data) => {
     try {
       const record = await this.recordTable.findOneAndUpdate(
